@@ -53,15 +53,15 @@ class Timer {
 
 	double waitForTick();	// Wait for next clock tick, and return time.
 
+	typedef void (*FUNCPTR)();
     	void calibrate(		// Determine measurement overhead.
-		void (*initialize)(),
-		void (*finalize)());
+		FUNCPTR initialize,
+		FUNCPTR finalize);
 
 	double time(		// Measure rate for a given operation.
-		void (*initialize)(),
-		void (*operation)(),
-		void (*finalize)());
-
+		FUNCPTR initialize,
+		FUNCPTR operation,
+		FUNCPTR finalize);
 
 	Timer() {overhead = 0.0;}
 }; // class Timer

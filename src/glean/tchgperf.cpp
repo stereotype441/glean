@@ -272,12 +272,10 @@ TexBindPerf::compare(Environment& environment) {
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef void (*TIME_FUNC) ();
-
 void
 TexBindPerf::runOne(Result& r, Window& w) {
 	Timer time;
-	time.calibrate((TIME_FUNC)glFinish, (TIME_FUNC) glFinish);
+	time.calibrate((Timer::FUNCPTR) glFinish, (Timer::FUNCPTR) glFinish);
 
 	glGenTextures(1, &redTex);
 	glBindTexture(GL_TEXTURE_2D, redTex);
@@ -321,11 +319,13 @@ TexBindPerf::runOne(Result& r, Window& w) {
 	vector<float> measurements;
 	for (int i = 0; i < 5; ++i) {
 		env->quiesce();
-		double tBind = time.time((TIME_FUNC)glFinish, (TIME_FUNC) bindDraw, (TIME_FUNC) glFinish);
+		double tBind = time.time((Timer::FUNCPTR)glFinish,
+		    (Timer::FUNCPTR) bindDraw, (Timer::FUNCPTR) glFinish);
 		w.swap();	// So the user can see something happening.
 
 		env->quiesce();
-		double tNoBind = time.time((TIME_FUNC)glFinish, (TIME_FUNC)noBindDraw, (TIME_FUNC)glFinish);
+		double tNoBind = time.time((Timer::FUNCPTR) glFinish,
+		    (Timer::FUNCPTR) noBindDraw, (Timer::FUNCPTR) glFinish);
 		w.swap();
 
 		double bindTime = 1E6 * (tBind - tNoBind) / nTris;

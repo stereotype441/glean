@@ -82,8 +82,6 @@ C4UB_N3F_V3F* c4ub_n3f_v3f;
 C4UB_T2F_V3F* c4ub_t2f_v3f;
 
 
-typedef void (*TIME_FUNC)();
-
 void
 coloredLit_imIndTri() {
 	const C4UB_N3F_V3F* p = c4ub_n3f_v3f;
@@ -222,8 +220,8 @@ callDList() {
 } // callDList
 
 void
-measure(GLEAN::Timer& time, TIME_FUNC function, GLEAN::Environment* env,
-    GLEAN::Window& w, int nTris, GLEAN::VPResult& r) {
+measure(GLEAN::Timer& time, GLEAN::Timer::FUNCPTR function,
+    GLEAN::Environment* env, GLEAN::Window& w, int nTris, GLEAN::VPResult& r) {
 	// Clear both front and back buffers and swap, to avoid confusing
 	// this test with results of the previous test:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -235,9 +233,10 @@ measure(GLEAN::Timer& time, TIME_FUNC function, GLEAN::Environment* env,
 	vector<double> measurements;
 	for (int i = 0; i < nMeasurements; ++i) {
 		env->quiesce();
-		double t = time.time(static_cast<TIME_FUNC>(glFinish),
+		double t = time.time(
+			static_cast<GLEAN::Timer::FUNCPTR>(glFinish),
 			function,
-			static_cast<TIME_FUNC>(glFinish));
+			static_cast<GLEAN::Timer::FUNCPTR>(glFinish));
 		w.swap();	// give the user something to watch
 		measurements.push_back(nTris / t);
 	}
@@ -629,13 +628,13 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glShadeModel(GL_FLAT);
 
 	Timer time;
-	time.calibrate(static_cast<TIME_FUNC>(glFinish),
-		static_cast<TIME_FUNC>(glFinish));
+	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
+		static_cast<Timer::FUNCPTR>(glFinish));
 
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(coloredLit_imIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(coloredLit_imIndTri), env, w,
 		nTris, r.imTri);
 	imTriImage.read(0, 0);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -649,7 +648,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glNewList(dList, GL_COMPILE);
 		coloredLit_imIndTri();
 	glEndList();
-	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
 		r.dlTri);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -669,7 +668,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<TIME_FUNC>(daIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
 		nTris, r.daTri);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTri, env,
@@ -682,7 +681,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(daIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
 		nTris, r.ldaTri);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -695,7 +694,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(deIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
 		nTris, r.deTri);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.deTri, env,
@@ -706,7 +705,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(deIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
 		nTris, r.ldeTri);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -756,8 +755,8 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// Immediate-mode triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(coloredLit_imTriStrip), env, w,
-		nTris, r.imTS);
+	measure(time, static_cast<Timer::FUNCPTR>(coloredLit_imTriStrip), env,
+		w, nTris, r.imTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.imTS, env,
 		"Immediate-mode triangle strip");
@@ -769,7 +768,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glNewList(dList, GL_COMPILE);
 		coloredLit_imTriStrip();
 	glEndList();
-	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
 		r.dlTS);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -789,7 +788,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<TIME_FUNC>(daTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
 		nTris, r.daTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTS, env,
@@ -800,7 +799,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(daTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
 		nTris, r.ldaTS);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -813,7 +812,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(deTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
 		nTris, r.deTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.deTS, env,
@@ -824,7 +823,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(deTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
 		nTris, r.ldeTS);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -1289,13 +1288,13 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	glShadeModel(GL_FLAT);
 
 	Timer time;
-	time.calibrate(static_cast<TIME_FUNC>(glFinish),
-		static_cast<TIME_FUNC>(glFinish));
+	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
+		static_cast<Timer::FUNCPTR>(glFinish));
 
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(coloredTex_imIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(coloredTex_imIndTri), env, w,
 		nTris, r.imTri);
 	imTriImage.read(0, 0);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -1309,7 +1308,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	glNewList(dList, GL_COMPILE);
 		coloredTex_imIndTri();
 	glEndList();
-	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
 		r.dlTri);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -1329,7 +1328,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 		c4ub_t2f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<TIME_FUNC>(daIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
 		nTris, r.daTri);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTri, env,
@@ -1342,7 +1341,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(daIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
 		nTris, r.ldaTri);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -1355,7 +1354,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(deIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
 		nTris, r.deTri);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.deTri, env,
@@ -1366,7 +1365,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(deIndTri), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
 		nTris, r.ldeTri);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -1415,8 +1414,8 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// Immediate-mode triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(coloredTex_imTriStrip), env, w,
-		nTris, r.imTS);
+	measure(time, static_cast<Timer::FUNCPTR>(coloredTex_imTriStrip), env,
+		w, nTris, r.imTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.imTS, env,
 		"Immediate-mode triangle strip");
@@ -1428,7 +1427,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	glNewList(dList, GL_COMPILE);
 		coloredTex_imTriStrip();
 	glEndList();
-	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
 		r.dlTS);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
@@ -1448,7 +1447,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 		c4ub_t2f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<TIME_FUNC>(daTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
 		nTris, r.daTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTS, env,
@@ -1459,7 +1458,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(daTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
 		nTris, r.ldaTS);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
@@ -1472,7 +1471,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<TIME_FUNC>(deTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
 		nTris, r.deTS);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.deTS, env,
@@ -1483,7 +1482,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<TIME_FUNC>(deTriStrip), env, w,
+	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
 		nTris, r.ldeTS);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();

@@ -61,7 +61,7 @@ namespace GLEAN {
 //	and finalization routine
 ///////////////////////////////////////////////////////////////////////////////
 void
-Timer::calibrate(void (*initialize)(), void (*finalize)()) {
+Timer::calibrate(FUNCPTR initialize, FUNCPTR finalize) {
 	double runTime = chooseRunTime();
 
 	if (initialize)
@@ -168,9 +168,9 @@ Timer::waitForTick() {
 ///////////////////////////////////////////////////////////////////////////////
 double
 Timer::time(
-    void (*initialize)(),
-    void (*operation)(),
-    void (*finalize)()) {
+    FUNCPTR initialize,
+    FUNCPTR operation,
+    FUNCPTR finalize) {
 
 	if (!operation)
 		return 0.0;
