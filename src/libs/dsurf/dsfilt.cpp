@@ -62,10 +62,10 @@ DrawingSurfaceFilter::DrawingSurfaceFilter(const string& s):
 
 	// Make the final sort in order of increasing ID number:
 	EmitKey(MIN);
+	EmitKey(VAR_ID);
 #	if defined(GLX_VERSION_1_3)
+		EmitKey(MIN);
 		EmitKey(VAR_FBCID);
-#	else
-		EmitKey(VAR_ID);
 #	endif
 } // DrawingSurfaceFilter::DrawingSurfaceFilter
 

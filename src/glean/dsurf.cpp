@@ -76,10 +76,12 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h,
 #if defined(__X11__)
 
 #if defined(GLX_VERSION_1_3)
-// XXX Need GLX 1.3 window-creation code
+	if (ws.GLXVersMajor == 1 && ws.GLXVersMinor < 3)
+		goto legacyMethod;
+// XXX Need GLX 1.3 window-creation code.  For now, just fall through.
 #endif
 
-
+legacyMethod:
 	// XXX There's basically no error-handling code here.
 	// See XErrorHandler().
 

@@ -78,7 +78,15 @@ main(int argc, char* argv[]) {
 		criteria = "1";
 
 
-#	if defined(__X11__) && !defined(GLX_VERSION_1_3)
+#	if defined(__X11__)
+#		if defined(GLX_VERSION_1_3)
+			// XXX Need to write GLX 1.3 FBConfig code
+			// Yeah, yeah, it shouldn't be hard.  I just don't
+			// have any way to test it yet.
+			goto legacyMethod;
+#		endif
+
+legacyMethod:
 		Display* dpy = XOpenDisplay(displayName.c_str());
 
 		if (!dpy) {
@@ -127,10 +135,6 @@ main(int argc, char* argv[]) {
 		}
 
 
-#	elif defined(__X11__) && defined(GLX_VERSION_1_3)
-			// XXX Need to write GLX 1.3 FBConfig code
-			// Yeah, yeah, it shouldn't be hard.  I just don't
-			// have any way to test it yet.
 #	elif defined(__WIN__)
 		HDC hDC = GetDC(GetDesktopWindow());
 

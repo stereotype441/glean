@@ -106,10 +106,14 @@ RenderingContext::RenderingContext(WindowSystem& ws, DrawingSurfaceConfig& c,
 
 #	if defined(GLX_VERSION_1_3)
 
+	if (ws.GLXVersMajor == 1 && ws.GLXVersMinor < 3)
+		goto legacyMethod;
 	// XXX Need GLX 1.3 rc constructor code
+	// For now, just fall through.
 
 #	endif
 
+legacyMethod:
 	// Create the rendering context:
 	rc = glXCreateContext(winSys->dpy, c.vi, (share? share->rc: 0),
 		direct? True: False);
@@ -135,8 +139,12 @@ RenderingContext::~RenderingContext() {
 	remove(winSys->contexts.begin(), winSys->contexts.end(), this);
 #   if defined(__X11__)
 #	if defined(GLX_VERSION_1_3)
+		if (winSys->GLXVersMajor == 1 && winSys->GLXVersMinor < 3)
+			goto legacyMethod;
 		// XXX Need to write GLX 1.3 rc destructor
+		// For now, just fall through.
 #       endif
+legacyMethod:
 		glXDestroyContext(winSys->dpy, rc);
 #   elif defined(__WIN__)
 		wglDeleteContext(rc);

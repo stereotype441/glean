@@ -269,8 +269,10 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::GLXFBConfig* pfbc)
 {
 	if (!mapsInitialized)
 		initializeMaps();
-} // DrawingSurfaceConfig::DrawingSurfaceConfig
 // XXX Need to write drawing surface config code for GLX 1.3
+	cerr << "GLX 1.3 version of DrawingSurfaceConfig constructor is not"
+		"implemented.\n";
+} // DrawingSurfaceConfig::DrawingSurfaceConfig
 #endif
 
 #elif defined(__WIN__)
@@ -727,10 +729,9 @@ DrawingSurfaceConfig::conciseDescription() {
 	}
 
 #	if defined(__X11__)
+		s << ", id " << visID;
 #		if defined(GLX_VERSION_1_3)
 			s << ", id " << fbcID;
-#		else
-			s << ", id " << visID;
 #		endif
 #	elif defined(__WIN__)
 			s << ", id " << pfdID;
