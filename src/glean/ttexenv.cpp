@@ -614,6 +614,8 @@ TexEnvTest::runOne(BasicResult& r, Window& w) {
 	else
 		numModes = 4;
 
+	r.pass = true;
+
 	for (int fmt = 0; fmt < 6; fmt++) {
 		const GLenum format = FormatEnums[fmt];
 		const char *formatName = FormatNames[fmt];
@@ -630,7 +632,7 @@ TexEnvTest::runOne(BasicResult& r, Window& w) {
 						envName, formatName,
 						COLORS, colors, envColor, w)) {
 						r.pass = false;
-						return;
+						break;
 					}
 				}
 			}
@@ -640,14 +642,10 @@ TexEnvTest::runOne(BasicResult& r, Window& w) {
 					envName, formatName,
 					COLORS, colors, colors[0], w)) {
 					r.pass = false;
-					return;
 				}
 			}
 		}
 	}
-
-	r.pass = true;
-
 } // TexEnvTest::runOne
 
 
