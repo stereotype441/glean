@@ -697,6 +697,54 @@ TexCombineTest::PrintMachineState(const glmachine &machine) const {
 
 
 //
+// Check that the actual GL implementation's texture state matches what's
+// in the given glean machine state.  This is only used for debugging.
+//
+bool
+TexCombineTest::VerifyMachineState(const glmachine &machine) const {
+
+#define VERIFY(var, expected)				\
+	glGetTexEnviv(GL_TEXTURE_ENV, var, &actual);	\
+	if ((GLint) (expected) != (actual)) {		\
+		cerr << "Expected " << var << " = "	\
+			<< EnumString(expected)		\
+			<< " but got "			\
+			<< EnumString(actual)		\
+			<< "\n";			\
+		return false;				\
+	}
+#define VERIFYF(var, expected)				\
+	glGetTexEnvfv(GL_TEXTURE_ENV, var, &actualf);	\
+	if ((expected) != (actualf)) {		\
+		cerr << "Expected " << var << " = "	\
+			<< expected			\
+			<< " but got "			\
+			<< actualf			\
+			<< "\n";			\
+		return false;				\
+	}
+
+
+	for (int u = 0; u < machine.NumTexUnits; u++) {
+		GLint actual;
+		GLfloat actualf;
+		VERIFY(GL_COMBINE_RGB_EXT, machine.COMBINE_RGB[u]);
+		VERIFY(GL_COMBINE_ALPHA_EXT, machine.COMBINE_ALPHA[u]);
+		VERIFY(GL_SOURCE0_RGB_EXT, machine.SOURCE0_RGB[u]);
+		VERIFY(GL_SOURCE1_RGB_EXT, machine.SOURCE1_RGB[u]);
+		VERIFY(GL_SOURCE2_RGB_EXT, machine.SOURCE2_RGB[u]);
+		VERIFY(GL_OPERAND0_RGB_EXT, machine.OPERAND0_RGB[u]);
+		VERIFY(GL_OPERAND1_RGB_EXT, machine.OPERAND1_RGB[u]);
+		VERIFY(GL_OPERAND2_RGB_EXT, machine.OPERAND2_RGB[u]);
+		VERIFYF(GL_RGB_SCALE_EXT, machine.RGB_SCALE[u]);
+		VERIFYF(GL_ALPHA_SCALE, machine.ALPHA_SCALE[u]);
+	}
+
+	return true;  // state is AOK
+}
+
+
+//
 // Print an error report.
 //
 void
@@ -994,6 +1042,7 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
 #if 0 // Debug
+			VerifyMachineState(machine);
 			// For debugging, printing the state of the previous
 			// test is useful to see what's changed when we've
 			// failed a test but passed the previous one.

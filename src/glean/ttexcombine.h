@@ -102,6 +102,7 @@ class TexCombineTest: public BasicTest {
 	void ComputeTexCombine(const glmachine &machine, int texUnit,
 		const GLfloat prevColor[4], GLfloat result[4]) const;
 	void PrintMachineState(const glmachine &machine) const;
+	bool VerifyMachineState(const glmachine &machine) const;
 	void ReportFailure(const glmachine &machine, const GLfloat expected[4],
 		const GLfloat rendered[4], BasicResult &r);
 	void TexEnv(glmachine &machine, int texUnit, GLenum target,
