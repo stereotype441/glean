@@ -3320,8 +3320,9 @@ TeapotTest::compareOne(Result& oldR, Result& newR) {
 			env->log << name << ":  SAME "
 				<< newR.config->conciseDescription() << '\n'
 				<< (oldR.pass? "\tBoth PASS\n": "\tBoth FAIL\n")
-				<< "\tTeapots Comparison: " << oldR.fTps << " vs. " << newR.fTps 
-				;
+				<< "\tTeapots Comparison: "
+				<< oldR.fTps << " vs. " << newR.fTps
+				<< '\n';
 	} else {
 		env->log << name << ":  DIFF "
 			<< newR.config->conciseDescription() << '\n'
@@ -3329,8 +3330,9 @@ TeapotTest::compareOne(Result& oldR, Result& newR) {
 			<<	(oldR.pass? " PASS, ": " FAIL, ")
 			<< env->options.db2Name
 			<<	(newR.pass? " PASS\n": " FAIL\n")
-			<< "\tTeapots Comparison: " << oldR.fTps << " vs. " << newR.fTps
-			;
+			<< "\tTeapots Comparison: "
+			<< oldR.fTps << " vs. " << newR.fTps
+			<< '\n';
 	}
 } // BasicTest::compareOne
 
