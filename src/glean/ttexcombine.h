@@ -99,7 +99,9 @@ class TexCombineTest: public BasicTest {
 	static test_param Dot3RGBParams[];
 	static test_param Dot3RGBAParams[];
 	static test_param MultitexParams[];
+	static test_param CrossbarParams[];
 	bool haveDot3;
+	bool haveCrossbar;
 	GLfloat mTolerance[4];
 	GLuint mTextures[MAX_TEX_UNITS];
 
@@ -109,7 +111,7 @@ class TexCombineTest: public BasicTest {
 	void PrintMachineState(const glmachine &machine) const;
 	bool VerifyMachineState(const glmachine &machine) const;
 	void ReportFailure(const glmachine &machine, const GLfloat expected[4],
-		const GLfloat rendered[4], BasicResult &r);
+		const GLfloat rendered[4], BasicResult &r, const char *where);
 	void TexEnv(glmachine &machine, int texUnit, GLenum target,
 		GLenum value);
 	void SetupTestEnv(glmachine &machine, int texUnit, int testNum,
@@ -117,9 +119,11 @@ class TexCombineTest: public BasicTest {
 	void SetupColors(struct glmachine &machine);
 	int CountTestCombinations(const test_param testParams[]) const;
 	bool RunSingleTextureTest(glmachine &machine,
-		const test_param testParams[], BasicResult &r, Window& w);
+		const test_param testParams[], BasicResult &r, Window &w);
         int CountMultiTextureTestCombinations(const glmachine &machine) const;
-	bool RunMultiTextureTest(glmachine &machine, BasicResult &r, Window& w);
+	bool RunMultiTextureTest(glmachine &machine, BasicResult &r, Window &w);
+	int CountCrossbarCombinations() const;
+	bool RunCrossbarTest(glmachine &machine, BasicResult &r, Window &w);
 
 	PFNGLACTIVETEXTUREARBPROC p_glActiveTextureARB;
 	PFNGLMULTITEXCOORD2FARBPROC p_glMultiTexCoord2fARB;
