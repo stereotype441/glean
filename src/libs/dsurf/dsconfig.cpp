@@ -244,7 +244,7 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::XVisualInfo* pvi) {
 	fast = true;
 	conformant = true;
 #	if defined(GLX_EXT_visual_rating)
-		if (haveGLXExtension(dpy, "EXT_visual_rating")) {
+		if (haveGLXExtension(dpy, "GLX_EXT_visual_rating")) {
 			glXGetConfig(dpy, vi, GLX_VISUAL_CAVEAT_EXT, &var);
 			if (var == GLX_SLOW_VISUAL_EXT)
 				fast = false;
@@ -256,7 +256,7 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::XVisualInfo* pvi) {
 	transparent = false;
 	transR = transG = transB = transA = transI = 0;
 #	if defined(GLX_EXT_visual_info)
-		if (haveGLXExtension(dpy, "EXT_visual_info")) {
+		if (haveGLXExtension(dpy, "GLX_EXT_visual_info")) {
 			glXGetConfig(dpy, vi, GLX_TRANSPARENT_TYPE_EXT, &var);
 			if (var == GLX_TRANSPARENT_RGB_EXT) {
 				glXGetConfig(dpy, vi,
