@@ -58,30 +58,32 @@ class ColoredLitPerf: public Test {
 	// Class for a single test result.  All basic tests have a
 	// drawing surface configuration, plus other information
 	// that's specific to the test.
+	struct OneResult {
+		float tps;		// Triangles Per Second
+		float tpsLow;		// Low end of tps range
+		float tpsHigh;		// High end of tps range
+		bool imageOK;		// Image sanity-check status
+		bool imageMatch;	// Image comparison status
+
+		void put(ostream& s) const {
+			s << tps
+			   << ' ' << tpsLow
+			   << ' ' << tpsHigh
+			   << ' ' << imageOK
+			   << ' ' << imageMatch
+			   << '\n';
+		}
+		void get(istream& s) {
+			s >> tps >> tpsLow >> tpsHigh >> imageOK >> imageMatch;
+		}
+	};
 	class Result: public Test::Result {
 	    public:
 		DrawingSurfaceConfig* config;
 
-		float imTriTps;		// immediate-mode independent triangles
-		float imTriTpsLow;
-		float imTriTpsHigh;
-		bool imTriImageOK;
-
-		float dlTriTps;		// display-listed independent triangles
-		float dlTriTpsLow;
-		float dlTriTpsHigh;
-		bool dlTriImageOK;
-		bool dlTriImageMatch;
-
-		float daTriTps;		// DrawArrays independent triangles
-		float daTriTpsLow;
-		float daTriTpsHigh;
-		bool daTriImageOK;
-		bool daTriImageMatch;
-
-		float imStripTps;	// immediate-mode triangle strip
-		float imStripTpsLow;
-		float imStripTpsHigh;
+		OneResult imTri;	// immediate-mode independent triangles
+		OneResult dlTri;	// display-listed independent triangles
+		OneResult daTri;	// DrawArrays independent triangles
 
 		virtual void put(ostream& s) const;
 		virtual bool get(istream& s);
