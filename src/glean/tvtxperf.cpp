@@ -540,6 +540,8 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 
 	glShadeModel(GL_FLAT);
 
+	glReadBuffer(GL_FRONT);
+
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
@@ -1011,6 +1013,8 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	glShadeModel(GL_FLAT);
+
+	glReadBuffer(GL_FRONT);
 
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
