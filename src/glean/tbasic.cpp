@@ -94,7 +94,7 @@ BasicTest::run(Environment& environment) {
 				;	// XXX need to throw exception here
 
 			// Create a result object and run the test:
-			Result *r = new Result;
+			Result* r = new Result();
 			r->config = *p;
 			runOne(*r);
 
@@ -159,10 +159,10 @@ BasicTest::compare(Environment& environment) {
 	}
 
 	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator op = newR.begin(); op < newR.end(); ++op)
-		delete *op;
-	for (vector<Result*>::iterator np = oldR.begin(); np < oldR.end(); ++np)
+	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
 		delete *np;
+	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
+		delete *op;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
