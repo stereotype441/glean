@@ -78,17 +78,22 @@ clobber: clobber_here clobber_dirs
 test:    test_here    test_dirs
 
 all_dirs:
-	@for d in $(DIRS); do (cd $$d; $(MAKE) all); done
+	if [ -n "$(DIRS)" ]; \
+		then for d in $(DIRS); do (cd $$d; $(MAKE) all); done; fi
 install_dirs:
-	@for d in $(DIRS); do (cd $$d; $(MAKE) install); done
+	if [ -n "$(DIRS)" ]; \
+		then for d in $(DIRS); do (cd $$d; $(MAKE) install); done; fi
 clean_dirs:
-	@for d in $(DIRS); do (cd $$d; $(MAKE) clean); done
-	@if [ -d Test ]; then (cd Test; $(MAKE) clean); fi
+	if [ -n "$(DIRS)" ]; \
+		then for d in $(DIRS); do (cd $$d; $(MAKE) clean); done; fi
+	if [ -d Test ]; then (cd Test; $(MAKE) clean); fi
 clobber_dirs:
-	@for d in $(DIRS); do (cd $$d; $(MAKE) clobber); done
-	@if [ -d Test ]; then (cd Test; $(MAKE) clobber); fi
+	if [ -n "$(DIRS)" ]; \
+		then for d in $(DIRS); do (cd $$d; $(MAKE) clobber); done; fi
+	if [ -d Test ]; then (cd Test; $(MAKE) clobber); fi
 test_dirs:
-	@for d in $(DIRS); do (cd $$d; $(MAKE) test); done
+	if [ -n "$(DIRS)" ]; \
+		then for d in $(DIRS); do (cd $$d; $(MAKE) test); done; fi
 
 clean_here:
 	$(RM) -f *.o *.dep *.bak *~
