@@ -344,7 +344,7 @@ TexBindPerf::runOne(Result& r, Window& w) {
 	}
 
 	sort(measurements.begin(), measurements.end());
-	r.bindTime = measurements[2];
+	r.bindTime = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
 	r.lowerBound = measurements[1];
 	r.upperBound = measurements[3];
 
