@@ -186,6 +186,9 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::XVisualInfo* pvi) {
 
 	vi = pvi;
 	visID = vi->visualid;
+#	if defined(GLX_VERSION_1_3)
+		fbcID = 0;
+#	endif
 
 	glXGetConfig(dpy, vi, GLX_RGBA, &var);
 	canRGBA = var;
@@ -227,6 +230,13 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::XVisualInfo* pvi) {
 
 	canWindow = canPixmap = true;
 		// Only guaranteed in early versions of GLX.
+
+#	if defined(GLX_VERSION_1_3)
+		canPBuffer = 0;
+		maxPBufferWidth = 0;
+		maxPBufferHeight = 0;
+		maxPBufferPixels = 0;
+#	endif
 
 	canWinSysRender = true;
 		// Only guaranteed in early versions of GLX.
@@ -731,7 +741,8 @@ DrawingSurfaceConfig::conciseDescription() {
 #	if defined(__X11__)
 		s << ", id " << visID;
 #		if defined(GLX_VERSION_1_3)
-			s << ", id " << fbcID;
+			if (fbcID)
+				s << ", fbcid " << fbcID;
 #		endif
 #	elif defined(__WIN__)
 			s << ", id " << pfdID;
