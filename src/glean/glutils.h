@@ -51,6 +51,9 @@ void useScreenCoords(int windowW, int windowH);
 // any arbitrary context.)
 bool haveExtension(const char* name);
 
+// Check for OpenGL errors and log any that have occurred:
+void logGLErrors(Environment& env);
+
 // Syntactic sugar for dealing with light source parameters:
 class Light {
 	GLenum lightNumber;
