@@ -38,6 +38,9 @@
 #if defined(__X11__)
 #   include <dlfcn.h>
 #endif
+#if defined(__AGL__)
+#   include <cstring>
+#endif
 
 namespace GLEAN {
 
@@ -125,6 +128,27 @@ void
 #elif defined(__BEWIN__)
 #	error "Need GetProcAddress (or equivalent) for BeOS"
 	return 0;
+#elif defined(__AGL__)
+	// Very quick hack to keep things running for a few hours until
+	// a better solution is in place:
+	if (!strcmp(name, "glLockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glLockArraysEXT);
+	else if (!strcmp(name, "glUnlockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glUnlockArraysEXT);
+	else if (!strcmp(name, "glActiveTextureARB"))
+		return reinterpret_cast<void (*)()> (glActiveTextureARB);
+	else if (!strcmp(name, "glMultiTexCoord2fARB"))
+		return reinterpret_cast<void (*)()> (glMultiTexCoord2fARB);
+	else if (!strcmp(name, "glLockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glLockArraysEXT);
+	else if (!strcmp(name, "glUnlockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glUnlockArraysEXT);
+	else if (!strcmp(name, "glLockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glLockArraysEXT);
+	else if (!strcmp(name, "glUnlockArraysEXT"))
+		return reinterpret_cast<void (*)()> (glUnlockArraysEXT);
+	else
+		return 0;
 #endif
 } // getProcAddress
 
