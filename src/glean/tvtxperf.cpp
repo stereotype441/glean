@@ -34,6 +34,7 @@
 #include "rand.h"
 #include "image.h"
 #include "codedid.h"
+#include "treadpix.h"
 
 namespace {
 struct C4UB_N3F_V3F {
@@ -408,6 +409,20 @@ namespace GLEAN {
 
 void
 ColoredLitPerf::runOne(VPResult& r, Window& w) {
+	// Don't bother running if the ExactRGBA test for this display
+	// surface configuration failed:
+	vector<ExactRGBAResult*>::const_iterator erRes;
+	for (erRes = exactRGBATest.results.begin();
+	    erRes != exactRGBATest.results.end();
+	    ++erRes)
+		if ((*erRes)->config == r.config)
+			break;
+	if (erRes == exactRGBATest.results.end() || !(*erRes)->ub.pass) {
+		r.skipped = true;
+		r.pass = false;
+		return;
+	}
+
 	bool passed = true;
 	PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
 	PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
@@ -754,6 +769,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	delete[] indices;
 	
 	r.pass = passed;
+	r.skipped = false;
 } // ColoredLitPerf::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -761,6 +777,14 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 ColoredLitPerf::logOne(VPResult& r) {
+	if (r.skipped) {
+		env->log << name << ":  NOTE ";
+		logConcise(r);
+		env->log << "\tTest skipped; prerequisite test "
+			 << exactRGBATest.name
+			 << " failed or was not run\n";
+		return;
+	}
 	if (r.pass) {
 		logPassFail(r);
 		logConcise(r);
@@ -773,8 +797,25 @@ ColoredLitPerf::logOne(VPResult& r) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 ColoredLitPerf::compareOne(VPResult& oldR, VPResult& newR) {
-	bool same = true;
+	if (oldR.skipped || newR.skipped) {
+		env->log << name
+			 << ((oldR.skipped && newR.skipped)? ":  SAME "
+			 	: ":  DIFF ")
+			 << newR.config->conciseDescription()
+			 << '\n';
+		if (oldR.skipped)
+			 env->log << "\t"
+				  << env->options.db1Name
+				  << " skipped\n";
+		if (newR.skipped)
+			 env->log << "\t"
+				  << env->options.db2Name
+				  << " skipped\n";
+		env->log << "\tNo comparison is possible.\n";
+		return;
+	}
 
+	bool same = true;
 	doComparison(oldR.imTri, newR.imTri, newR.config, same, name,
 		env, "immediate-mode independent triangle");
 	doComparison(oldR.dlTri, newR.dlTri, newR.config, same, name,
@@ -839,7 +880,11 @@ ColoredLitPerf::logStats(VPResult& r, GLEAN::Environment* env) {
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-ColoredLitPerf coloredLitPerfTest("coloredLitPerf", "window, rgb, z, fast",
+
+Test* coloredLitPerfTestPrereqs[] = {&exactRGBATest, 0};
+
+ColoredLitPerf coloredLitPerfTest("coloredLitPerf2", "window, rgb, z, fast",
+    coloredLitPerfTestPrereqs,
 
 	"This test examines rendering performance for colored, lit,\n"
 	"flat-shaded triangles.  It checks several different ways to\n"
@@ -865,6 +910,20 @@ ColoredLitPerf coloredLitPerfTest("coloredLitPerf", "window, rgb, z, fast",
 
 void
 ColoredTexPerf::runOne(VPResult& r, Window& w) {
+	// Don't bother running if the ExactRGBA test for this display
+	// surface configuration failed:
+	vector<ExactRGBAResult*>::const_iterator erRes;
+	for (erRes = exactRGBATest.results.begin();
+	    erRes != exactRGBATest.results.end();
+	    ++erRes)
+		if ((*erRes)->config == r.config)
+			break;
+	if (erRes == exactRGBATest.results.end() || !(*erRes)->ub.pass) {
+		r.skipped = true;
+		r.pass = false;
+		return;
+	}
+
 	PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
 	PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
 	if (GLUtils::haveExtension("GL_EXT_compiled_vertex_array")) {
@@ -1227,6 +1286,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	delete[] indices;
 
 	r.pass = passed;
+	r.skipped = false;
 } // ColoredTexPerf::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1234,6 +1294,15 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 ColoredTexPerf::logOne(VPResult& r) {
+	if (r.skipped) {
+		env->log << name << ":  NOTE ";
+		logConcise(r);
+		env->log << "\tTest skipped; prerequisite test "
+			 << exactRGBATest.name
+			 << " failed or was not run\n"
+			 ;
+		return;
+	}
 	if (r.pass) {
 		logPassFail(r);
 		logConcise(r);
@@ -1246,8 +1315,25 @@ ColoredTexPerf::logOne(VPResult& r) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 ColoredTexPerf::compareOne(VPResult& oldR, VPResult& newR) {
-	bool same = true;
+	if (oldR.skipped || newR.skipped) {
+		env->log << name
+			 << ((oldR.skipped && newR.skipped)? ":  SAME "
+			 	: ":  DIFF ")
+			 << newR.config->conciseDescription()
+			 << '\n';
+		if (oldR.skipped)
+			 env->log << "\t"
+				  << env->options.db1Name
+				  << " skipped\n";
+		if (newR.skipped)
+			 env->log << "\t"
+				  << env->options.db2Name
+				  << " skipped\n";
+		env->log << "\tNo comparison is possible.\n";
+		return;
+	}
 
+	bool same = true;
 	doComparison(oldR.imTri, newR.imTri, newR.config, same, name,
 		env, "immediate-mode independent triangle");
 	doComparison(oldR.dlTri, newR.dlTri, newR.config, same, name,
@@ -1312,7 +1398,11 @@ ColoredTexPerf::logStats(VPResult& r, GLEAN::Environment* env) {
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-ColoredTexPerf coloredTexPerfTest("coloredTexPerf", "window, rgb, z, fast",
+//
+Test* coloredTexPerfTestPrereqs[] = {&exactRGBATest, 0};
+
+ColoredTexPerf coloredTexPerfTest("coloredTexPerf2", "window, rgb, z, fast",
+    coloredTexPerfTestPrereqs,
 
 	"This test examines rendering performance for colored, textured,\n"
 	"flat-shaded triangles.  It checks several different ways to\n"

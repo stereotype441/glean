@@ -67,7 +67,8 @@ public:
 
 class VPResult: public BaseResult {
 public:
-	bool        pass;	// not written to results file
+	bool	    skipped;	// prerequisite tests failed
+	bool        pass;
 	
 	VPSubResult imTri;	// immediate-mode independent triangles
 	VPSubResult dlTri;	// display-listed independent triangles
@@ -84,6 +85,11 @@ public:
 	VPSubResult ldeTS;	// Locked DrawElements triangle strip
 		
 	virtual void putresults(ostream& s) const {
+		s
+			<< skipped << '\n'
+			<< pass << '\n'
+			;
+
 		imTri.put(s);
 		dlTri.put(s);
 		daTri.put(s);
@@ -100,6 +106,10 @@ public:
 	}
 	
 	virtual bool getresults(istream& s) {
+		s
+			>> skipped
+			>> pass
+			;
 		imTri.get(s);
 		dlTri.get(s);
 		daTri.get(s);
