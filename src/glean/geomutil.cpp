@@ -202,7 +202,7 @@ SpiralTri2D::SpiralTri2D(int nTris, float minX, float maxX,
 
 	float* pTris = v;
 	float* pStrip = ts(0);
-	bool front = false;	// winding order alternates in strip
+	bool front = true;	// winding order alternates in strip
 	for (int i = 0; i < nTris; ++i) {
 		if (front) {
 			pTris[0] = pStrip[0];
