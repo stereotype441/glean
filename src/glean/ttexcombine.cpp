@@ -233,7 +233,7 @@ TexCombineTest::ResetMachine(glmachine &machine) {
 		machine.OPERAND2_ALPHA[u] = GL_SRC_ALPHA;
 		machine.RGB_SCALE[u] = 1.0;
 		machine.ALPHA_SCALE[u] = 1.0;
-		machine.TexFormat[u] = GL_LUMINANCE;
+		machine.TexFormat[u] = GL_RGBA;
 	}
 }
 
