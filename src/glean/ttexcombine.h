@@ -105,6 +105,9 @@ class TexCombineTest: public BasicTest {
         int CountMultiTextureTestCombinations(const glmachine &machine) const;
 	bool RunMultiTextureTest(glmachine &machine, Result &r);
 
+	PFNGLACTIVETEXTUREARBPROC p_glActiveTextureARB;
+	PFNGLMULTITEXCOORD2FARBPROC p_glMultiTexCoord2fARB;
+
 }; // class TexCombineTest
 
 } // namespace GLEAN

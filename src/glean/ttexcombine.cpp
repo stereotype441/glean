@@ -666,7 +666,7 @@ TexCombineTest::TexEnv(glmachine &machine, int texUnit,
 	GLenum target, GLenum value) {
 
 	if (machine.NumTexUnits > 1)
-		glActiveTextureARB(GL_TEXTURE0_ARB + texUnit);
+		p_glActiveTextureARB(GL_TEXTURE0_ARB + texUnit);
 
 	glTexEnvi(GL_TEXTURE_ENV, target, value);
 
@@ -773,7 +773,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 
 	for (int u = 0; u < machine.NumTexUnits; u++) {
 		if (machine.NumTexUnits > 1)
-			glActiveTextureARB(GL_TEXTURE0_ARB + u);
+			p_glActiveTextureARB(GL_TEXTURE0_ARB + u);
 		glEnable(GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_NEAREST);
@@ -973,16 +973,16 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, Result &r) {
 		GLfloat renderedResult[4];
 		glBegin(GL_POLYGON);
 		for (int u = 0; u < machine.NumTexUnits; u++)
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 0);
+			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 0);
 		glVertex2f(-1.0, -1.0);
 		for (int u = 0; u < machine.NumTexUnits; u++)
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 0);
+			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 0);
 		glVertex2f( 1.0, -1.0);
 		for (int u = 0; u < machine.NumTexUnits; u++)
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 1);
+			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 1);
 		glVertex2f( 1.0,  1.0);
 		for (int u = 0; u < machine.NumTexUnits; u++)
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 1);
+			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 1);
 		glVertex2f(-1.0,  1.0);
 		glEnd();
 		glReadPixels(0, 0, 1, 1, GL_RGBA, GL_FLOAT, renderedResult);
@@ -1039,6 +1039,14 @@ TexCombineTest::TexCombineTest(const char* aName, const char* aFilter,
 // XXX should we run a number of individual tests instead?
 void
 TexCombineTest::runOne(Result& r) {
+	// Grab pointers to the extension functions.  It's safe to use
+	// these without testing them because we already know that we
+	// won't be invoked except on contexts that support the
+	// extension.
+	p_glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)
+		(GLUtils::getProcAddress("glActiveTextureARB"));
+	p_glMultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC)
+		(GLUtils::getProcAddress("glMultiTexCoord2fARB"));
 
         // We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
