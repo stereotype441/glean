@@ -76,13 +76,6 @@
 #define CLAMP(VAL, MIN, MAX)	\
 	((VAL) < (MIN) ? (MIN) : ((VAL) > (MAX) ? (MAX) : (VAL)))
 
-#define COPY3(DST, SRC)		\
-{				\
-	(DST)[0] = (SRC)[0];	\
-	(DST)[1] = (SRC)[1];	\
-	(DST)[2] = (SRC)[2];	\
-}
-
 #define COPY4(DST, SRC)		\
 {				\
 	(DST)[0] = (SRC)[0];	\
@@ -252,22 +245,24 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 				const GLfloat prevColor[4],
 				GLfloat result[4]) const {
 	GLfloat term0[4], term1[4], term2[4], dot;
+	const GLfloat *colorSrc0, *colorSrc1, *colorSrc2;
+	const GLfloat *alphaSrc0, *alphaSrc1, *alphaSrc2;
 	const GLfloat *fragColor = machine.FragColor;
 	const GLfloat *constColor = machine.EnvColor[texUnit];
 	const GLfloat *texColor = machine.TexColor[texUnit];
 
 	switch (machine.SOURCE0_RGB[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		COPY3(term0, fragColor);
+		colorSrc0 = fragColor;
 		break;
 	case GL_TEXTURE:
-		COPY3(term0, texColor);
+		colorSrc0 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		COPY3(term0, constColor);
+		colorSrc0 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		COPY3(term0, prevColor);
+		colorSrc0 = prevColor;
 		break;
 	default:
 		problem("bad rgbSource0");
@@ -276,16 +271,16 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.SOURCE0_ALPHA[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		term0[3] = fragColor[3];
+		alphaSrc0 = fragColor;
 		break;
 	case GL_TEXTURE:
-		term0[3] = texColor[3];
+		alphaSrc0 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		term0[3] = constColor[3];
+		alphaSrc0 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		term0[3] = prevColor[3];
+		alphaSrc0 = prevColor;
 		break;
 	default:
 		problem("bad alphaSource0");
@@ -294,16 +289,16 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.SOURCE1_RGB[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		COPY3(term1, fragColor);
+		colorSrc1 = fragColor;
 		break;
 	case GL_TEXTURE:
-		COPY3(term1, texColor);
+		colorSrc1 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		COPY3(term1, constColor);
+		colorSrc1 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		COPY3(term1, prevColor);
+		colorSrc1 = prevColor;
 		break;
 	default:
 		problem("bad rgbSource1");
@@ -312,16 +307,16 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.SOURCE1_ALPHA[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		term1[3] = fragColor[3];
+		alphaSrc1 = fragColor;
 		break;
 	case GL_TEXTURE:
-		term1[3] = texColor[3];
+		alphaSrc1 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		term1[3] = constColor[3];
+		alphaSrc1 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		term1[3] = prevColor[3];
+		alphaSrc1 = prevColor;
 		break;
 	default:
 		problem("bad alphaSource1");
@@ -330,16 +325,16 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.SOURCE2_RGB[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		COPY3(term2, fragColor);
+		colorSrc2 = fragColor;
 		break;
 	case GL_TEXTURE:
-		COPY3(term2, texColor);
+		colorSrc2 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		COPY3(term2, constColor);
+		colorSrc2 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		COPY3(term2, prevColor);
+		colorSrc2 = prevColor;
 		break;
 	default:
 		problem("bad rgbSource2");
@@ -348,16 +343,16 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.SOURCE2_ALPHA[texUnit]) {
 	case GL_PRIMARY_COLOR_EXT:
-		term2[3] = fragColor[3];
+		alphaSrc2 = fragColor;
 		break;
 	case GL_TEXTURE:
-		term2[3] = texColor[3];
+		alphaSrc2 = texColor;
 		break;
 	case GL_CONSTANT_EXT:
-		term2[3] = constColor[3];
+		alphaSrc2 = constColor;
 		break;
 	case GL_PREVIOUS_EXT:
-		term2[3] = prevColor[3];
+		alphaSrc2 = prevColor;
 		break;
 	default:
 		problem("bad alphaSource2");
@@ -366,22 +361,25 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND0_RGB[texUnit]) {
 	case GL_SRC_COLOR:
+		term0[0] = colorSrc0[0];
+		term0[1] = colorSrc0[1];
+		term0[2] = colorSrc0[2];
 		// no change
 		break;
 	case GL_ONE_MINUS_SRC_COLOR:
-		term0[0] = 1.0 - term0[0];
-		term0[1] = 1.0 - term0[1];
-		term0[2] = 1.0 - term0[2];
+		term0[0] = 1.0 - colorSrc0[0];
+		term0[1] = 1.0 - colorSrc0[1];
+		term0[2] = 1.0 - colorSrc0[2];
 		break;
 	case GL_SRC_ALPHA:
-		term0[0] = term0[3];
-		term0[1] = term0[3];
-		term0[2] = term0[3];
+		term0[0] = colorSrc0[3];
+		term0[1] = colorSrc0[3];
+		term0[2] = colorSrc0[3];
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		term0[0] = 1.0 - term0[3];
-		term0[1] = 1.0 - term0[3];
-		term0[2] = 1.0 - term0[3];
+		term0[0] = 1.0 - colorSrc0[3];
+		term0[1] = 1.0 - colorSrc0[3];
+		term0[2] = 1.0 - colorSrc0[3];
 		break;
 	default:
 		problem("bad rgbOperand0");
@@ -390,10 +388,11 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND0_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
+		term0[3] = alphaSrc0[3];
 		// no change
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		term0[3] = 1.0 - term0[3];
+		term0[3] = 1.0 - alphaSrc0[3];
 		break;
 	default:
 		problem("bad alphaOperand0");
@@ -402,22 +401,24 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND1_RGB[texUnit]) {
 	case GL_SRC_COLOR:
-		// no change
+		term1[0] = colorSrc1[0];
+		term1[1] = colorSrc1[1];
+		term1[2] = colorSrc1[2];
 		break;
 	case GL_ONE_MINUS_SRC_COLOR:
-		term1[0] = 1.0 - term1[0];
-		term1[1] = 1.0 - term1[1];
-		term1[2] = 1.0 - term1[2];
+		term1[0] = 1.0 - colorSrc1[0];
+		term1[1] = 1.0 - colorSrc1[1];
+		term1[2] = 1.0 - colorSrc1[2];
 		break;
 	case GL_SRC_ALPHA:
-		term1[0] = term1[3];
-		term1[1] = term1[3];
-		term1[2] = term1[3];
+		term1[0] = colorSrc1[3];
+		term1[1] = colorSrc1[3];
+		term1[2] = colorSrc1[3];
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		term1[0] = 1.0 - term1[3];
-		term1[1] = 1.0 - term1[3];
-		term1[2] = 1.0 - term1[3];
+		term1[0] = 1.0 - colorSrc1[3];
+		term1[1] = 1.0 - colorSrc1[3];
+		term1[2] = 1.0 - colorSrc1[3];
 		break;
 	default:
 		problem("bad rgbOperand1");
@@ -426,10 +427,11 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND1_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
+		term1[3] = alphaSrc1[3];
 		// no change
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		term1[3] = 1.0 - term1[3];
+		term1[3] = 1.0 - alphaSrc1[3];
 		break;
 	default:
 		problem("bad alphaOperand1");
@@ -438,9 +440,9 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND2_RGB[texUnit]) {
 	case GL_SRC_ALPHA:
-		term2[0] = term2[3];
-		term2[1] = term2[3];
-		term2[2] = term2[3];
+		term2[0] = colorSrc2[3];
+		term2[1] = colorSrc2[3];
+		term2[2] = colorSrc2[3];
 		break;
 	default:
 		problem("bad rgbOperand2");
@@ -449,6 +451,9 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND2_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
+		term2[0] = colorSrc2[3];
+		term2[1] = colorSrc2[3];
+		term2[2] = colorSrc2[3];
 		// no change
 		break;
 	default:
@@ -459,7 +464,9 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 	// Final combine
 	switch (machine.COMBINE_RGB[texUnit]) {
 	case GL_REPLACE:
-		COPY3(result, term0);
+		result[0] = term0[0];
+		result[1] = term0[1];
+		result[2] = term0[2];
 		break;
 	case GL_MODULATE:
 		result[0] = term0[0] * term1[0];
@@ -805,18 +812,18 @@ TexCombineTest::SetupTestEnv(struct glmachine &machine, int texUnit,
 void
 TexCombineTest::SetupColors(glmachine &machine) {
 
-	static const GLfloat fragColor[4] = { 0.25, 0.50, 0.75, 1.00 };
+	static const GLfloat fragColor[4] = { 0.00, 0.25, 0.50, 0.75 };
 	static const GLfloat envColors[][4] = {
-		{ 0.25, 0.50, 1.00, 1.0 },
-		{ 0.50, 0.75, 0.25, 1.0 },
-		{ 1.00, 0.25, 0.00, 1.0 },
-		{ 0.50, 0.00, 0.25, 0.5 }
+		{ 0.25, 0.50, 0.75, 1.00 },
+		{ 0.50, 0.75, 1.00, 0.00 },
+		{ 0.75, 1.00, 0.00, 0.25 },
+		{ 1.00, 0.00, 0.25, 0.50 }
 	};
 	static const GLfloat texColors[][4] = {
-		{ 1.00, 0.75, 0.25, 1.0 },
-		{ 0.25, 1.00, 0.00, 0.0 },
-		{ 0.25, 0.25, 1.00, 1.0 },
-		{ 0.00, 0.25, 0.50, 0.5 }
+		{ 1.00, 0.00, 0.25, 0.50 },
+		{ 0.75, 1.00, 0.00, 0.25 },
+		{ 0.50, 0.75, 1.00, 0.00 },
+		{ 0.25, 0.50, 0.75, 1.00 }
 	};
 
 	COPY4(machine.FragColor, fragColor);
@@ -1069,8 +1076,8 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		if (dr > mTolerance[0] || dg > mTolerance[1] ||
 			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
-			printf("multitex test %d failed\n", testNum);
 #if 0 // Debug
+			printf("multitex test %d failed\n", testNum);
 			if (testNum > 0) {
 				printf("prev test:\n");
 				SetupTestEnv(machine, 0, testNum - 1, testParams);
@@ -1137,6 +1144,9 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 			mTolerance[3] = 1.0;
 		else
 			mTolerance[3] = 8.0 / (1 << aBits);
+		//printf("Tolerance: %g %g %g %g\n",
+		//	mTolerance[0], mTolerance[1], 
+		//	mTolerance[2], mTolerance[3]);
 	}
 
 	// We'll only render a 4-pixel polygon
