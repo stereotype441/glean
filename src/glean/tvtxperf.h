@@ -73,6 +73,12 @@ class ColoredLitPerf: public Test {
 		bool dlTriImageOK;
 		bool dlTriImageMatch;
 
+		float daTriTps;		// DrawArrays independent triangles
+		float daTriTpsLow;
+		float daTriTpsHigh;
+		bool daTriImageOK;
+		bool daTriImageMatch;
+
 		float imStripTps;	// immediate-mode triangle strip
 		float imStripTpsLow;
 		float imStripTpsHigh;

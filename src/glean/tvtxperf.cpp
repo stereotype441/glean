@@ -97,18 +97,26 @@ coloredLit_imIndTri() {
 } // coloredLit_imIndTri
 
 void
+coloredLit_daIndTri() {
+	glDrawArrays(GL_TRIANGLES, 0, nVertices);
+} // coloredLit_daIndTri
+
+void
 callDList() {
 	glCallList(dList);
 } // callDList
 
 void
 logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
+	// Immediate-mode independent triangles:
 	env->log << "\tImmediate-mode independent triangle rate = "
 		<< r.imTriTps << " tri/sec.\n"
 		<< "\t\tRange of valid measurements = ["
 		<< r.imTriTpsLow << ", " << r.imTriTpsHigh << "]\n";
 	env->log << "\t\tImage sanity check "
 		<< (r.imTriImageOK? "passed\n": "failed\n");
+
+	// Display-listed independent triangles:
 	env->log << "\tDisplay-list independent triangle rate = "
 		<< r.dlTriTps << " tri/sec.\n"
 		<< "\t\tRange of valid measurements = ["
@@ -117,6 +125,16 @@ logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 		<< (r.dlTriImageOK? "passed\n": "failed\n");
 	env->log << "\t\tImage consistency check "
 		<< (r.dlTriImageMatch? "passed\n": "failed\n");
+
+	// DrawArrays independent triangles:
+	env->log << "\tDrawArrays independent triangle rate = "
+		<< r.daTriTps << " tri/sec.\n"
+		<< "\t\tRange of valid measurements = ["
+		<< r.daTriTpsLow << ", " << r.daTriTpsHigh << "]\n";
+	env->log << "\t\tImage sanity check "
+		<< (r.daTriImageOK? "passed\n": "failed\n");
+	env->log << "\t\tImage consistency check "
+		<< (r.daTriImageMatch? "passed\n": "failed\n");
 } // logStats
 
 void
@@ -285,8 +303,8 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// at least one pixel, so that we can confirm drawing actually took
 	// place.  As a compromise, we'll choose a number of triangles that
 	// yields approximately 5 pixels per triangle.
-	// We're drawing a filled spiral that approximates a circle, so
-	// pi * (drawingSize/2)**2 / nTris = 5 implies...
+	// We're drawing a filled spiral that approximates a circular area,
+	// so pi * (drawingSize/2)**2 / nTris = 5 implies...
 	const int nTris = static_cast<int>
 		(((3.14159 / 4.0) * drawingSize * drawingSize) / 5.0 + 0.5);
 	nVertices = nTris * 3;
@@ -356,7 +374,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	lm.twoSide(false);
 	lm.colorControl(GL_SINGLE_COLOR);
 
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 	glEnable(GL_NORMALIZE);
 	GLUtils::Material mat;
 	mat.ambient(0, 0, 0, 1);
@@ -379,7 +397,6 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glDisable(GL_DITHER);
 	glDisable(GL_COLOR_LOGIC_OP);
 
-	glDrawBuffer(GL_BACK);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glDepthMask(GL_TRUE);
 
@@ -413,7 +430,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		measurements.push_back(nTris / t);
 	}
 	sort(measurements.begin(), measurements.end());
-	r.imTriTps = measurements[2];
+	r.imTriTps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
 	r.imTriTpsLow = measurements[1];
 	r.imTriTpsHigh = measurements[3];
 
@@ -450,7 +467,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glDeleteLists(dList, 1);
 
 	sort(measurements.begin(), measurements.end());
-	r.dlTriTps = measurements[2];
+	r.dlTriTps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
 	r.dlTriTpsLow = measurements[1];
 	r.dlTriTpsHigh = measurements[3];
 
@@ -477,6 +494,60 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	} else
 		r.dlTriImageMatch = true;
 
+	////////////////////////////////////////////////////////////
+	// DrawArrays on independent triangles
+	////////////////////////////////////////////////////////////
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	w.swap();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].c);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glNormalPointer(GL_FLOAT, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].n);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glVertexPointer(3, GL_FLOAT, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].v);
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	measurements.resize(0);
+	for (int i3 = 0; i3 < 5; ++i3) {
+		env->quiesce();
+		double t = time.time(static_cast<TIME_FUNC>(glFinish),
+			static_cast<TIME_FUNC>(coloredLit_daIndTri),
+			static_cast<TIME_FUNC>(glFinish));
+		w.swap();
+		measurements.push_back(nTris / t);
+	}
+
+	sort(measurements.begin(), measurements.end());
+	r.daTriTps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
+	r.daTriTpsLow = measurements[1];
+	r.daTriTpsHigh = measurements[3];
+
+	// Verify that the image is the same as that produced by
+	// rendering independent triangles:
+	testImage.read(0, 0);
+	if (colorGen.allPresent(testImage, 0, lastID))
+		r.daTriImageOK = true;
+	else {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDrawArrays independent triangle rendering is missing\n"
+			<< "\t\tsome triangles.\n";
+		r.daTriImageOK = false;
+	}
+	imageReg = testImage.reg(imTriImage);
+	if (imageReg.stats[0].max()
+	    + imageReg.stats[1].max()
+	    + imageReg.stats[2].max() != 0.0) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDrawArrays independent triangle rendering\n"
+			<< "\t\tyielded different image than immediate-mode\n"
+			<< "\t\tindependent triangle rendering.\n";
+		r.daTriImageMatch = false;
+	} else
+		r.daTriImageMatch = true;
+
 	delete[] c4ub_n3f_v3f;
 
 	if (passed)
@@ -493,6 +564,8 @@ env->log
 void
 ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 	bool same = true;
+
+	// Immediate-mode independent triangles:
 	if (newR.imTriTps < oldR.imTriTpsLow) {
 		diffHeader(same, name, newR.config, env);
 		env->log << '\t' << env->options.db1Name
@@ -513,6 +586,7 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 			<< (newR.imTriImageOK? "passed\n": "failed\n");
 	}
 
+	// Display-listed independent triangles:
 	if (newR.dlTriTps < oldR.dlTriTpsLow) {
 		diffHeader(same, name, newR.config, env);
 		env->log << '\t' << env->options.db1Name
@@ -538,6 +612,34 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 			<< (oldR.dlTriImageMatch? "passed\n": "failed\n");
 		env->log << '\t' << env->options.db2Name << " image compare "
 			<< (newR.dlTriImageMatch? "passed\n": "failed\n");
+	}
+
+	// DrawArrays independent triangles:
+	if (newR.daTriTps < oldR.daTriTpsLow) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name
+			<< " may have higher DrawArrays "
+			"independent triangle performance.\n";
+	}
+	if (newR.daTriTps > oldR.daTriTpsHigh) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db2Name
+			<< " may have higher DrawArrays "
+			"independent triangle performance.\n";
+	}
+	if (newR.daTriImageOK != oldR.daTriImageOK) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name << " image check "
+			<< (oldR.daTriImageOK? "passed\n": "failed\n");
+		env->log << '\t' << env->options.db2Name << " image check "
+			<< (newR.daTriImageOK? "passed\n": "failed\n");
+	}
+	if (newR.daTriImageMatch != oldR.daTriImageMatch) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name << " image compare "
+			<< (oldR.daTriImageMatch? "passed\n": "failed\n");
+		env->log << '\t' << env->options.db2Name << " image compare "
+			<< (newR.daTriImageMatch? "passed\n": "failed\n");
 	}
 
 	if (same && env->options.verbosity) {
@@ -580,6 +682,8 @@ ColoredLitPerf::Result::put(ostream& s) const {
 		<< imTriImageOK << '\n';
 	s << dlTriTps << ' ' << dlTriTpsLow << ' ' << dlTriTpsHigh
 		<< dlTriImageOK << dlTriImageMatch << '\n';
+	s << daTriTps << ' ' << daTriTpsLow << ' ' << daTriTpsHigh
+		<< daTriImageOK << daTriImageMatch << '\n';
 } // ColoredLitPerf::Result::put
 
 bool
@@ -593,6 +697,8 @@ ColoredLitPerf::Result::get(istream& s) {
 	s >> imTriTps >> imTriTpsLow >> imTriTpsHigh >> imTriImageOK;
 	s >> dlTriTps >> dlTriTpsLow >> dlTriTpsHigh >> dlTriImageOK
 		>> dlTriImageMatch;
+	s >> daTriTps >> daTriTpsLow >> daTriTpsHigh >> daTriImageOK
+		>> daTriImageMatch;
 	return s.good();
 } // ColoredLitPerf::Result::get
 
