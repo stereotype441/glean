@@ -74,40 +74,57 @@ MaskedClearTest::failRGB(Result &r, GLint chan, GLfloat expected, GLfloat actual
 {
 	static const char *chanNames[] = { "Red", "Green", "Blue", "Alpha" };
 	static const char *bufferNames[] = { "GL_FRONT", "GL_BACK" };
+	GLboolean mask[4];
+	glGetBooleanv(GL_COLOR_WRITEMASK, mask);
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n'
 		 << "\t" << chanNames[chan] << " is " << actual
 		 << ", expected " << expected
-		 << " in " << bufferNames[buffer] << "buffer\n";
+		 << " in " << bufferNames[buffer] << " buffer\n";
+	env->log << "\tGL_COLOR_WRITEMASK = ("
+		 << (mask[0] ? "GL_TRUE" : "GL_FALSE") << ", "
+		 << (mask[1] ? "GL_TRUE" : "GL_FALSE") << ", "
+		 << (mask[2] ? "GL_TRUE" : "GL_FALSE") << ", "
+		 << (mask[3] ? "GL_TRUE" : "GL_FALSE") << ")\n";
 }
 
 void
 MaskedClearTest::failCI(Result& r, GLuint expected, GLuint actual, GLint buffer)
 {
 	static const char *bufferNames[] = { "GL_FRONT", "GL_BACK" };
+	GLint mask;
+	glGetIntegerv(GL_INDEX_WRITEMASK, &mask);
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n'
 		 << "\tcolor index is " << actual
 		 << ", expected " << expected
-		 << " in " << bufferNames[buffer] << "buffer\n";
+		 << " in " << bufferNames[buffer] << " buffer\n";
+	env->log << "\tGL_INDEX_WRITEMASK = " << mask << "\n";
 }
 
 void
 MaskedClearTest::failZ(Result& r, GLfloat expected, GLfloat actual)
 {
+	GLboolean mask;
+	glGetBooleanv(GL_DEPTH_WRITEMASK, &mask);
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n'
 		 << "\tdepth buffer value is " << actual
 		 << ", expected " << expected << "\n";
+	env->log << "\tGL_DEPTH_WRITEMASK = "
+		 << (mask ? "GL_TRUE" : "GL_FALSE") << "\n";
 }
 
 void
 MaskedClearTest::failStencil(Result& r, GLuint expected, GLuint actual)
 {
+	GLint mask;
+	glGetIntegerv(GL_STENCIL_WRITEMASK, &mask);
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n'
 		 << "\tstencil buffer value is " << actual
 		 << ", expected " << expected << "\n";
+	env->log << "\tGL_STENCIL_WRITEMASK = " << mask << "\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -270,8 +287,8 @@ MaskedClearTest::runOne(Result& r) {
 ///////////////////////////////////////////////////////////////////////////////
 MaskedClearTest maskedClearTest("maskedClear", "window",
 
-	"This test checks that glClear works correctly with glColorMask\n"
-	"or glIndexMask.\n");
+	"This test checks that glClear works correctly with glColorMask,\n"
+	"glIndexMask, glDepthMask and glStencilMask.\n");
 
 
 } // namespace GLEAN
