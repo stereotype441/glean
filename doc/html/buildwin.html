@@ -10,69 +10,148 @@
 <BODY bgcolor=#FFFFFF topmargin="10" bottommargin="10" leftmargin="10"
   rightmargin="10" marginheight="0" marginwidth="0">
 
-<h1>
-Building <i>glean</i> under Windows</h1>
-Note : this document assumes that you are using Microsoft Visual C++ 6 (VC6).
-<h2>
-Other software you'll need</h2>
-Currently<i> glean</i> doesn't build with the STL included with VC6. <i>glean</i>
-has been verified to build with the <a href="http://www.stlport.org/">STLport</a>
-implementation.
-<p>You may also need to acquire the file <code>glext.h</code>, which
-contains declarations for all known OpenGL extensions.
-You can find an up-to-date copy at
-<A HREF="http://oss.sgi.com/projects/ogl-sample/ABI/glext.h">
-http://oss.sgi.com/projects/ogl-sample/ABI/glext.h
-</A>.
-This should be placed in the same directory as your <code>gl.h</code>
-file.
-<br>&nbsp;
-<h2>
-Obtain the source code</h2>
-Obtain the .zip file containing <i>glean</i> from
-<A HREF="http://sourceforge.net/project/filelist.php?form_grp=430">the
-<I>glean</I> downloads page on SourceForge</A>.
-<p>Unzip the file:
-<pre>&nbsp;&nbsp;&nbsp; pkunzip -d glean-win-1-0.zip c:\
-&nbsp;&nbsp;&nbsp; cd glean_1_0</pre>
-This will create a subdirectory named <tt>glean_1_0</tt> and make it your
-current directory.
-<h2>
-Set the GLEAN_ROOT environment variable</h2>
-To compile or run <i>glean</i>, you will need to set the environment variable
-<tt>GLEAN_ROOT</tt> to the full pathname of the <i>glean</i> source directory.
-Open a dos prompt and type
-<pre>&nbsp;&nbsp;&nbsp; set GLEAN_ROOT=c:\glean_1_0</pre>
-Be sure to set the environment variable each time you want to compile or
-run <i>glean</i>.
-<br>&nbsp;
-<h2>
-Set the VC6 environment variables</h2>
-To use the command-line tools, you will have to set some environment variables.
-There is a batch file in VC6's bin directory called <i>vcvars32.bat </i>that
-contains the necessary commands. Just execute this in the same dos
-prompt as the previous step and you'll be set to go.
-<br>&nbsp;
-<h2>
-Set Makefile options</h2>
-Edit GLEAN_ROOT\make\common.win and modify the configuration variables
-according to your preferences. Some of the variables that are most likely
-to need customization are:
-<p>STL_DIR
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This variables specifies
-the directory containing include files of the STLport.
-<p>LIBTIFF_INC_DIR
-<br>LIBTIFF_LIB_DIR
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; These variables specify
-the directories that contain the libtiff include files and library resp.
-<br>&nbsp;
-<h2>
-Build <i>glean</i></h2>
-When you've finished editing the Makefile, simply type
-<pre>&nbsp;&nbsp;&nbsp; cd src
-&nbsp;&nbsp;&nbsp; nmake /f makefile.win</pre>
-This will build <i>glean</i> and the other tools in the suite, and install
-them in <tt>$GLEAN_ROOT/bin</tt>.
+<h1>Building <i>glean</i> on Windows</h1>
+
+<p>This document describes a process for building glean on Win32 systems.  It assumes that 
+you're using MSVC 6.0.  This document is based off of the prior version of this document 
+by <a href="mailto:johan.smet@cocks.be">Johan Smet</a>.</p>
+
+<p>Building glean is actually a pretty painless process once you know what to do.  Step by 
+step, the process is:</p>
+
+<ul>
+<li><a href="#STEP0">Get CVS</a></li>
+<li><a href="#STEP1">Get the glean source distribution</a></li>
+<li><a href="#STEP2">Get STLPort 4.0.  There's a pre-configured copy available from this webpage</a></li>
+<li><a href="#STEP3">Get the LibTIFF lib and header.  Also available from this page</a></li>
+<li><a href="#STEP4">Configure the appropriate environment variables</a></li>
+<li><a href="#STEP5">Edit make/common.win to point to your copies of the STLPort and LibTIFF</a></li>
+<li><a href="#STEP6">Build it</a></li>
+</ul>
+
+<hr>
+<h2><a name="STEP0">Getting CVS</h2>
+
+<p>While you can download an older version of glean as a zipfile off SourceForge, this file
+describes the process for building a current version of glean from the SourceForge CVS tree.
+Therefore, you'll need CVS (1.10 or later, preferably) to get it.  The easiest 
+way I've found to get a Win32 binary of CVS is to download <a href="http://www.wincvs.org/">WinCVS</a> 
+and during installation, pick a Custom Install and only install the cvs command-line client (or, of 
+course, you could install the full WinCVS if you want the full WinCVS).</p>
+
+<hr>
+<h2><a name="STEP1">Getting glean</h2>
+
+<p>Once you have CVS installed, you can get a copy of the latest source distribution of glean by 
+doing the following:</p>
+
+<ul>
+
+<li>Find the directory you want glean to live in.  Note that the way it comes from the repository, 
+if you wanted it to live in <i>c:/glean</i>, you don't need to make the glean subdirectory; just fetch 
+it into <i>c:/</i>.</li>
+
+<li>From the base directory (i.e. <i>c:/</i> in the above example) type:
+<blockquote><pre>
+cvs -d:pserver:anonymous@cvs.glean.sourceforge.net:/cvsroot/glean login 
+cvs -z3 -d:pserver:anonymous@cvs.glean.sourceforge.net:/cvsroot/glean co glean 
+</pre></blockquote>
+</li>
+
+</ul>
+
+<p>When prompted for a password during the "login" command, just hit Enter.</p>
+
+<p>After executing the second command, you should see it pull down a bunch of files (which may take a 
+few minutes), and you will subsequently have the glean source!</p>
+
+<hr>
+<h2><a name="STEP2">Getting the STLPort</h2>
+
+<p>Glean doesn't currently build with the STL version that comes with MSVC.  As such, you'll need a
+ copy of the <a href="http://www.stlport.org/">STLPort</a> to build glean.  I have, so far, only 
+verified that it builds with STLPort 4.0.  To make things easy, there's a pre-configured (and prebuilt)
+version of the STLPort 4.0 available right here.  Following is the copyright and distribution notice 
+from the STLPort:</p>
+
+<blockquote><pre><i>
+Copyright (c) 1999,2000 Boris Fomitchev
+
+This material is provided "as is", with absolutely no warranty 
+expressed or implied. Any use is at your own risk. Permission 
+to use or copy this software for any purpose is hereby granted 
+without fee, provided the above notices are retained on all 
+copies. Permission to modify the code and to distribute modified 
+code is granted, provided the above notices are retained, and 
+a notice that the code was modified is included with the above 
+copyright notice.
+</i></pre></blockquote>
+
+<p>This source contained here does contain a modification, simply that in <i>stlport/stl/_site_config.h</i>, 
+I have uncommented the <b>#defines</b> for <b>_NOTHREADS</b> and <b>__STL_NO_THREADS</b>.  This allows 
+the STLPort to be used with non-multithreaded apps (like glean).  The included libs are built off of 
+this modified source.</p>
+
+<p><a href="stlport-4.0-glean.zip">Download the modified, prebuilt STLPort-4.0 for glean here (3.5 megs).</a>
+Unzip it somewhere, being careful to preserve the internal directories of the zipfile.</p>
+
+<hr>
+<h2><a name="STEP3">Getting LibTIFF</h2>
+
+<p>LibTIFF is just one lib and a handful of headers.  Download them 
+<a href="libtiff-glean.zip">here (113K)</a>, and unzip them to some directory.</p>
+
+<hr>
+<h2><a name="STEP4">Configuring Environment Variables</h2>
+
+<p>You must set the environment variable <b>GLEAN_ROOT</b> to point to base of your glean distribution.  
+This should be the directory that has subdirectories <i>/src, /doc, /bin, /include, /lib, /make</i>, etc.</p
+
+<p>You also must run the <i>vcvars32.bat</i> that comes with MSVC, found in <i>/bin/vcvars32.bat</i> 
+under your MSVC install.</p
+
+<p>You can set <b>GLEAN_ROOT</b> and run <i>vcvars32.bat</i> from your autoexec.bat, but I find it easier 
+to do another way:</p>
+
+<ul>
+<li>Make a batch file that sets <b>GLEAN_ROOT</b> and calls <i>vcvars32.bat</i>.  </li>
+<li>Make a New Shortcut on your desktop, to <i>command.com</i>.  (This is basically a DOS-Prompt shortcut.) </li>
+<li>Then, right-click the shortcut and go to Properties; a new tabbed panel opens.  </li>
+<li>Under the Memory tab, jack the Initial Environment size up to 4096.</li>
+<li>Under the Program tab, set the Batch File to call your configuration batch file.  </li>
+</ul>
+
+<p>Then, in order to build glean, just run that DOS-Prompt shortcut and build it from within that shell.</p>
+
+<hr>
+<h2><a name="STEP5">Editing make/common.win</h2>
+
+<p>The three things you'll need to edit in make/common.win (in the glean source distribution) are 
+<b>STL_BASE_DIR</b>, <b>LIBTIFF_INC_DIR</b>, and <b>LIBTIFF_LIB_DIR</b>.</p>
+
+<ul>
+
+<li><b>STL_BASE_DIR</b> should be the name of the base directory that the STLPort is in, such that 
+/lib, /src, /doc, /stlport, etc. are subdirectories of <b>STL_BASE_DIR</b>.</li>
+
+<li><b>LIBTIFF_INC_DIR</b> should be the directory that the various LibTIFF headers (<i>tiff.h, 
+tiffio.h</i>, etc) reside in.  </li>
+
+<li><b>LIBTIFF_LIB_DIR</b> should be the directory that libtiff.lib resides in.  If you just unzipped 
+the libtiff zipfile into one directory, this will likely be the same as <b>LIBTIFF_INC_DIR</b>.</li>
+
+</ul>
+
+<hr>
+<h2><a name="STEP6">Build glean</h2>
+
+<p>Go to the /src directory under your glean directory.  Hopefully, typing <b>nmake /f makefile.win</b> will 
+build glean successfully!  If there are problems, try to address them and then run a 
+<b>nmake /f makefile.win clean</b> before rebuilding.</p>
+
+<hr>
+<p><i>This document Copyright (c) 2000 <a href="mailto:brian@maniacal.org">Brian Sharp</a>.  Please report any 
+errata, suggestions, or contributions to him.</i></p>
 
 <HR>
 <SMALL>
