@@ -48,7 +48,13 @@ Options::Options() {
 	visFilter = "1";
 	selectedTests.resize(0);
 #   if defined(__X11__)
-	dpyName = getenv("DISPLAY");
+	{
+	char* display = getenv("DISPLAY");
+	if (display)
+		dpyName = display;
+	else
+		dpyName = ":0";
+	}
 #   elif defined(__WIN__)
 #   endif
 } // Options::Options()
