@@ -51,11 +51,11 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <algorithm>
 #include <cmath>
 #include <stdlib.h>
-#include <gl/glut.h>
+#include <stdio.h>
+#include <GL/glut.h>
 #include "dsconfig.h"
 #include "dsfilt.h"
 #include "dsurf.h"
@@ -85,7 +85,7 @@ TexgenTest::~TexgenTest() {
 void
 TexgenTest::FailMessage(Result &r, const std::string& texgenMode, const std::string& colorMismatch) const {
 	env->log << name << ":  FAIL "
-		 << r.config->conciseDescription() << '\n';
+             << r.config->conciseDescription() << '\n';
 	env->log << "\t" << "during mode " << texgenMode << ", " << colorMismatch << std::endl; 
 }
 
@@ -95,11 +95,13 @@ TexgenTest::compareColors(GLfloat* color0, GLfloat* color1, std::string& failure
 	// Compare the colors; fail and report why if they don't match.
 	if (color0[0] != color1[0] || color0[1] != color1[1] || color0[2] != color1[2])
 	{
-	        // Assemble the error message into a stringstream, then hand it back in the string.
-	        std::stringstream failureOut;
-		failureOut << "expected [" << color0[0] << "," << color0[1] << "," << color0[2] << "], read back [" 
-			   << color1[0] << "," << color1[1] << "," << color1[2] << "]"; 
-		failureInfo = failureOut.str();
+        // Assemble the error message into a C-string, then hand it back in the string.
+        char failureOut[1024];
+        sprintf(failureOut, "expected [%f,%f,%f], read back [%f,%f,%f]", 
+                color0[0], color0[1], color0[2],
+                color1[0], color1[1], color1[2]);
+
+		failureInfo = std::string(failureOut);
 		return false;
 	}
 
@@ -108,95 +110,95 @@ TexgenTest::compareColors(GLfloat* color0, GLfloat* color1, std::string& failure
 
 bool 
 TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* upperRightColor, std::string& failureInfo) const {
-
-        // My loop control variable, since gcc and MSVC do things differently.
-        GLint samp;
-
-        // It's a viewSize x viewSize pixel block; since we drew a sphere that doesn't quite touch the 
+    
+    // My loop   control variable, since gcc and MSVC do things differently.
+    GLint samp;
+    
+    // It's a viewSize x viewSize pixel block; since we drew a sphere that doesn't quite touch the 
 	// edges, we need to be careful not to sample from what should be background.
 	// These pairs are hand-picked coordinates on the image that fall on the bottom-left quadrant
 	// of the sphere.
 	// XXX FIX ME: these sample coordinates assume that viewSize == 50.
-        GLuint samples[6][2] = {{13,13}, {4,22}, {22,4}, {20,20}, {20,10}, {10,20}};
-
-        // Run through those sample points in the bottom-left corner and make sure they're all the right color.
+    GLuint samples[6][2] = {{13,13}, {4,22}, {22,4}, {20,20}, {20,10}, {10,20}};
+    
+    // Run through those sample points in the bottom-left corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
-	  GLuint sampleOffset = (samples[samp][0] + (viewSize*samples[samp][1]))*3;
-	  if (!compareColors(upperRightColor, pixels + sampleOffset, failureInfo))
-	  {
-	    return false;
-	  }
+        GLuint sampleOffset = (samples[samp][0] + (viewSize*samples[samp][1]))*3;
+        if (!compareColors(upperRightColor, pixels + sampleOffset, failureInfo))
+        {
+            return false;
+        }
 	}
-
-        // Run through those sample points in the bottom-right corner and make sure they're all the right color.
+    
+    // Run through those sample points in the bottom-right corner and make sure they're all the right color.
 	// Note the "viewSize - samples[samp][0]" to flip it to the bottom-right quadrant.
 	for (samp=0; samp<6; samp++)
 	{
-	  GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*samples[samp][1]))*3;
-	  if (!compareColors(upperLeftColor, pixels + sampleOffset, failureInfo))
-	  {
-	    return false;
-	  }
+        GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*samples[samp][1]))*3;
+        if (!compareColors(upperLeftColor, pixels + sampleOffset, failureInfo))
+        {
+            return false;
+        }
 	}
-
-        // Run through those sample points in the upper-right corner and make sure they're all the right color.
+    
+    // Run through those sample points in the upper-right corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
-	  GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*(viewSize - samples[samp][1])))*3;
-	  if (!compareColors(upperRightColor, pixels + sampleOffset, failureInfo))
-	  {
-	    return false;
-	  }
+        GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*(viewSize - samples[samp][1])))*3;
+        if (!compareColors(upperRightColor, pixels + sampleOffset, failureInfo))
+        {
+            return false;
+        }
 	}
-
-        // Run through those sample points in the upper-left corner and make sure they're all the right color.
+    
+    // Run through those sample points in the upper-left corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
-	  GLuint sampleOffset = (samples[samp][0] + (viewSize*(viewSize - samples[samp][1])))*3;
-	  if (!compareColors(upperLeftColor, pixels + sampleOffset, failureInfo))
-	  {
-	    return false;
-	  }
+        GLuint sampleOffset = (samples[samp][0] + (viewSize*(viewSize - samples[samp][1])))*3;
+        if (!compareColors(upperLeftColor, pixels + sampleOffset, failureInfo))
+        {
+            return false;
+        }
 	}
-
+    
 	return true;
 }
-  
-
+    
+    
 ///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 TexgenTest::runOne(Result& r) {
-
-        // Temporary buffer to store pixels we've read back for verification.
-        GLfloat pixels[50*50*3];
+    
+    // Temporary buffer to store pixels we've read back for verification.
+    GLfloat pixels[50*50*3];
 	
 	// Colors for matching against when we readback pixels.
 	GLfloat matchBlue[3] = {0,0,1};
 	GLfloat matchRed[3] = {1,0,0};
-
+    
 	// draw the sphere in a 50x50 pixel window for some precision.
 	glViewport(0, 0, 50, 50);
-
+    
 	// Basic GL setup.
 	glDisable(GL_DITHER);
 	glColor3f(1,1,1);
-
+    
 	// Setup the projection.
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-10,10,-10,10,-10,10);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
+    
 	// Set up our texture.
 	glEnable(GL_TEXTURE_2D);
 	GLuint checkerTextureHandle;
 	glGenTextures(1, &checkerTextureHandle);
 	glBindTexture(GL_TEXTURE_2D, checkerTextureHandle);
-
+    
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -204,40 +206,40 @@ TexgenTest::runOne(Result& r) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glEnable(GL_TEXTURE_GEN_S);
 	glEnable(GL_TEXTURE_GEN_T);
-
+    
 	// Make a little checker texture.
 	unsigned char redBlueCheck[256*256*3];
 	for (int x=0; x<256; x++)
 	{
-	        for (int y=0; y<256; y++)
+        for (int y=0; y<256; y++)
 		{
-		        bool xPastHalf = x >= 128;
+            bool xPastHalf = x >= 128;
 			bool yPastHalf = y >= 128;
-	    
+            
 			redBlueCheck[(x+(256*y))*3 + 0] = ((xPastHalf && yPastHalf) || (!xPastHalf && !yPastHalf)) ? 255 : 0;
 			redBlueCheck[(x+(256*y))*3 + 1] = 0;
 			redBlueCheck[(x+(256*y))*3 + 2] = ((xPastHalf && !yPastHalf) || (!xPastHalf && yPastHalf)) ? 255 : 0;
 		}
 	}
 	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, redBlueCheck);
-
+    
 	// GL_SPHERE_MAP: with spheremap, the UL corner is blue
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glutSolidSphere(9.9,32,16);
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
-
+    
 	// Validate it.
 	std::string sphereMapResult;
 	if (!verifyCheckers(pixels, matchBlue, matchRed, sphereMapResult))
 	{
-	        FailMessage(r, std::string("GL_SPHERE_MAP"), sphereMapResult);
+        FailMessage(r, std::string("GL_SPHERE_MAP"), sphereMapResult);
 		r.pass = false;
 		glDeleteTextures(1, &checkerTextureHandle);
 		return;
 	}
-
+    
 	// GL_OBJECT_LINEAR: with object linear and the below planes, the UL corner is red.
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
@@ -245,21 +247,21 @@ TexgenTest::runOne(Result& r) {
 	float tObjPlane[4] = {0.05,0,0,1};
 	glTexGenfv(GL_S, GL_OBJECT_PLANE, sObjPlane);
 	glTexGenfv(GL_T, GL_OBJECT_PLANE, tObjPlane);
-
+    
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glutSolidSphere(9.9,32,16);
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
-
+    
 	// Validate it.
 	std::string objectLinearResult;
 	if (!verifyCheckers(pixels, matchRed, matchBlue, objectLinearResult))
 	{
-	        FailMessage(r, std::string("GL_OBJECT_LINEAR"), objectLinearResult);
+        FailMessage(r, std::string("GL_OBJECT_LINEAR"), objectLinearResult);
 		r.pass = false;
 		glDeleteTextures(1, &checkerTextureHandle);
 		return;
 	}
-
+    
 	// GL_EYE_LINEAR: with eye linear and the below planes, the UL corner is blue.
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -267,29 +269,29 @@ TexgenTest::runOne(Result& r) {
 	float tEyePlane[4] = {0.05,0,0,1};
 	glTexGenfv(GL_S, GL_EYE_PLANE, sEyePlane);
 	glTexGenfv(GL_T, GL_EYE_PLANE, tEyePlane);
-
+    
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glutSolidSphere(9.9,32,16);
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
-
+    
 	// Validate it.
 	std::string eyeLinearResult;
 	if (!verifyCheckers(pixels, matchBlue, matchRed, eyeLinearResult))
 	{
-	        FailMessage(r, std::string("GL_EYE_LINEAR"), eyeLinearResult);
+        FailMessage(r, std::string("GL_EYE_LINEAR"), eyeLinearResult);
 		r.pass = false;
 		glDeleteTextures(1, &checkerTextureHandle);
 		return;
 	}
-
+    
 	// success
 	r.pass = true;
 	env->log << name << ":  PASS "
-		 << r.config->conciseDescription() << '\n';
+             << r.config->conciseDescription() << '\n';
 	glDeleteTextures(1, &checkerTextureHandle);
 }
-
-
+    
+    
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
@@ -301,3 +303,8 @@ TexgenTest texgenTest("texgen", "window, rgb",
 
 
 } // namespace GLEAN
+
+
+
+
+
