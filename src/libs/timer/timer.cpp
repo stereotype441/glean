@@ -39,7 +39,7 @@
 // <faith@valinux.com>, December 2000
 
 #include "timer.h"
-#include "vector.h"
+#include <vector.h>
 #include <algorithm>
 
 #if defined(__UNIX__)
