@@ -1,6 +1,6 @@
 // BEGIN_COPYRIGHT -*- linux-c -*-
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -29,7 +29,16 @@
 
 
 
-// tbasicperf.cpp:  implementation of example class for basic tests
+// tbasicperf.cpp:  implementation of example class for basic
+// performance tests
+
+// To customize this for benchmarking a particular function,
+// create a new performance test object of type GLEAN::Perf,
+// overriding the preop(), op(), and postop() methods as needed.
+// (For OpenGL timing tests preop() and postop() will both call
+// glFinish(), but other pre- and post-ops may be used for
+// timing things other than OpenGL.)  Then invoke the object's
+// calibrate() and time() methods as shown in runOne().
 
 #ifdef __UNIX__
 #include <unistd.h>
@@ -139,7 +148,7 @@ doComparison(const GLEAN::TimeResult& oldR,
 }
 
 namespace GLEAN {
-const int WIN_SIZE         = 100; // Maximum window width/height.
+const int WIN_SIZE         = 258; // Maximum window width/height.
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructor:
@@ -188,7 +197,7 @@ BasicPerfTest::run(Environment& environment) {
 		// Test each config:
 		for (vector<DrawingSurfaceConfig*>::const_iterator
 		    p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, 258, 258);
+			Window w(ws, **p, WIN_SIZE, WIN_SIZE);
 			RenderingContext rc(ws, **p);
 			if (!ws.makeCurrent(rc, w))
 				;	// XXX need to throw exception here
@@ -390,8 +399,14 @@ BasicPerfTest::logStats(BasicPerfTest::Result& r, GLEAN::Environment* env) {
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
 BasicPerfTest basicPerfTest("basicPerf", "window",
+
 	"This trivial test simply verifies the internal support for basic\n"
-	"tests.  It is run on every OpenGL-capable drawing surface\n"
-	"configuration that supports creation of a window.\n");
+	"performance tests.  It is run on every OpenGL-capable drawing\n"
+	"surface configuration that supports creation of a window.  It\n"
+	"uses glean's timing infrastructure to benchmark a one-second\n"
+	"delay function, so the result should be approximately 1.0\n"
+	"(to within 1%).\n"
+	
+	);
 
 } // namespace GLEAN

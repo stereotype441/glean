@@ -1,6 +1,6 @@
 // BEGIN_COPYRIGHT -*- linux-c -*-
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -31,9 +31,9 @@
 
 // tbasicperf.h:  Example class for basic performance tests
 
-// This class (derived from Test) provides a framework for a large set
-// of correctness tests that should be portable (in the sense that
-// they don't contain OS- or window-system-specific code).
+// This class provides a framework for performance tests that should
+// be portable (in the sense that they don't contain OS- or
+// window-system-specific code).
 
 // Each basic perf test includes a drawing surface filter string.  The
 // test will be run on all the drawing surface configurations that are
@@ -47,6 +47,9 @@
 
 // When comparing two runs, the drawing surface configurations are
 // used to select plausible matches among the results.
+
+// To customize this to benchmark a particular function, see
+// tbasicperf.cpp.
 
 
 #ifndef __tbasicperf_h__
