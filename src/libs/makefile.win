@@ -1,0 +1,78 @@
+.SILENT :
+
+!IF "$(CFG)" == ""
+CFG=release
+!ENDIF 
+
+!IF "$(CFG)" != "release" && "$(CFG)" != "debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "makefile.win" CFG=release
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "release"
+!MESSAGE "debug"
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+all :
+	cd rand
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+	
+	cd lex
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+	
+	cd stats
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd dsurf
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd image
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd timer
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+clean :
+	cd dsurf
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd image
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd lex
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd rand
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd stats
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd timer
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+
+
+
+	
+	
+	
+	

@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>porting glean to new environments</TITLE>
+  <META NAME="description" CONTENT="porting glean to new environments">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>Porting <I>glean</I> to new environments</H1>
+
+<P>
+Thanks to <A HREF="mailto:johan.smet@glo.be">Johan Smet</A>,
+we have a working version of <I>glean</I> for Microsoft Windows,
+using Visual C++ version 6.
+
+<P>
+Porting <I>glean</I> to BeOS and MacOS would be well worthwhile.
+
+<P>
+Porting <I>glean</I> to other UNIX variants should be straightforward, but I
+haven't looked into it.
+
+<P>
+In all of these cases, most of the work is in the window system
+code (src/libs/dsurf, src/glean/winsys.cpp, src/glean/dsurf.cpp).
+Some other things are needed in src/libs/timer and src/glean/environ.cpp.
+It's always possible that differences in compilers will result in a
+need for more pervasive changes; some problems of this type did arise
+during the port to Windows.
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

@@ -1,0 +1,86 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Johan Smet">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (Win98; I) [Netscape]">
+   <title>Building glean under Windows</title>
+</head>
+<body>
+
+<h1>
+Building <i>glean</i> under Windows</h1>
+Note : this document asumes that you are using Microsoft Visual C++ 6 (VC6).
+<h2>
+Other software you'll need</h2>
+Currently<i> glean</i> doesn't build with the STL included with VC6. <i>glean</i>
+has been verified to build with the <a href="http://www.stlport.org/">STLport</a>
+implementation.
+<br>&nbsp;
+<h2>
+Obtain the source code</h2>
+Obtain the .zip file containing <i>glean</i> from
+<a href="ftp://ftp.mesa3d.org/mesa/contrib/">ftp://ftp.mesa3d.org/mesa/contrib/</a>.
+<p>Unzip the file:
+<pre>&nbsp;&nbsp;&nbsp; pkunzip -d glean_1_0.zip c:\
+&nbsp;&nbsp;&nbsp; cd glean_1_0</pre>
+This will create a subdirectory named <tt>glean_1_0</tt> and make it your
+current directory.
+<h2>
+Set the GLEAN_ROOT environment variable</h2>
+To compile or run <i>glean</i>, you will need to set the environment variable
+<tt>GLEAN_ROOT</tt> to the full pathname of the <i>glean</i> source directory.
+Open a dos prompt and type
+<pre>&nbsp;&nbsp;&nbsp; set GLEAN_ROOT=c:\glean_1_0</pre>
+Be sure to set the environment variable each time you want to compile or
+run <i>glean</i>.
+<br>&nbsp;
+<h2>
+Set the VC6 environment variables</h2>
+To use the command-line tools, you will have to set some environment variables.
+There is a batch file in VC6's bin directory called <i>vcvars32.bat </i>that
+contains the necessary commands. Just execute this in the same dos
+prompt as the previous step and you'll be set to go.
+<br>&nbsp;
+<h2>
+Set Makefile options</h2>
+Edit GLEAN_ROOT\make\common.win and modify the configuration variables
+according to your preferences. Some of the variables that are most likely
+to need customization are:
+<p>STL_DIR
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This variables specifies
+the directory containing include files of the STLport.
+<p>LIBTIFF_INC_DIR
+<br>LIBTIFF_LIB_DIR
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; These variables specify
+the directories that contain the libtiff include files and library resp.
+<br>&nbsp;
+<h2>
+Build <i>glean</i></h2>
+When you've finished editing the Makefile, simply type
+<pre>&nbsp;&nbsp;&nbsp; cd src
+&nbsp;&nbsp;&nbsp; nmake /f makefile.win</pre>
+This will build <i>glean</i> and the other tools in the suite, and install
+them in <tt>$GLEAN_ROOT/bin</tt>.
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

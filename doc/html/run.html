@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>How to run glean</TITLE>
+  <META NAME="description" CONTENT="How to use the glean test suite">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>How do I run <I>glean</I>?</H1>
+
+<P>
+<I>Note:  These instructions assume you're running glean on a
+GNU/Linux system.  We hope the translation to running glean on a
+Windows system is straightforward.  If not, we're always happy
+to receive additional documentation for the distribution. :-)</I>
+
+<P>
+<I>glean</I> runs in two modes:  Gathering information about your
+OpenGL implementation (<I>run mode</I>) and comparing results of two
+previous runs (<I>compare mode</I>).  After using <I>glean</I> in
+either mode, you may also find it helpful to evaluate results with
+other tools in the suite.
+
+<H2>Generating test results</H2>
+
+<P>
+To analyze the OpenGL implementation on your machine, first choose
+a directory name and then run <I>glean</I>, instructing it to store
+results in that directory:
+<PRE>
+    $GLEAN_ROOT/bin/glean -r myogl
+</PRE>
+The results directory must not exist prior to running <I>glean</I>;
+<I>glean</I> will not overwrite existing information.
+
+<P>
+As glean runs, it produces a log containing information like
+the following:
+<PRE>
+blendFunc:  FAIL rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+	source factor = GL_SRC_ALPHA, dest factor = GL_ONE_MINUS_SRC_ALPHA
+	Readback had 1.00002 bits in error; blending had 1.43898 bits in error.
+
+texBindPerf:  PASS rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+	Approximate texture binding time = 10.8911 microseconds.
+	Range of valid measurements = [9.34022, 16.2041]
+
+getString:  PASS rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+</PRE>
+Each test produces output including its name, a description of the
+format of the window in which it is run, and a brief summary of its
+results.  Each summary always includes one of the words PASS, FAIL,
+or NOTE; the meaning of the first two is obvious, and NOTE simply
+means that something is worthy of the reader's attention.  (Some
+tests don't explicitly pass or fail; these generate only NOTEs.)
+
+<P>
+A more verbose log, including descriptions of each test,
+will be generated if you supply the <KBD>-v</KBD> option on the
+<I>glean</I> command line.
+
+<P>
+To run just a particular set of tests, or to exclude some tests from the
+usual run of all tests, you can use the <KBD>-t</KBD>
+option on the command line:
+<PRE>
+    $GLEAN_ROOT/bin/glean -r mysubset -t "basic+getString"
+    $GLEAN_ROOT/bin/glean -r mysubset -t "-blendFunc-texBindPerf"
+</PRE>
+
+<P>
+Some of the tests in <I>glean</I> (such as the texBindPerf test
+shown in the example above) involve benchmarking OpenGL operations.
+To obtain the most accurate, repeatable results for these tests, there
+should be no other processes running on your machine, and you should run
+<I>glean</I> at higher than normal priority.  However, <I>glean</I>
+makes multiple sample runs and attempts to stabilize the system before
+taking measurements, in order to get sensible results even if you
+don't take those precautions.
+
+<H2>Comparing test results</H2>
+
+<P>
+To compare two previous runs, invoke <I>glean</I> with the <KBD>-c</KBD>
+(compare) option:
+<PRE>
+    $GLEAN_ROOT/bin/glean -c myogl anotherogl
+
+    texBindPerf:  DIFF rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+	    myogl appears to have higher performance.
+
+    getString:  DIFF rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+	    Extensions in anotherogl but not in myogl:
+		    GL_ARB_multitexture
+	    Extensions in myogl but not in anotherogl:
+		    GL_EXT_shared_texture_palette
+	    Extensions in both myogl and in anotherogl:
+		    GL_EXT_abgr
+		    GL_EXT_blend_color
+		    GL_EXT_blend_logic_op
+		    GL_EXT_blend_minmax
+		    GL_EXT_blend_subtract
+		    GL_EXT_multitexture
+		    GL_EXT_paletted_texture
+		    GL_EXT_point_parameters
+		    GL_EXT_polygon_offset
+		    GL_EXT_rescale_normal
+		    GL_EXT_texture3D
+		    GL_EXT_texture_object
+		    GL_EXT_vertex_array
+		    GL_MESA_resize_buffers
+		    GL_MESA_window_pos
+		    GL_SGIS_multitexture
+		    GL_SGIS_texture_edge_clamp
+</PRE>
+<I>glean</I> will note any significant differences between the two
+runs, displaying the test name, the keyword DIFF, the format of the
+window used for the test, and an explanation of the differences.
+Again, you can generate a more extensive log by specifying the
+<KBD>-v</KBD> option on the command line.  In addition to extra
+explanatory information, <I>glean</I> will also list tests without
+significant differences, marking them with the notation "SAME".
+
+<P>
+Some sample results files can be found in $GLEAN_ROOT/results.
+
+<H2>Looking at test results in detail</H2>
+
+<P>
+When you run <I>glean</I> with the <KBD>-r</KBD> option, <I>glean</I>
+uses the name of each test to create a subdirectory within the main
+test result directory you specified on the command line.
+
+<P>
+Within these subdirectories you'll find a text file named
+<KBD>results</KBD> containing the machine-readable form of the test
+results.  The precise format of the data in the results file varies
+from test to test; you'll need to look at the source code to understand
+it fully.
+
+<P>
+One special case is that of TIFF images generated by a test.  These
+also appear in the test's subdirectory, and have names of the form
+<KBD>iNNN.tif</KBD>, where <KBD>NNN</KBD> represents a three-digit
+number.  The <I>glean</I> log will explain which test result is
+associated with which image number.
+
+<P>
+You can use the <I>showtiff</I> tool to display an image:
+<PRE>
+    $GLEAN_ROOT/bin/showtiff myogl/rgbTriStrip/i001.tif
+</PRE>
+Use the right-hand mouse button to pop up a menu of available commands.
+
+<P>
+You can also use the <I>difftiff</I> tool to compare two images:
+<PRE>
+    $GLEAN_ROOT/bin/difftiff myogl/rgbTriStrip/i001.tif \
+        anotherogl/rgbTriStrip/i001.tif
+</PRE>
+Again, pressing the right-hand mouse button will pop up a command menu.
+<I>difftiff</I> allows you to display either image, a difference image
+(using selectable difference threshold and color), or a difference image
+overlayed on one of the two base images.  This makes it easier to spot
+subtle differences between images generated by two different OpenGL
+implementations.
+
+<H2>Drawing surface configurations and <I>showvis</I></H2>
+
+<P>
+In current OpenGL implementations, one creates a drawing surface
+(usually a window) by selecting a <I>configuration</I> that describes
+the depth of the color buffers, whether a Z buffer is present, etc.
+from those configurations that the implementation supports.
+You can list the drawing surface configurations that are available on
+your system with <I>showvis</I>:
+<PRE>
+$GLEAN_ROOT/bin/showvis
+
+rgb8, db, z16, s8, accrgba16, win+pmap, id 34
+</PRE>
+In this particular case, there is only one supported configuration.
+The color portion of the framebuffer is 24 bits deep (r, g, and b each
+have 8 bits) and it's double-buffered.  There is a 16-bit depth (Z) buffer,
+an 8-bit stencil buffer, and an RGBA accumulation buffer with 16 bits per
+color component.  The configuration can be used for creating windows and
+pixmaps.  It has an X11 Visual ID of 34.
+
+<P>
+By default, <I>showvis</I> lists all the configurations your system supports.
+However, it's possible to ask <I>showvis</I> about configurations with
+specific characteristics.  You do this by providing command-line options
+that are logical expressions using C syntax and involving variables that
+are related to attributes of drawing surface configurations.  You may
+also request that the configurations be listed in increasing or decreasing
+order of any particular attribute.  Some examples:
+<PRE>
+    $GLEAN_ROOT/bin/showvis db
+</PRE>
+Lists all drawing surface configurations that support double buffering.
+<PRE>
+    $GLEAN_ROOT/bin/showvis "window && rgb && r == g && g == b, min z"
+</PRE>
+Lists all drawing surface configurations for RGB windows where the three
+color channels have equal size, sorted with smallest Z first.
+
+<P>
+You may also use these filter expressions to restrict <I>glean</I> to
+a particular set of drawing surface configurations.  For example,
+<PRE>
+    $GLEAN_ROOT/bin/glean -r rgbWindows --visuals "rgb && window"
+</PRE>
+would run only those <I>glean</I> tests that can be run on RGB windows.
+Color index windows, tests that only run on pixmaps, etc., would be
+omitted.
+
+<P>
+For more information on filter expressions, try executing:
+<PRE>
+    $GLEAN_ROOT/bin/showvis --help
+</PRE>
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

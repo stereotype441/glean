@@ -1,0 +1,181 @@
+// BEGIN_COPYRIGHT
+// 
+// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// 
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the
+// Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+// KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL ALLEN AKIN BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+// AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+// OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+// 
+// END_COPYRIGHT
+
+
+
+
+// winsys.cpp:  implementation of window-system services class
+
+#include <iostream>
+#include "options.h"
+#include "winsys.h"
+#include "dsconfig.h"
+#include "dsfilt.h"
+#include "dsurf.h"
+#include "rc.h"
+
+namespace GLEAN {
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Constructors
+///////////////////////////////////////////////////////////////////////////////
+#if defined(__X11__)
+WindowSystem::WindowSystem(Options& o) {
+	// Open the X11 display:
+	dpy = XOpenDisplay(o.dpyName.c_str());
+	if (!dpy)
+		throw CantOpenDisplay();
+
+	// Verify that GLX is supported:
+	int error_base, event_base;
+	if (glXQueryExtension(dpy, &error_base, &event_base) == False)
+		throw NoOpenGL();
+
+	// Record version numbers for later use:
+	if (glXQueryVersion(dpy, &GLXVersMajor, &GLXVersMinor) == False)
+		throw Error();	// this should never happen :-)
+
+	// Get the list of raw XVisualInfo structures:
+	XVisualInfo vit;
+	vit.screen = DefaultScreen(dpy);
+	int n;
+	vip = XGetVisualInfo(dpy, VisualScreenMask, &vit, &n);
+
+	// Construct a vector of DrawingSurfaceConfigs corresponding to the
+	// XVisualInfo structures that indicate they support OpenGL:
+	vector<DrawingSurfaceConfig*> glxv;
+	for (int i = 0; i < n; ++i) {
+		int supportsOpenGL;
+		glXGetConfig(dpy, &vip[i], GLX_USE_GL, &supportsOpenGL);
+		if (supportsOpenGL)
+			glxv.push_back(new DrawingSurfaceConfig (dpy, &vip[i]));
+	}
+
+	// Filter the basic list of DrawingSurfaceConfigs according to
+	// constraints provided by the user.  (This makes it convenient
+	// to run tests on just a subset of all available configs.)
+	DrawingSurfaceFilter f(o.visFilter);	// may throw an exception!
+	surfConfigs = f.filter(glxv);
+} // WindowSystem::WindowSystem
+
+#elif defined(__WIN__)
+WindowSystem::WindowSystem(Options& o) {
+	// register an window class
+	WNDCLASS	wc;
+
+	wc.style = CS_OWNDC;
+    wc.lpfnWndProc = Window::WindowProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.hIcon = LoadIcon(wc.hInstance, "glean");
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    wc.lpszMenuName =  NULL;
+	wc.lpszClassName = "glean";
+
+    if (!RegisterClass(&wc))
+		throw Error();
+		
+	
+	HDC hDC = GetDC(GetDesktopWindow());
+	
+	PIXELFORMATDESCRIPTOR pfd;
+	int n = DescribePixelFormat(hDC,0,sizeof(pfd),0);
+	
+	vector<DrawingSurfaceConfig*> glpf;
+
+	for (int i = 1;i <= n;++i) {
+		DescribePixelFormat(hDC,i,sizeof(pfd),&pfd);
+		
+		glpf.push_back(new DrawingSurfaceConfig(i,&pfd));
+	}
+
+	ReleaseDC(GetDesktopWindow(),hDC);
+
+	// Filter the basic list of DrawingSurfaceConfigs according to
+	// constraints provided by the user.  (This makes it convenient
+	// to run tests on just a subset of all available configs.)
+	DrawingSurfaceFilter f(o.visFilter);	// may throw an exception!
+	surfConfigs = f.filter(glpf);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// Destructors
+///////////////////////////////////////////////////////////////////////////////
+#if defined(__X11__)
+WindowSystem::~WindowSystem() {
+	XFree(vip);
+} // WindowSystem:: ~WindowSystem
+
+#elif defined(__WIN__)
+WindowSystem::~WindowSystem() {
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// makeCurrent and friends - binding contexts and drawing surfaces
+///////////////////////////////////////////////////////////////////////////////
+
+bool
+WindowSystem::makeCurrent() {
+#   if defined(__X11__)
+#	if defined(GLX_VERSION_1_3)
+#	    error "XXX Need to write GLX 1.3 MakeCurrent code"
+#	else
+	    return glXMakeCurrent(dpy, None, 0);
+#       endif
+#   elif defined(__WIN__)
+		return wglMakeCurrent(0,0);
+#   endif
+} // WindowSystem::makeCurrent
+
+bool
+WindowSystem::makeCurrent(RenderingContext& r, Window& w) {
+#   if defined(__X11__)
+#	if defined(GLX_VERSION_1_3)
+#	    error "XXX Need to write GLX 1.3 MakeCurrent code"
+#	else
+	    return glXMakeCurrent(dpy, w.xWindow, r.rc);
+#       endif
+#   elif defined(__WIN__)
+		return wglMakeCurrent(w.get_dc(),r.rc);
+#   endif
+} // WindowSystem::makeCurrent
+
+void
+WindowSystem::quiesce() {
+#   if defined(__X11__)
+	XSync(dpy, False);
+#   elif defined(__WIN__)
+#   endif
+} // WindowSystem::quiesce
+
+} // namespace GLEAN

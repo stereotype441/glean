@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>Recent changes in glean</TITLE>
+  <META NAME="description" CONTENT="glean changes">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>What has changed recently?</H1>
+
+<H2>Changes from Version 0.6 to Version 1.0</H2>
+
+<P>
+Added hints to set window position as well as size, so that users
+of window managers without automatic window placement don't have
+to click to create each test window.
+
+<H2>Changes from Version 0.5 to Version 0.6</H2>
+
+<P>
+Replaced <CODE>*.dsw</CODE> and <CODE>*.dsp</CODE> files with nmake
+makefiles (named <CODE>common.win</CODE> and <CODE>makefile.win</CODE>)
+for building on Windows.
+
+<P>
+Added Johan Smet's documentation for building glean on Windows.  This
+necessitated reworking the documentation structure somewhat.
+
+<P>
+Fixed a storage allocation bug in the Windows version of <I>showvis</I>.
+
+<P>
+Fixed a couple of problems in libs/dsurf/dsconfig.cpp related to the
+visual_rating extension that caused compilation errors on some
+systems.  Thanks to Brian Paul for catching these.
+
+<P>
+Brian also reported some bizarre link errors.  These occurred because
+there were multiple gl.h files installed on his system, and the
+makefiles searched different header file directories for different
+glean components.  This has been worked around by changing common.mak
+and the individual makefiles to search for header files and libraries
+in the same order for all components.  This is not a universal
+solution; if your system has a very unusual configuration of library
+or header directories, you may need to customize the makefiles.
+
+<H2>Changes from Version 0.4 to Version 0.5</H2>
+
+<P>
+Incorporated the second set of Johan Smet's changes
+to port <I>glean</I> to Microsoft Windows.
+
+<H2>Changes from Version 0.3 to Version 0.4</H2>
+
+<P>
+Added the ability to include or exclude specific tests from a run.
+
+<P>
+
+A recent change in the behavior of the C++ string
+<CODE>getline()</CODE> function in the GNU libraries caused
+<I>glean</I>'s test comparison operation to appear to hang.  The new
+behavior appears to be correct, but it was necessary to add a
+workaround to <I>glean</I> so that it would run properly on both old
+and new versions of the library.
+
+<H2>Changes from Version 0.2 to Version 0.3</H2>
+
+<P>
+Incorporated the first set of Johan Smet's changes
+to port <I>glean</I> to Microsoft Windows.  These included:
+
+  <UL TYPE=DISC>
+    <LI>
+        VC6 still uses old-style scoping rules for variables declared
+        in the init part of ``for'' statements, so in some cases new
+        blocks or new variables were introduced to avoid collisions.
+
+    <LI>
+        VC6 has trouble with some styles of initialization in
+        declarations; for example,
+	<PRE>
+        WindowSystem& ws(env->winSys);
+	</PRE>
+	had to be changed to
+	<PRE>
+        WindowSystem& ws = env->winSys;
+	</PRE>
+
+    <LI>
+	Several items in the std namespace (notably the stream
+	functions) weren't scoped correctly.  These were all fixed
+	with ``using namespace std'' or explicit qualification, as
+	needed.
+
+    <LI>
+	VC6 can't handle the template functions used for image packing
+	and unpacking, so those were replaced.
+  </UL>
+
+<H2>Changes from Version 0.1 to Version 0.2</H2>
+
+<P>
+In lib/dsurf, bit counts for green and blue channels were reversed.
+This caused incorrect drawing-surface configuration reports for normal
+color channels and accumulation buffer channels, and also confused
+code that determined errors in color values.
+
+<P>
+In lib/dsurf, the expression for computing bits-in-error was in error. :-)
+
+<P>
+Switched from egcs to g++ in common.mak.
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

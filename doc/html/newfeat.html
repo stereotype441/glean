@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>adding new infrastructure features to glean</TITLE>
+  <META NAME="description" CONTENT="adding new infrastructure features to glean">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>Adding new infrastructure features to <I>glean</I></H1>
+
+<P>
+(Thanks to Neal Tringham for most of these.)
+
+<H2>On all systems</H2>
+
+It might be useful to add a command-line option that would force
+<I>glean</I> to overwrite an existing database, which is something
+that it refuses to do now.  Probably the best way to implement this
+would be to recursively delete the old results directory before
+creating a new one, since the set of tests may have changed in
+unpredictable ways.  This code would be system-dependent, so distinct
+versions would be needed for all operating systems.
+
+<H2>On Windows</H2>
+
+<H3>Non-default color depths</H3>
+
+<I>glean</I> and the other tools in the suite run only at the default
+screen color depth.  It would be useful to add a command-line option
+that switches to a new depth, because some graphics cards accelerate
+only some color depths.  Note that the usual method for doing this
+(<CODE>ChangeDisplaySettings</CODE>) can't be guaranteed to work on
+Windows 95, and using DirectDraw to change the depth causes some
+drivers to crash.  However, it would be valuable on Windows 98 and
+perhaps on Windows 2000.  Documenting the need to switch color depths
+manually on Windows 95 (and Linux!) would cover the other cases.
+
+<H3>Supporting old standalone 3D cards</H3>
+
+<I>glean</I> uses the normal ICD mechanism to access the OpenGL
+driver.  This means that graphics on older standalone cards (such as
+3Dfx Voodoo 1 and Voodoo 2) will never be accelerated, and the test
+results will be valueless on those cards.  Probably the best solution
+is to use the upcoming GLSetup API, which allows the proper driver to
+be loaded.  If this is done, we'll need to make sure that tests which
+create more than one window are not run on the older cards.
+
+<P>
+A related issue is that GLUT also doesn't support standalone cards,
+so the tools which use it need to be modified to use the
+GLSetup API or some toolkit other than GLUT.
+
+<P>
+Note that there are further issues with supporting old 3Dfx cards.
+Neal Tringham reports:
+
+  <BLOCKQUOTE>
+
+     The problem is that even if the driver's been installed, the 3dfx
+     card might have been taken out later, leaving a driver which
+     faults as soon as you load the 3dfxvgl dll.  As far as I know,
+     the only truly safe way to deal with this is to check for the
+     presence of the Glide dlls, load glide if they're present, and
+     then use the Glide API (grGetNumBoards or something with a
+     vaguely similar name) to actually detect the presence of the
+     hardware.  If its there, you should be able to load 3dfxvgl.dll
+     safely.
+
+  </BLOCKQUOTE>
+
+<P>
+Perhaps the GLSetup implementation will cover this.
+
+<H3>Supporting multi-card systems</H3>
+
+For systems with multiple graphics cards, it would be nice to have a
+command-line option that specifies the card to be tested.  This could
+be similar to the <CODE>display</CODE> option used on X11-based
+systems.
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

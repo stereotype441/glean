@@ -1,0 +1,12 @@
+.SILENT :
+
+!INCLUDE $(GLEAN_ROOT)\make\common.win
+
+ALL : 
+	echo Copying Header Files
+	copy .\glwrap.h $(GLEAN_INC_DIR)
+
+CLEAN :
+
+
+

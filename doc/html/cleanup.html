@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>cleaning up loose ends in glean</TITLE>
+  <META NAME="description" CONTENT="loose ends in glean that need cleanup">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>Cleaning up the loose ends</H1>
+
+<P>
+Many loose-end projects are marked by comments containing "XXX".
+Any of those you'd like to tackle are fair game.
+
+<P>
+Some other things that would be nice:
+<UL TYPE=DISC>
+  <LI>Use <B>const</B> more consistently throughout the code.
+  <LI>Use <B>string</B> in preference to <B>char*</B> where possible.
+  <LI>Add the concept of test categories, assign each test to one or
+      more of them, and add a way to run all the tests in a given
+      category.
+  <LI>Push the <B>Test</B> class hierarchy down one more level of detail.
+      (I actually did this, factoring out everything that's common to
+      classes like BasicTest, but it turned out to be more awkward to
+      use than just cutting and pasting code, so I backed out the changes.
+      After a few more tests are written, it should be more clear how to do
+      this correctly.)
+  <LI>Automated checks for memory leaks.
+  <LI>GLX 1.3 support.
+</UL>
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>adding new tests to glean</TITLE>
+  <META NAME="description" CONTENT="adding new tests to glean">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>Adding new tests to <I>glean</I></H1>
+
+<P>
+On this page, we'll consider some general testing principles and
+suggest areas in which new tests are needed.
+When you're ready to implement a new test, check out the
+<A HREF="overview.html">overview of <I>glean</I> internals</A>.
+
+<H2>Guidelines for writing <I>glean</I> tests</H2>
+
+<P>
+To define a new test, first create a new test class derived from
+<B>Test</B>.  Most of the time you'll want to write tests
+that run on all drawing surface configurations and are portable
+(in the sense that they don't use any OS- or window-system-dependent
+data structures exposed in the <B>Environment</B>, <B>WindowSystem</B>,
+and <B>DrawingSurface</B> classes).  Starting from <B>BasicTest</B> may
+be easiest in those cases.
+
+<P>
+Once you've created a new test class, create one or more global
+objects of that class.  The constructor for <B>Test</B> ensures that
+all such objects are automatically linked onto the master list of
+tests.  (Creating test objects dynamically isn't recommended, but if
+you can make a good argument for it we can figure out the rules needed to
+make it work.) Every test must have a good description; it's very much
+worthwhile to add text that will help the user understand the results
+or debug the problem if something goes wrong.
+
+<P>
+The first workhorse method in any test class is <B>run()</B>.
+Here are some things to remember about it:
+<UL TYPE=DISC>
+  <LI>
+    Every run must produce at least one PASS, FAIL, or NOTE message in the
+    log.  
+  <LI>
+    In the case of failure, never just report failure and assume the user
+    will go add debugging code to the source to figure out exactly what failure
+    occurred.  Ideally, provide enough information so that a driver
+    developer could start debugging his code without having to look at
+    the <I>glean</I> source first.
+  <LI>
+    Each test is producing two kinds of result:  The result that goes into
+    the results database, and the result that remains in memory, accessible
+    through the test object.  Eventually there will be tests that refer
+    back to the results of previous tests!  (This is the reason for the
+    <B>hasRun</B> mechanism in the <B>Test</B> class; one test may be
+    forced to run another as a prerequisite, but we never need to run a
+    test twice.)
+  <LI>
+    Try to keep most test runs short.  Eventually there will be a lot of
+    tests, and some machines will have a lot of drawing surface
+    configurations, and runtime will add up.
+  <LI>
+    Whenever possible, avoid tests that just generate images for the
+    user to check, rather than determining for themselves whether they
+    pass or fail.  Even experts find it hard to tell which of two
+    complicated images is correct, and when some subtle part of the
+    OpenGL driver changes (like the precision with which colors are
+    computed) the user might be faced with comparing hundreds or
+    thousands of images for all existing tests.
+  <LI>
+    Prefer statistical summaries of error to simple pass/fail results.
+    They provide a lot more useful information, and in some cases they
+    make writing test comparisons much easier and more effective.
+</UL>
+
+<P>
+The second major method is <B>compare()</B>.  Some things to keep in mind:
+<UL TYPE=DISC>
+  <LI>
+    When two test results are the same (whatever that means for the
+    particular test in question), don't report that they are the same
+    unless the user has requested verbose output.  Ideally, if two
+    test runs are identical, <I>glean</I> should report nothing.
+  <LI>
+    Subject to the constraint in the previous item, every comparison
+    must yield at least one SAME or DIFF message in the log.
+  <LI>
+    As with <B>run()</B>, statistical summaries are preferable to simple
+    pass/fail assessments.
+</UL>
+
+<H2>New tests</H2>
+
+<P>
+Here are some suggestions for tests that could be added to <I>glean</I>.
+(These are not listed in any particular order; any of them would be
+worthwhile.)
+
+<UL TYPE=DISC>
+  <LI>
+    Quake3 Arena.
+    <BR>
+    We could use a set of tests that check everything John Carmack mentioned
+    in <A HREF="http://www.quake3arena.com/news/glopt.html">
+    http://www.quake3arena.com/news/glopt.html</A>.
+  <LI>
+    Default state check.
+    <BR>
+    The OpenGL spec defines initial values for all state variables, and
+    many programs (including <I>glean</I>!) depend on those initial
+    values being correct.  It would be great to have a test that actually
+    verified them.
+  <LI>
+    Enumerant coverage check.
+    <BR>
+    It would be good to verify that each OpenGL command actually accepts
+    all the argument values that it's supposed to accept, without generating
+    an error.  Conversely, it would be nice to know that errors are
+    generated appropriately when illegal arguments are used.
+  <LI>
+    Regression tests.
+    <BR>
+    (This is especially relevant to everyone working on Mesa.)
+    Regression tests simply check that a previously-discovered bug or
+    performance problem doesn't reappear after later changes to an OpenGL
+    driver.  Regression tests are really valuable, because bugs tend to
+    appear in the parts of the driver that are the most difficult to
+    implement correctly.  Therefore, writing tests in response to each bug
+    report tends to cluster tests in precisely the area where they're most
+    needed.  As a general principle, whenever you report a bug or fix a bug,
+    you could write a <I>glean</I> test to make sure that bug will never
+    reappear.
+  <LI>
+    Stress tests.
+    <BR>
+    Stress tests assess the robustness of an OpenGL implementation.  Some
+    possibilities are:  create and download many texture objects, then
+    switch rapidly from one to another; perform many buffer swaps in
+    rapid succession; execute ten thousand glClear() operations and see
+    whether the hardware FIFO times out; and create a large number of windows
+    and rendering contexts and randomly bind arbitrary pairs of them.
+  <LI>
+    Limits tests.
+    <BR>
+    Every OpenGL implementation has limits (sometimes enforced by the graphics
+    hardware) and these often determine how applications must be written.
+    For example, it would be good to know the maximum acceptable texture
+    size for a variety of texture formats; the largest image that can
+    be passed to glDrawPixels(); the maximum number of vertices that can
+    be placed in a triangle strip or vertex array; and the maximum number of
+    windows or rendering contexts that can be created.
+  <LI>
+    Window-system binding tests.
+    <BR>
+    Most tests concentrate on OpenGL itself, but an area that must not be
+    overlooked is the window system binding (GLX or WGL).  It would be useful
+    to test the window system binding's extension string and all the basic
+    operations like context creation, copy, and deletion.  Sharing texture
+    objects and display lists is important to test.
+  <LI>
+    Core OpenGL correctness tests.
+    <BR>
+    Most OpenGL implementations have been checked with the OpenGL
+    conformance tests.  However, the conformance tests are lax in some
+    areas due to historical reasons.  One way to address this would be
+    to add some correctness tests to <I>glean</I>.  Check the contents
+    page of the OpenGL spec; each heading is a good suggestion for a
+    test.
+</UL>
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

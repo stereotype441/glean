@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>How to build glean</TITLE>
+  <META NAME="description" CONTENT="building glean">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>How do I build <I>glean</I>?</H1>
+
+<P>
+<I>glean</I> is intended to run on a variety of operating systems.
+It has been tested on Linux-based GNU systems with the XFree86
+X11 server, and on Microsoft Windows.
+
+<P>
+To help port <I>glean</I> to other
+systems, please see <A HREF="next.html">Where do we go from here?</A>.
+
+<H2>Other software you'll need before you can build <I>glean</I></H2>
+
+<P>
+<I>glean</I> stores images in the TIFF format, because it's one of
+the few standard formats that's capable of handling images with 32-bit
+and floating-point color values.  The best widely-available library for
+handling TIFF is <A HREF="ftp://ftp.sgi.com/graphics/tiff">Sam Leffler's
+libtiff</A>.  Your operating system may include this library already
+(most Linux distributions do); if not, you'll need to obtain a copy of
+the source and compile it according to the instructions contained therein.
+
+<P>
+Some of the tools in the <I>glean</I> suite use <A
+HREF="http://reality.sgi.com/opengl/glut3/glut3.html">Mark
+Kilgard's GLUT library</A>.  Again, your OS (or your <A
+HREF="http://www.mesa3d.org/">MESA</A> distribution) may already include
+GLUT, but if not, you'll need to grab a copy and install it.
+
+<P>
+Once you've completed those tasks, choose one of the following:
+
+<UL>
+  <LI><A HREF="buildgnu.html">Building <I>glean</I> for GNU/Linux</A></LI>
+  <LI><A HREF="buildwin.html">Building <I>glean</I> for Windows</A></LI>
+</UL>
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

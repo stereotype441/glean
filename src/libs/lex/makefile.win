@@ -1,0 +1,129 @@
+.SILENT :
+
+!IF "$(CFG)" == ""
+CFG=release
+!ENDIF 
+
+!IF "$(CFG)" != "release" && "$(CFG)" != "debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "makefile.win" CFG=release
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "release"
+!MESSAGE "debug"
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+!INCLUDE $(GLEAN_ROOT)\make\common.win
+
+FTARGET=lex
+TARGET=$(FTARGET).lib
+
+LIB32_OBJS= \
+	"$(INTDIR)\lex.obj" 
+
+!IF  "$(CFG)" == "release"
+
+DEFINES=$(DEFINES) /D "NDEBUG"
+
+OUTDIR=.\Release
+INTDIR=.\Release
+
+ALL : "$(GLEAN_LIB_DIR)\$(TARGET)"
+
+CLEAN :
+	-@erase "$(INTDIR)\*.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(OUTDIR)\$(FTARGET).pch
+	-@deltree /y "$(OUTDIR)"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /ML /W3 /GX /O2 $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+LIB32=link.exe -lib
+LIB32_FLAGS=/nologo /out:"$(GLEAN_LIB_DIR)\$(TARGET)" 
+
+"$(GLEAN_LIB_DIR)\$(TARGET)" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+    $(LIB32) @<<
+  $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "debug"
+
+DEFINES=$(DEFINES) /D "_DEBUG"
+
+OUTDIR=.\Debug
+INTDIR=.\Debug
+
+ALL : "$(GLEAN_LIB_DIR)\$(TARGET)"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\*.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\$(FTARGET).pch"
+	-@deltree /Y $(INTDIR)
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MLd /W3 /Gm /GX /ZI /Od $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+LIB32=link.exe -lib
+LIB32_FLAGS=/nologo /out:"$(GLEAN_LIB_DIR)\$(TARGET)" 
+
+"$(GLEAN_LIB_DIR)\$(TARGET)" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+    $(LIB32) @<<
+  $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
+<<
+
+!ENDIF 
+
+DS_POSTBUILD_DEP=$(INTDIR)\postbld.dep
+
+ALL : $(DS_POSTBUILD_DEP)
+
+$(DS_POSTBUILD_DEP) : "$(GLEAN_LIB_DIR)\$(TARGET)"
+	echo Copying Header Files
+	copy .\lex.h $(GLEAN_INC_DIR)
+
+
+
+
+

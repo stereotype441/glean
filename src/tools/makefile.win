@@ -1,0 +1,54 @@
+.SILENT :
+
+!IF "$(CFG)" == ""
+CFG=release
+!ENDIF 
+
+!IF "$(CFG)" != "release" && "$(CFG)" != "debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "makefile.win" CFG=release
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "release"
+!MESSAGE "debug"
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+all :
+	cd difftiff
+	nmake /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd showtiff
+	nmake /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd showvis
+	nmake /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+clean :
+	cd difftiff
+	nmake /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd showtiff
+	nmake /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd showvis
+	nmake /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+
+
+
+
+	
+	
+	

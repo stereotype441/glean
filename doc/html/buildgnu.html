@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>Building glean for GNU/Linux</TITLE>
+  <META NAME="description" CONTENT="building glean for GNU/Linux">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>Building <I>glean</I> for GNU/Linux</H1>
+
+<P>
+The present versions of <I>glean</I> Makefiles depend on features of GNU make.
+(In particular, the automatic re-scanning of all dependency files after
+any have changed.)  If your version of make is known to be significantly
+incompatible with GNU make, then you will need to acquire a copy of
+GNU make or modify <I>glean</I>'s Makefiles.
+
+<P>
+<I>glean</I> makes extensive use of the C++ Standard Template Library.
+If your C++ compiler fails to compile <I>glean</I>, you may want to try
+<A HREF="http://egcs.cygnus.com/">egcs or the latest version of gcc</A>.
+<I>glean</I> was developed with egcs 1.1.2; earlier versions are missing
+some features that <I>glean</I> uses, such as namespaces.
+
+
+<H2>Obtain the source code</H2>
+
+<P>
+Obtain the gzipped tar file containing <I>glean</I> from
+<A HREF="ftp://ftp.mesa3d.org/mesa/contrib/">
+ftp://ftp.mesa3d.org/mesa/contrib/</A>.
+
+<P>
+Unpack the tar file:
+<PRE>
+    tar xfz glean_1_0.tgz
+    cd glean_1_0
+</PRE>
+This will create a subdirectory named <KBD>glean_1_0</KBD> and
+make it your current directory.
+
+<H2>Set the GLEAN_ROOT environment variable</H2>
+
+<P>
+To compile or run <I>glean</I>, you will need to set the environment
+variable <KBD>GLEAN_ROOT</KBD> to the full pathname of the <I>glean</I>
+source directory.
+If you're following along, this is your current directory, so
+this command should do the trick for users of csh and its descendants:
+<PRE>
+    setenv GLEAN_ROOT `pwd`
+</PRE>
+and this command should work for users of sh and its descendants:
+<PRE>
+    GLEAN_ROOT=`pwd`; export GLEAN_ROOT
+</PRE>
+Be sure to set the environment variable each time you want to compile
+or run <I>glean</I>.  Perhaps the easiest way to ensure this is to
+set it in your shell's startup script.
+
+<H2>Set Makefile options</H2>
+
+<P>
+Edit $GLEAN_ROOT/make/common.mak and modify the configuration variables
+according to your preferences.  Some of the variables that are most
+likely to need customization are:
+
+<DL>
+  <DT>CONFIG</DT>
+  <DD>
+    This variable selects the operating system and window system for which
+    <I>glean</I> will be compiled.  The OS option must be either __UNIX__
+    or __MS__.  The window-system option must be either __X11__ or __WIN__.
+    (Yes, there is some ambiguity between the OS and the window system in
+    Microsoft's case.  However, there are X11 products that run under
+    Windows, so the combination of __MS__ and __X11__ is possible.)
+    By default, this variable is set to "-D__UNIX__ -D__X11__".
+  </DD>
+
+  <DT>CC</DT>
+  <DD>
+    This variable specifies the location of the C++ compiler.
+    By default it is "g++".
+  </DD>
+
+  <DT>XINC, GLINC, GLUTINC, TIFFINC</DT>
+  <DD>
+    These variables specify the directories containing include files for
+    X, OpenGL, GLUT, and libtiff, respectively.
+    The defaults are /usr/include/X11, /usr/local/include, /usr/local/include,
+    and /usr/include, respectively.
+  </DD>
+
+  <DT>XLIB, GLLIB, GLUTLIB, TIFFLIB</DT>
+  <DD>
+    These variables specify the directories containing libraries
+    (libX11, libGL, libglut, and libtiff, respectively).
+    The defaults are /usr/X11R6/lib, /usr/local/lib, /usr/local/lib, and
+    /usr/lib, respectively.
+  </DD>
+
+  <DT>_INC, _OPT, _DBG, _WARN, _LIBDIR, _LIB, _PROF</DT>
+  <DD>
+    These variables define C++ command-line options for include-file
+    directories, optimization, debugging, warnings, library directories,
+    libraries, and profiling.  These apply universally, to all <I>glean</I>
+    compilations.  Individual Makefiles can make local additions to
+    these defaults by defining corresponding variables whose names
+    do not have a leading underscore.  Note that it is possible to
+    configure your system so that the <I>order</I> of include-file
+    or library-file directories is significant; for example, by having
+    two versions of the same include file, one in /usr/include and one
+    in /usr/local/include.  In such cases, you'll need to make sure
+    that the _INC and _LIB variables specify directories in precisely
+    the order you require.
+  </DD>
+</DL>
+
+<H2>Build <I>glean</I></H2>
+
+<P>
+When you've finished editing the Makefile, simply type
+<PRE>
+    cd src
+    make install
+</PRE>
+This will build <I>glean</I> and the other tools in the suite, and install
+them in <KBD>$GLEAN_ROOT/bin</KBD>.
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

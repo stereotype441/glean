@@ -1,0 +1,71 @@
+.SILENT :
+
+!IF "$(CFG)" == ""
+CFG=release
+!ENDIF 
+
+!IF "$(CFG)" != "release" && "$(CFG)" != "debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "makefile.win" CFG=release
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "release"
+!MESSAGE "debug"
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+all :
+    	if not exist "$(GLEAN_BIN_DIR)/$(NULL)" mkdir "$(GLEAN_BIN_DIR)"
+	if not exist "$(GLEAN_LIB_DIR)/$(NULL)" mkdir "$(GLEAN_LIB_DIR)"
+	if not exist "$(GLEAN_INC_DIR)/$(NULL)" mkdir "$(GLEAN_INC_DIR)"
+
+	cd glh
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd libs
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd tools
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+	cd glean
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG)
+	cd ..
+
+clean :
+	cd glh
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd libs
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd tools
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+	cd glean
+	$(MAKE) /nologo /f makefile.win CFG=$(CFG) clean
+	cd ..
+
+
+
+	
+	
+	
+

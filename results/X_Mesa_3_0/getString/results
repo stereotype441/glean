@@ -1,0 +1,5 @@
+id 34 canRGBA 1 r 8 g 8 b 8 a 0 canCI 0 bufSize 24 level 0 db 1 stereo 0 aux 0 z 16 s 8 accumR 16 accumG 16 accumB 16 accumA 16 window 1 pixmap 1 winsys 1 fast 1 conformant 1 transparent 0 transR 0 transG 0 transB 0 transA 0 transI 0
+Brian Paul
+Mesa X11
+1.2 Mesa 3.0
+GL_EXT_blend_color GL_EXT_blend_minmax GL_EXT_blend_logic_op GL_EXT_blend_subtract GL_EXT_paletted_texture GL_EXT_point_parameters GL_EXT_polygon_offset GL_EXT_vertex_array GL_EXT_texture_object GL_EXT_texture3D GL_MESA_window_pos GL_MESA_resize_buffers GL_EXT_shared_texture_palette GL_EXT_rescale_normal GL_EXT_abgr GL_SGIS_texture_edge_clamp GL_SGIS_multitexture GL_EXT_multitexture

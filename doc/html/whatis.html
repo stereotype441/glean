@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>What is glean?</TITLE>
+  <META NAME="description" CONTENT="glean purpose and overview">
+  <META NAME="author" CONTENT="Allen Akin">
+  <LINK REV="made" HREF="mailto:glean@pobox.com">
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000"
+  BGCOLOR="#FFFFFF">
+
+<H1>What is <I>glean</I>?</H1>
+
+<P>
+<I>glean</I> is a suite of tools for evaluating the quality of an
+OpenGL implementation and diagnosing any problems that are discovered.
+<I>glean</I> also has the ability to compare two OpenGL implementations and
+highlight the differences between them.
+
+<P>
+Who should care about <I>glean</I>?
+
+<UL>
+  <LI>Anyone who buys or reviews graphics cards.
+  <BR>
+    <I>glean</I> gives you the ability to compare performance, features,
+    and image quality of different graphics cards.  Since the source code
+    is freely available, you can customize <I>glean</I> to add tests for
+    the things that are most important to you.
+
+  <LI>Software developers.
+  <BR>
+    With <I>glean</I> you can learn which features really work for a
+    given combination of hardware and driver.  You can also find the
+    timing for basic drawing operations, mode changes, texture
+    downloads, etc. so that you can maximize the performance of your
+    application.
+
+  <LI>OpenGL driver developers.
+  <BR>
+    <I>glean</I> can increase your confidence that your driver software
+    is correct and efficient.  It also allows you to compare a new release
+    to a previous release, to make sure that there are no regressions in
+    quality or performance.
+</UL>
+
+<P>
+<I>glean</I> is provided under an "X11-style" copyright, which permits
+it and its derivatives to be used at no cost for both commercial and
+non-commercial projects.
+
+<H2>Acknowledgments</H2>
+
+<P>
+Development of the original <I>glean</I> framework and diagnosis tools
+was supported by
+<A HREF="http://www.precisioninsight.com/">Precision Insight, Inc.</A>
+
+<P>
+<A HREF="mailto:johan.smet@glo.be">Johan Smet</A> took on the Herculean
+job of porting <I>glean</I> to Microsoft Windows.  The importance of
+this work cannot be understated!  In addition to making <I>glean</I>
+useful to a great many more people, it enlarges the pool of developers
+that can contribute to <I>glean</I>.
+
+<P>
+I'm also grateful to <A HREF="mailto:brian@precisioninsight.com">Brian Paul</A>
+and <A HREF="http://www.valinux.com/">VA Linux</A> for providing
+<I>glean</I>'s first home on the Web.
+
+<P>
+<A HREF="mailto:cass@r3.nu">Cass Everitt</A> suggested several improvements
+in the ways <I>glean</I> uses C++.
+
+<P>
+Currently Allen Akin is coordinating enhancements to <I>glean</I>.
+Please address <I>glean</I>-related correspondence to
+<A HREF="mailto:glean@pobox.com">glean@pobox.com</A>.
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

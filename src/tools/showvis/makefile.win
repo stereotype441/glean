@@ -1,0 +1,118 @@
+.SILENT :
+
+!IF "$(CFG)" == ""
+CFG=release
+#!MESSAGE No configuration specified. Defaulting to release build.
+!ENDIF 
+
+!IF "$(CFG)" != "release" && "$(CFG)" != "debug"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f makefile.win CFG="release"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "release" 
+!MESSAGE "debug" 
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+!INCLUDE $(GLEAN_ROOT)\make\common.win
+
+LINK32_OBJS= "$(INTDIR)\main.obj"
+
+LIBS=lex.lib dsurf.lib opengl32.lib kernel32.lib user32.lib gdi32.lib
+
+FTARGET=showvis
+TARGET=$(FTARGET).exe
+
+!IF  "$(CFG)" == "release"
+
+DEFINES=$(DEFINES) /D "NDEBUG"
+
+OUTDIR=.\Release
+INTDIR=.\Release
+
+ALL : "$(GLEAN_BIN_DIR)\$(TARGET)"
+
+CLEAN :
+	-@erase "$(INTDIR)\*.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(OUTDIR)\$(FTARGET).pch
+	-@deltree /Y "$(OUTDIR)"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /ML /W3 /GX /O2 $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=$(LIBS) /nologo /subsystem:console /machine:I386 /include:"__imp__glGetString@4" /out:"$(GLEAN_BIN_DIR)\$(TARGET)" /nodefaultlib:libcd.lib
+
+"$(GLEAN_BIN_DIR)\$(TARGET)" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS) $(LIB_DIRS) 
+
+
+!ELSEIF  "$(CFG)" == "debug"
+
+DEFINES=$(DEFINES) /D "_DEBUG"
+
+OUTDIR=.\Debug
+INTDIR=.\Debug
+
+ALL : "$(GLEAN_BIN_DIR)\$(TARGET)"
+
+CLEAN :
+	-@erase "$(INTDIR)\*.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(OUTDIR)\$(FTARGET).pdb"
+	-@erase "$(GLEAN_BIN_DIR)\$(FTARGET).ilk"
+	-@erase "$(OUTDIR)\$(FTARGET).pch
+	-@deltree /Y "$(OUTDIR)" 
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MLd /W3 /Gm /GX /ZI /Od $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=$(LIBS) /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\$(FTARGET).pdb" /debug /machine:I386 /include:"__imp__glGetString@4" /out:"$(GLEAN_BIN_DIR)\$(TARGET)" /pdbtype:sept $(LIB_DIRS) 
+
+"$(GLEAN_BIN_DIR)\showvis.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
+
+!ENDIF 
+
+

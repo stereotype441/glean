@@ -1,0 +1,85 @@
+0.6 to 1.0:
+===========
+
+Added hints to set window position as well as size, so that users
+of window managers without automatic window placement don't have
+to click to create each test window.
+
+0.5 to 0.6:
+===========
+
+Replaced *.dsw and *.dsp files with nmake makefiles (named
+makefile.win) for building on Windows.
+
+Added Johan Smet's documentation for building glean on Windows.  This
+necessitated reworking the documentation structure somewhat.
+
+Fixed a storage allocation bug in the Windows version of showvis.
+
+Fixed a couple of problems in libs/dsurf/dsconfig.cpp related to the
+visual_rating extension that caused compilation errors on some
+systems.  Thanks to Brian Paul for catching these.
+
+Brian also reported some bizarre link errors.  These occurred because
+there were multiple gl.h files installed on his system, and the
+makefiles searched different header file directories for different
+glean components.  This has been worked around by changing common.mak
+and the individual makefiles to search for header files and libraries
+in the same order for all components.  This is not a universal
+solution; if your system has a very unusual configuration of library
+or header directories, you may need to customize the makefiles.
+
+0.4 to 0.5:
+===========
+
+Incorporated the second set of Johan Smet's <johan.smet@glo.be>
+changes to port glean to Microsoft Windows.
+
+0.3 to 0.4:
+===========
+
+Added the ability to include or exclude specific tests from a run.
+
+A recent change in the behavior of the C++ string getline() function
+in the GNU libraries caused glean's test comparison operation to
+appear to hang.  The new behavior appears to be correct, but it was
+necessary to add a workaround to glean so that it would run properly
+on both old and new versions of the library.
+
+
+0.2 to 0.3:
+===========
+
+Incorporated the first set of Johan Smet's <johan.smet@glo.be> changes
+to port glean to Microsoft Windows.  These included:
+
+        VC6 still uses old-style scoping rules for variables declared
+        in the init part of ``for'' statements, so in some cases new
+        blocks or new variables were introduced to avoid collisions.
+
+        VC6 has trouble with some styles of initialization in
+        declarations; for example,
+                WindowSystem& ws(env->winSys);
+        had to be changed to
+                WindowSystem& ws = env->winSys;
+
+        Several items in the std namespace (notably the stream
+        functions) weren't scoped correctly.  These were all fixed
+        with ``using namespace std'' or explicit qualification, as
+        needed.
+
+        VC6 can't handle the template functions used for image packing
+        and unpacking, so those were replaced.
+
+
+0.1 to 0.2:
+===========
+
+In lib/dsurf, bit counts for green and blue channels were reversed.
+This caused incorrect drawing-surface configuration reports for normal
+color channels and accumulation buffer channels, and also confused
+code that determined errors in color values.
+
+In lib/dsurf, the expression for computing bits-in-error was in error. :-)
+
+Switched from egcs to g++ in common.mak.
