@@ -993,7 +993,6 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 		if (dr > mTolerance[0] || dg > mTolerance[1] ||
 			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
-			printf("single-texture test %d failed\n", test);
 #if 0 // Debug
 			// For debugging, printing the state of the previous
 			// test is useful to see what's changed when we've
