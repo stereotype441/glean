@@ -29,6 +29,7 @@ NULL=nul
 LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\dsurf.obj" \
 		"$(INTDIR)\environ.obj" \
+                "$(INTDIR)\geomrend.obj" \
 		"$(INTDIR)\geomutil.obj" \
 		"$(INTDIR)\glutils.obj" \
 		"$(INTDIR)\main.obj" \
@@ -36,18 +37,24 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\options.obj" \
 		"$(INTDIR)\rc.obj" \
 		"$(INTDIR)\tbasic.obj" \
-		"$(INTDIR)\tblend.obj" \
+		"$(INTDIR)\tbasicperf.obj" \
 		"$(INTDIR)\tbinding.obj" \
+		"$(INTDIR)\tblend.obj" \
 		"$(INTDIR)\tchgperf.obj" \
 		"$(INTDIR)\test.obj" \
 		"$(INTDIR)\tgetstr.obj" \
 		"$(INTDIR)\tmaskedclear.obj" \
 		"$(INTDIR)\torthpos.obj" \
+		"$(INTDIR)\tpaths.obj" \
+		"$(INTDIR)\tpgos.obj" \
 		"$(INTDIR)\trgbtris.obj" \
+		"$(INTDIR)\tscissor.obj" \
 		"$(INTDIR)\tteapot.obj" \
-		"$(INTDIR)\tvtxperf.obj" \
+		"$(INTDIR)\ttexcombine.obj" \
+		"$(INTDIR)\ttexcube.obj" \
+		"$(INTDIR)\ttexenv.obj" \
 		"$(INTDIR)\ttexgen.obj" \
-                "$(INTDIR)\geomrend.obj" \
+		"$(INTDIR)\tvtxperf.obj" \
 		"$(INTDIR)\winsys.obj"
 
 LIBS=dsurf.lib image.lib stats.lib timer.lib lex.lib libtiff.lib opengl32.lib glu32.lib glu32.lib glut32.lib kernel32.lib user32.lib gdi32.lib
