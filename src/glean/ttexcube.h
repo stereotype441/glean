@@ -50,7 +50,7 @@ class TexCubeTest: public BasicTest {
 	virtual void logOne(BasicResult& r);
 
     private:
-'	bool TestColor(const GLfloat c1[3], const GLfloat c2[3],
+	bool TestColor(const GLfloat c1[3], const GLfloat c2[3],
 			const GLfloat tolerance[3]);
 	void BuildTexImage(GLenum target, const GLfloat color[4][3]);
 
