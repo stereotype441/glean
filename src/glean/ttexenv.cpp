@@ -483,6 +483,13 @@ TexEnvTest::MatrixTest(GLenum envMode, GLenum texFormat,
 					 << envColor[1] << ", "
 					 << envColor[2] << ", "
 					 << envColor[3] << ") "
+#if BLEND_WITH_BACKGROUND
+					 << " Blend over=("
+					 << BgColor[0] << ", "
+					 << BgColor[1] << ", "
+					 << BgColor[2] << ", "
+					 << BgColor[3] << ") "
+#endif
 					 << " Expected=("
 					 << expected[0] << ", "
 					 << expected[1] << ", "
@@ -585,7 +592,7 @@ TexEnvTest::runOne(BasicResult& r, Window& w) {
 		const char *formatName = FormatNames[fmt];
 		for (int mode = 0; mode < numModes; mode++) {
 			const GLenum envMode = EnvModeEnums[mode];
-			const char *envName = EnvModeNames[fmt];
+			const char *envName = EnvModeNames[mode];
 			//printf("format %s mode %s\n", FormatNames[fmt],
 			//	EnvModeNames[mode]);
 			if (envMode == GL_BLEND && format != GL_ALPHA) {
