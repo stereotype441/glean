@@ -38,7 +38,7 @@
 
 namespace GLEAN {
 
-#define MAX_TEX_UNITS 4
+#define MAX_TEX_UNITS 8
 
 class TexCombineTest: public BasicTest {
     public:
