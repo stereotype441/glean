@@ -22,6 +22,7 @@ step, the process is:</p>
 <ul>
 <li><a href="#STEP0">Get CVS</a></li>
 <li><a href="#STEP1">Get the glean source distribution</a></li>
+<li><a href="#STEP1.5">Get <i>glext.h</i></a></li>
 <li><a href="#STEP2">Get STLPort 4.0.  There's a pre-configured copy available from this webpage</a></li>
 <li><a href="#STEP3">Get the LibTIFF lib and header.  Also available from this page</a></li>
 <li><a href="#STEP4">Configure the appropriate environment variables</a></li>
@@ -64,6 +65,14 @@ cvs -z3 -d:pserver:anonymous@cvs.glean.sourceforge.net:/cvsroot/glean co glean
 
 <p>After executing the second command, you should see it pull down a bunch of files (which may take a 
 few minutes), and you will subsequently have the glean source!</p>
+
+<hr>
+<h2><a name="STEP1.5">Getting <i>glext.h</i></h2>
+
+<p>If you don't already have it, make sure to get an updated version of
+<a href="http://oss.sgi.com/projects/ogl-sample/ABI/glext.h"><i>glext.h</i></a>
+and put it in the same directory as your <i>gl.h</i>, which is usually under
+<i>/include/gl</i> in your MSVC install dir.</p>
 
 <hr>
 <h2><a name="STEP2">Getting the STLPort</h2>
