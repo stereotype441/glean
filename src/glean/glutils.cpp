@@ -34,8 +34,10 @@
 #include "glwrap.h"
 #include "environ.h"
 #include "lex.h"
-
 #include "glutils.h"
+#if defined(__UNIX__)
+#   include <dlfcn.h>
+#endif
 
 namespace GLEAN {
 
@@ -75,6 +77,37 @@ haveExtension(const char* name) {
 
 	return false;
 } // haveExtension
+
+///////////////////////////////////////////////////////////////////////////////
+// getProcAddress: Get address of an OpenGL or window-system-binding function.
+//	This belongs here, rather than as a member of RenderingContext, because
+//	on Windows it must only be applied to the *current* context.  (The
+//	return value on Windows is context-dependent, and wglGetProcAddress
+//	doesn't take a rendering context as an argument.)
+///////////////////////////////////////////////////////////////////////////////
+void*
+getProcAddress(const char* name) {
+#if defined(__X11__)
+#   if defined(GLX_ARB_get_proc_address)
+	return glXGetProcAddressARB(reinterpret_cast<const GLubyte*>(name));
+#   else
+	// XXX This isn't guaranteed to work, but it may be the best option
+	// we have at the moment.
+	void* libHandle = dlopen("libGL.so", RTLD_LAZY);
+	if (libHandle) {
+		void* funcPointer = dlsym(libHandle, name);
+		dlclose(libHandle);
+		return funcPointer;
+	} else
+		return 0;
+#   endif
+#elif defined(__WIN__)
+	return wglGetProcAddress(name);
+#elif defined(__BEWIN__)
+#	error "Need GetProcAddress (or equivalent) for BeOS"
+	return 0;
+#endif
+} // getProcAddress
 
 ///////////////////////////////////////////////////////////////////////////////
 // logGLErrors: Check for OpenGL errors and log any that have occurred.

@@ -51,6 +51,11 @@ void useScreenCoords(int windowW, int windowH);
 // any arbitrary context.)
 bool haveExtension(const char* name);
 
+// Get a pointer to a function (usually, an extension function).
+// Like haveExtension, we have to do this here rather than in
+// RenderingContext.
+void* getProcAddress(const char* name);
+
 // Check for OpenGL errors and log any that have occurred:
 void logGLErrors(Environment& env);
 
