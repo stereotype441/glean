@@ -116,7 +116,7 @@ MaskedClearTest::failStencil(Result& r, GLuint expected, GLuint actual)
 void
 MaskedClearTest::runOne(Result& r) {
 
-	GLboolean passed = GL_TRUE;
+	bool passed = true;
 
 	// GL init, just to be safe
 	glDisable(GL_SCISSOR_TEST);
@@ -161,14 +161,14 @@ MaskedClearTest::runOne(Result& r) {
 					if (comp == chan) {
 						// component should be 1.0
 						if (pixel[comp] < 0.5) {
-							passed = GL_FALSE;
+							passed = false;
 							failRGB(r, comp, 1.0,
 							  pixel[comp], buffer);
 						}
 					} else {
 						// component should be 0.0
 						if (pixel[comp] > 0.5) {
-							passed = GL_FALSE;
+							passed = false;
 							failRGB(r, comp, 0.0,
 							  pixel[comp], buffer);
 						}
@@ -199,7 +199,7 @@ MaskedClearTest::runOne(Result& r) {
 
 				// test results
 				if (pixel != (1U << bit)) {
-					passed = GL_FALSE;
+					passed = false;
 					failCI(r, 1 << bit, pixel, buffer);
 				}
 			}
@@ -223,7 +223,7 @@ MaskedClearTest::runOne(Result& r) {
 
 		// test result
 		if (depth != 0.0) {
-			passed = GL_FALSE;
+			passed = false;
 			failZ(r, 0.0, depth);
 		}
 	}
@@ -251,7 +251,7 @@ MaskedClearTest::runOne(Result& r) {
 
 			// test results
 			if (stencil != (1U << bit)) {
-				passed = GL_FALSE;
+				passed = false;
 				failStencil(r, 1 << bit, stencil);
 			}
 		}
