@@ -39,6 +39,7 @@
 // <faith@valinux.com>, December 2000
 
 #include "timer.h"
+using namespace std;
 #include <vector>
 #include <algorithm>
 
