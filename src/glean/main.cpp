@@ -31,6 +31,8 @@
 
 // main.cpp:  main program for Glean
 
+using namespace std;
+
 #include <assert.h>
 #include <iostream>
 #include <string>
@@ -43,7 +45,6 @@
 #include "lex.h"
 #include "dsfilt.h"
 
-using namespace std;
 using namespace GLEAN;
 
 char* mandatoryArg(int argc, char* argv[], int i);

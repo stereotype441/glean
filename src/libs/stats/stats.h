@@ -81,7 +81,7 @@ class BasicStats {
 	BasicStats() {init();}
 	template<class T> BasicStats(std::vector<T>& v) {
 		init();
-		for (std::vector<T>::const_iterator p = v.begin(); p < v.end(); ++p)
+		for (typename std::vector<T>::const_iterator p = v.begin(); p < v.end(); ++p)
 			sample(*p);
 	}
 }; // class BasicStats

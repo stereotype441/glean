@@ -35,9 +35,9 @@
 #ifndef __misc_h__
 #define __misc_h__
 
-#include <iostream>
-
 using namespace std;
+
+#include <iostream>
 
 namespace GLEAN {
 

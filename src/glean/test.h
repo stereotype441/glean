@@ -52,11 +52,11 @@
 #ifndef __test_h__
 #define __test_h__
 
+using namespace std;
+
 #include <string>
 #include <vector>
 #include <fstream>
-
-using namespace std;
 
 namespace GLEAN {
 

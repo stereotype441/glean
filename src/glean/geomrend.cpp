@@ -34,6 +34,8 @@
 // vertex arrays with glDrawElements, and any of the preceding
 // methods stuffed in a display list.
 
+using namespace std;
+
 #include "geomrend.h"
 #include "rand.h"
 #include "glutils.h"
@@ -42,10 +44,6 @@
 #include <cmath>
 #include <float.h>
 #include <assert.h>
-
-#ifdef __WIN__
-using namespace std;
-#endif
 
 namespace GLEAN {
 

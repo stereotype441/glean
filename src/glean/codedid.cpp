@@ -30,14 +30,12 @@
 
 // codedid.h:  tool to map integer IDs into colors, and vice-versa
 
+using namespace std;
+
 #include <algorithm>
 #include <vector>
 #include "codedid.h"
 #include "image.h"
-
-#ifdef __WIN__
-using namespace std;
-#endif
 
 namespace GLEAN {
 

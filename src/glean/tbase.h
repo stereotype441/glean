@@ -303,13 +303,13 @@ public:
 		// old run.  (Later we'll find the best match in this
 		// vector for each config in the new run.)
 		vector<DrawingSurfaceConfig*> oldConfigs;
-		for (vector<ResultType*>::const_iterator p = oldR.begin();
+		for (typename vector<ResultType*>::const_iterator p = oldR.begin();
 		     p < oldR.end();
 		     ++p)
 			oldConfigs.push_back((*p)->config);
 
 		// Compare results:
-		for (vector<ResultType*>::const_iterator newP = newR.begin();
+		for (typename vector<ResultType*>::const_iterator newP = newR.begin();
 		     newP < newR.end();
 		     ++newP) {
 
@@ -330,11 +330,11 @@ public:
 
 		// Get rid of the results; we don't need them for future
 		// comparisons.
-		for (vector<ResultType*>::iterator np = newR.begin();
+		for (typename vector<ResultType*>::iterator np = newR.begin();
 		     np < newR.end();
 		     ++np)
 			delete *np;
-		for (vector<ResultType*>::iterator op = oldR.begin();
+		for (typename vector<ResultType*>::iterator op = oldR.begin();
 		     op < oldR.end();
 		     ++op)
 			delete *op;

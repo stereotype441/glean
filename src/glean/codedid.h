@@ -50,12 +50,10 @@
 #ifndef __codedid_h__
 #define __codedid_h__
 
+using namespace std;
+
 #include <vector>
 #include "glwrap.h"
-
-#ifdef __WIN__
-using namespace std;
-#endif
 
 namespace GLEAN {
 

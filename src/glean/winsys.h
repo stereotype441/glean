@@ -50,13 +50,11 @@
 #ifndef __winsys_h__
 #define __winsys_h__
 
+using namespace std;
+
 #include <string>
 #include <vector>
 #include "glwrap.h"
-
-#ifdef __WIN__
-using namespace std;
-#endif
 
 namespace GLEAN {
 
