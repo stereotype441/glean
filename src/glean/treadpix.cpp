@@ -485,5 +485,439 @@ readPixSanityTest("readPixSanity", "1",
 	"are within 1 LSB of the expected contents.\n"
 
 	);
+}; // namespace GLEAN
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ExactRGBATest
+//	Verifies that unsigned RGBA values written to a framebuffer with
+//	sufficient depth are not altered by the OpenGL implementation.
+////////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+template<class T>
+void
+check(GLEAN::ExactRGBAResult::Flavor& r, GLEAN::DrawingSurfaceConfig& config,
+    GLenum type) {
+	unsigned size = EXACT_RGBA_WIN_SIZE - 2;
+	unsigned nPixels = size * size;
+	unsigned nComponents = 4 * nPixels;
+	T* expected = new T[nComponents];
+	T* actual = new T[nComponents];
+	GLEAN::RandomBits rand(32, 1929);
+	unsigned x;
+	unsigned y;
+	T* p;
+	T* q;
+
+	// Draw random colors into the window, recording the raw
+	// color data in the array "expected":
+	p = expected;
+	for (y = 0; y < size; ++y)
+		for (x = 0; x < size; ++x) {
+			p[0] = rand.next();	// r
+			p[1] = rand.next();	// g
+			p[2] = rand.next();	// b
+			p[3] = rand.next();	// a
+			switch (type) {
+				case GL_UNSIGNED_BYTE:
+					glColor4ubv(reinterpret_cast<GLubyte*>
+					    (p));
+					break;
+				case GL_UNSIGNED_SHORT:
+					glColor4usv(reinterpret_cast<GLushort*>
+					    (p));
+					break;
+				case GL_UNSIGNED_INT:
+					glColor4uiv(reinterpret_cast<GLuint*>
+					    (p));
+					break;
+			}
+			glBegin(GL_QUADS);
+				glVertex2i(x + 1, y + 1);
+				glVertex2i(x + 2, y + 1);
+				glVertex2i(x + 2, y + 2);
+				glVertex2i(x + 1, y + 2);
+			glEnd();
+			p += 4;
+		}
+
+	// Read the relevant contents of the window into the array
+	// "actual":
+	glReadPixels(1, 1, size, size, GL_RGBA, type, actual);
+
+	// Find masks that select only the high-order bits that should
+	// be common to both the host representation and the framebuffer
+	// representation:
+	int hostBits;
+	switch (type) {
+		case GL_UNSIGNED_BYTE:
+			hostBits = 8;
+			break;
+		case GL_UNSIGNED_SHORT:
+			hostBits = 16;
+			break;
+		case GL_UNSIGNED_INT:
+			hostBits = 32;
+			break;
+	}
+	T rMask = static_cast<T>(-1) << (hostBits - min(hostBits, config.r));
+	T gMask = static_cast<T>(-1) << (hostBits - min(hostBits, config.g));
+	T bMask = static_cast<T>(-1) << (hostBits - min(hostBits, config.b));
+	T aMask = static_cast<T>(-1) << (hostBits - min(hostBits, config.a));
+	// Patch up arithmetic for RGB drawing surfaces.  All other nasty cases
+	// are eliminated by the drawing surface filter, which requires
+	// nonzero R, G, and B.
+	if (aMask == static_cast<T>(-1))
+		aMask = 0;
+
+	// Compare masked actual and expected values, and record the
+	// worst-case error location and magnitude.
+	r.err = 0;
+	p = expected;
+	q = actual;
+	for (y = 0; y < size; ++y)
+		for (x = 0; x < size; ++x) {
+			T e[4];
+			e[0] = p[0] & rMask;
+			e[1] = p[1] & gMask;
+			e[2] = p[2] & bMask;
+			e[3] = p[3] & aMask;
+			T a[4];
+			a[0] = q[0] & rMask;
+			a[1] = q[1] & gMask;
+			a[2] = q[2] & bMask;
+			a[3] = q[3] & aMask;
+			for (unsigned i = 0; i < 4; ++i) {
+				GLuint err =
+					max(e[i], a[i]) - min(e[i], a[i]);
+				if (err > r.err) {
+					r.x = x;
+					r.y = y;
+					r.err = err;
+					for (unsigned j = 0; j < 4; ++j) {
+						r.expected[j] = e[j];
+						r.actual[j] = a[j];
+					}
+				}
+			}
+			p += 4;
+			q += 4;
+		}
+
+	// We only pass if the maximum error was zero.
+	r.pass = (r.err == 0);
+
+	delete[] expected;
+	delete[] actual;
+}
+
+};
+
+
+namespace GLEAN {
+
+
+///////////////////////////////////////////////////////////////////////////////
+// runOne:  Run a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+ExactRGBATest::runOne(ExactRGBAResult& r, GLEAN::Window& w) {
+
+	// Many other tests depend on the ability of the OpenGL
+	// implementation to store fixed-point RGBA values in the
+	// framebuffer, and to read back exactly the value that
+	// was stored.  The OpenGL spec guarantees that this will work
+	// under certain conditions, which are spelled out in section
+	// 2.13.9 in the 1.2.1 version of the spec:
+	//
+	//	Suppose that lighting is disabled, the color associated
+	//	with a vertex has not been clipped, and one of
+	//	[gl]Colorub, [gl]Colorus, or [gl]Colorui was used to
+	//	specify that color.  When these conditions are
+	//	satisfied, an RGBA component must convert to a value
+	//	that matches the component as specified in the Color
+	//	command:  if m [the number of bits in the framebuffer
+	//	color channel] is less than the number of bits b with
+	//	which the component was specified, then the converted
+	//	value must equal the most significant m bits of the
+	//	specified value; otherwise, the most significant b bits
+	//	of the converted value must equal the specified value.
+	//
+	// This test attempts to verify that behavior.
+
+
+	// Don't bother running if the ReadPixels sanity test for this
+	// display surface configuration failed:
+	vector<ReadPixSanityResult*>::const_iterator rpsRes;
+	for (rpsRes = readPixSanityTest.results.begin();
+	    rpsRes != readPixSanityTest.results.end();
+	    ++rpsRes)
+		if ((*rpsRes)->config == r.config)
+			break;
+	if (rpsRes == readPixSanityTest.results.end() || !(*rpsRes)->pass) {
+		r.skipped = true;
+		return;
+	}
+
+	// Much of this state should already be set, if the defaults are
+	// implemented correctly.  We repeat the setting here in order
+	// to insure reasonable results when there are bugs.
+
+	GLUtils::useScreenCoords(EXACT_RGBA_WIN_SIZE, EXACT_RGBA_WIN_SIZE);
+
+	glDisable(GL_LIGHTING);
+
+	glFrontFace(GL_CCW);
+
+	glDisable(GL_COLOR_MATERIAL);
+
+	glDisable(GL_TEXTURE_1D);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_3D);
+
+	glDisable(GL_CLIP_PLANE0);
+	glDisable(GL_CLIP_PLANE1);
+	glDisable(GL_CLIP_PLANE2);
+	glDisable(GL_CLIP_PLANE3);
+	glDisable(GL_CLIP_PLANE4);
+	glDisable(GL_CLIP_PLANE5);
+
+	glDisable(GL_FOG);
+
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glDisable(GL_DITHER);
+	glDisable(GL_COLOR_LOGIC_OP);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_POLYGON_STIPPLE);
+	glDisable(GL_POLYGON_OFFSET_FILL);
+
+	glShadeModel(GL_FLAT);
+
+	glPixelStorei(GL_PACK_SWAP_BYTES, GL_FALSE);
+	glPixelStorei(GL_PACK_LSB_FIRST, GL_FALSE);
+	glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+	glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+	glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+	glPixelTransferi(GL_MAP_COLOR, GL_FALSE);
+	glPixelTransferi(GL_MAP_STENCIL, GL_FALSE);
+	glPixelTransferi(GL_INDEX_SHIFT, 0);
+	glPixelTransferi(GL_INDEX_OFFSET, 0);
+	glPixelTransferf(GL_RED_SCALE, 1.0);
+	glPixelTransferf(GL_GREEN_SCALE, 1.0);
+	glPixelTransferf(GL_BLUE_SCALE, 1.0);
+	glPixelTransferf(GL_ALPHA_SCALE, 1.0);
+	glPixelTransferf(GL_DEPTH_SCALE, 1.0);
+	glPixelTransferf(GL_RED_BIAS, 0.0);
+	glPixelTransferf(GL_GREEN_BIAS, 0.0);
+	glPixelTransferf(GL_BLUE_BIAS, 0.0);
+	glPixelTransferf(GL_ALPHA_BIAS, 0.0);
+	glPixelTransferf(GL_DEPTH_BIAS, 0.0);
+
+	check<GLubyte>(r.ub, *(r.config), GL_UNSIGNED_BYTE);
+	w.swap();
+	check<GLushort>(r.us, *(r.config), GL_UNSIGNED_SHORT);
+	w.swap();
+	check<GLuint>(r.ui, *(r.config), GL_UNSIGNED_INT);
+	w.swap();
+	r.pass = r.ub.pass && r.us.pass && r.ui.pass;
+	r.skipped = false;
+} // ExactRGBATest::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+ExactRGBATest::compareOne(ExactRGBAResult& oldR, ExactRGBAResult& newR) {
+	if (oldR.skipped || newR.skipped) {
+		env->log << name
+			 << ((oldR.skipped && newR.skipped)? ":  SAME "
+			 	: ":  DIFF ")
+			 << newR.config->conciseDescription()
+			 << '\n';
+		if (oldR.skipped)
+			 env->log << "\t"
+				  << env->options.db1Name
+				  << " skipped\n";
+		if (newR.skipped)
+			 env->log << "\t"
+				  << env->options.db2Name
+				  << " skipped\n";
+		env->log << "\tNo comparison is possible.\n";
+		return;
+	}
+
+	if (oldR.ub == newR.ub && oldR.us == newR.us && oldR.ui == newR.ui) {
+		if (env->options.verbosity)
+			env->log << name
+				 << ":  SAME "
+				 << newR.config->conciseDescription()
+				 << '\n'
+				 << (oldR.pass
+				     ? "\tBoth PASS\n"
+				     : "\tBoth FAIL\n");
+	} else {
+		env->log << name
+			 << ":  DIFF "
+			 << newR.config->conciseDescription()
+			 << '\n'
+#if 1
+			 << '\t'
+			 << env->options.db1Name
+			 << (oldR.pass? " PASS, ": " FAIL, ")
+			 << env->options.db2Name
+			 << (newR.pass? " PASS\n": " FAIL\n");
+#endif
+			 ;
+	}
+
+	summarize("Unsigned byte:   ", oldR.ub, newR.ub);
+	summarize("Unsigned short:  ", oldR.us, newR.us);
+	summarize("Unsigned int:    ", oldR.ui, newR.ui);
+} // ExactRGBATest::compareOne
+
+void
+ExactRGBATest::summarize(const char* label, const ExactRGBAResult::Flavor& o,
+    const ExactRGBAResult::Flavor& n) {
+	if (o == n) {
+		if (env->options.verbosity)
+			env->log << "\t"
+				<< label
+				<< "both "
+				<< (o.pass? "passed": "failed")
+				<< ".\n";
+	} else {
+		if (o.pass != n.pass)
+			env->log << "\t"
+				<< label
+				<< env->options.db1Name
+				<< " "
+				<< (o.pass? "passed": "failed")
+				<< "; "
+				<< env->options.db2Name
+				<< " "
+				<< (n.pass? "passed": "failed")
+				<< ".\n"
+				;
+		if (o.x != n.x || o.y != n.y)
+			env->log << "\t"
+				<< env->options.db1Name
+				<< " failed at ("
+				<< o.x
+				<< ", "
+				<< o.y
+				<< "); "
+				<< env->options.db2Name
+				<< " failed at ("
+				<< n.x
+				<< ", "
+				<< n.y
+				<< ")\n"
+				;
+		if (o.err != n.err)
+			env->log << "\t"
+				<< env->options.db1Name
+				<< " had max error "
+				<< o.err
+				<< "; "
+				<< env->options.db2Name
+				<< " had max error "
+				<< n.err
+				<< "\n"
+				;
+		if (o.expected[0] != n.expected[0]
+		 || o.expected[1] != n.expected[1]
+		 || o.expected[2] != n.expected[2]
+		 || o.expected[3] != n.expected[3])
+			env->log << "\tExpected values differ.\n";
+		if (o.actual[0] != n.actual[0]
+		 || o.actual[1] != n.actual[1]
+		 || o.actual[2] != n.actual[2]
+		 || o.actual[3] != n.actual[3])
+			env->log << "\tActual values differ.\n";
+	}
+} // ExactRGBATest::summarize
+
+void
+ExactRGBATest::logFlavor(const char* label, const ExactRGBAResult::Flavor& r) {
+	if (!r.pass) {
+		env->log << "\t"
+			<< label
+			<< " worst-case error was 0x"
+			<< hex
+			<< r.err << " at ("
+			<< dec
+			<< r.x << ", " << r.y << ")\n";
+		env->log << "\t\texpected (0x"
+			<< hex
+			<< r.expected[0] << ", 0x"
+			<< r.expected[1] << ", 0x"
+			<< r.expected[2] << ", 0x"
+			<< r.expected[3] << ")\n\t\tgot (0x"
+			<< r.actual[0] << ", 0x"
+			<< r.actual[1] << ", 0x"
+			<< r.actual[2] << ", 0x"
+			<< r.actual[3] << ")\n"
+			<< dec
+			;
+	}
+} // ExactRGBATest::logFlavor
+
+void
+ExactRGBATest::logOne(ExactRGBAResult& r) {
+	if (r.skipped) {
+		env->log << name << ":  NOTE ";
+		logConcise(r);
+		env->log << "\tTest skipped; prerequisite test "
+			 << readPixSanityTest.name
+			 << " failed or was not run\n";
+		return;
+	}
+
+	logPassFail(r);
+	logConcise(r);
+
+	logFlavor("Unsigned byte ", r.ub);
+	logFlavor("Unsigned short", r.us);
+	logFlavor("Unsigned int  ", r.ui);
+} // ExactRGBATest::logOne
+
+///////////////////////////////////////////////////////////////////////////////
+// The test object itself:
+///////////////////////////////////////////////////////////////////////////////
+Test* exactRGBATestPrereqs[] = {&readPixSanityTest, 0};
+ExactRGBATest
+exactRGBATest("exactRGBA", "rgb", exactRGBATestPrereqs,
+
+	"The OpenGL specification requires that under certain conditions\n"
+	"(e.g. lighting disabled, no clipping, no dithering, etc.) colors\n"
+	"specified as unsigned integers are represented *exactly* in the\n"
+	"framebuffer (up to the number of bits common to both the\n"
+	"original color and the framebuffer color channel).  Several glean\n"
+	"tests depend on this behavior, so this test is a prerequisite for\n"
+	"them.\n"
+	"\n"
+	"This test works by drawing many small quadrilaterals whose\n"
+	"colors are specified by glColorub, glColorus, and glColorui;\n"
+	"reading back the resulting image; and comparing the colors read\n"
+	"back to the colors written.  The high-order bits shared by the\n"
+	"source representation of the colors and the framebuffer\n"
+	"representation of the colors must agree exactly for the test to\n"
+	"pass.\n"
+
+	);
+
 
 } // namespace GLEAN

@@ -169,6 +169,124 @@ public:
 	void checkIndex(ReadPixSanityResult& r, Window& w);
 	void summarize(char* label, bool oldPass, bool newPass);
 }; // class ReadPixSanityTest
+extern ReadPixSanityTest readPixSanityTest;
+
+
+
+
+class ExactRGBAResult: public BaseResult {
+public:
+	struct Flavor {
+		bool pass;
+		int x;
+		int y;
+		GLuint err;
+		GLuint expected[4];
+		GLuint actual[4];
+
+		bool operator== (const Flavor& f) const {
+			return pass == f.pass
+				&& x == f.x
+				&& y == f.y
+				&& err == f.err
+				&& expected[0] == f.expected[0]
+				&& expected[1] == f.expected[1]
+				&& expected[2] == f.expected[2]
+				&& expected[3] == f.expected[3]
+				&& actual[0] == f.actual[0]
+				&& actual[1] == f.actual[1]
+				&& actual[2] == f.actual[2]
+				&& actual[3] == f.actual[3]
+				;
+		}
+
+		Flavor() {
+			pass = true;
+			x = y = 0;
+			err = 0;
+			expected[0] = expected[1] = expected[2]
+				= expected[3] = 0;
+			actual[0] = actual[1] = actual[2] = actual[3] = 0;
+		}
+
+		void put(ostream& s) const {
+			s
+			  << pass << '\n'
+			  << x << ' ' << y << '\n'
+			  << err << '\n'
+			  << expected[0] << ' '
+			  	<< expected[1] << ' '
+				<< expected[2] << ' '
+				<< expected[3] << '\n'
+			  << actual[0] << ' '
+			  	<< actual[1] << ' '
+				<< actual[2] << ' '
+				<< actual[3] << '\n'
+			  ;
+		}
+		void get(istream& s) {
+			s
+			  >> pass
+			  >> x >> y
+			  >> err
+			  >> expected[0]
+			  	>> expected[1]
+				>> expected[2]
+				>> expected[3]
+			  >> actual[0]
+			  	>> actual[1]
+				>> actual[2]
+				>> actual[3]
+			  ;
+		}
+	};
+
+	bool skipped;
+	bool pass;
+
+	Flavor ub;
+	Flavor us;
+	Flavor ui;
+
+	ExactRGBAResult(): ub(), us(), ui() {
+		skipped = false;
+		pass = true;
+	}
+	
+	void putresults(ostream& s) const {
+		s
+		  << skipped << '\n'
+		  << pass << '\n'
+		  ;
+		ub.put(s);
+		us.put(s);
+		ui.put(s);
+	}
+	
+	bool getresults(istream& s) {
+		s
+		  >> skipped
+		  >> pass
+		  ;
+		ub.get(s);
+		us.get(s);
+		ui.get(s);
+		return s.good();
+	}
+};
+
+#define EXACT_RGBA_WIN_SIZE (512+2)
+
+class ExactRGBATest: public BaseTest<ExactRGBAResult> {
+public:
+	GLEAN_CLASS_WH(ExactRGBATest, ExactRGBAResult,
+		EXACT_RGBA_WIN_SIZE, EXACT_RGBA_WIN_SIZE);
+
+	void summarize(const char* label, const ExactRGBAResult::Flavor& o,
+	    const ExactRGBAResult::Flavor& n);
+	void logFlavor(const char* label, const ExactRGBAResult::Flavor& r);
+}; // class ExactRGBATest
+extern ExactRGBATest exactRGBATest;
 
 } // namespace GLEAN
 
