@@ -65,6 +65,10 @@ class ColoredLitPerf: public Test {
 		bool imageOK;		// Image sanity-check status
 		bool imageMatch;	// Image comparison status
 
+		OneResult() {
+			tps = tpsLow = tpsHigh = 0.0;
+			imageOK = imageMatch = true;
+		}
 		void put(ostream& s) const {
 			s << tps
 			   << ' ' << tpsLow
@@ -84,6 +88,7 @@ class ColoredLitPerf: public Test {
 		OneResult imTri;	// immediate-mode independent triangles
 		OneResult dlTri;	// display-listed independent triangles
 		OneResult daTri;	// DrawArrays independent triangles
+		OneResult ldaTri;	// Locked DrawArrays independent tris
 
 		virtual void put(ostream& s) const;
 		virtual bool get(istream& s);

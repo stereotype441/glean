@@ -125,6 +125,7 @@ logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 	logStats1("Immediate-mode independent triangle", r.imTri, env);
 	logStats1("Display-listed independent triangle", r.dlTri, env);
 	logStats1("DrawArrays independent triangle", r.daTri, env);
+	logStats1("Locked DrawArrays independent triangle", r.ldaTri, env);
 } // logStats
 
 void
@@ -309,6 +310,15 @@ ColoredLitPerf::compare(Environment& environment) {
 
 void
 ColoredLitPerf::runOne(Result& r, Window& w) {
+	PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
+	PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
+	if (GLUtils::haveExtension("GL_EXT_compiled_vertex_array")) {
+		glLockArraysEXT = reinterpret_cast<PFNGLLOCKARRAYSEXTPROC>
+			(GLUtils::getProcAddress("glLockArraysEXT"));
+		glUnlockArraysEXT = reinterpret_cast<PFNGLUNLOCKARRAYSEXTPROC>
+			(GLUtils::getProcAddress("glUnlockArraysEXT"));
+	}
+
 	Image imTriImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
 	Image testImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
 	Image::Registration imageReg;
@@ -458,15 +468,12 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	// Read back the image, verify that every triangle was drawn:
 	imTriImage.read(0, 0);
-	if (colorGen.allPresent(imTriImage, 0, lastID))
-		r.imTri.imageOK = true;
-	else {
+	if (!colorGen.allPresent(imTriImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tImmediate-mode independent triangle rendering is missing\n"
 			<< "\t\tsome triangles.\n";
 		r.imTri.imageOK = false;
 	}
-	r.imTri.imageMatch = true;	// This is the baseline image
 
 	////////////////////////////////////////////////////////////
 	// Display-listed independent triangles
@@ -497,9 +504,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// Verify that the image is the same as that produced by
 	// rendering independent triangles:
 	testImage.read(0, 0);
-	if (colorGen.allPresent(testImage, 0, lastID))
-		r.dlTri.imageOK = true;
-	else {
+	if (!colorGen.allPresent(testImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tDisplay-listed independent triangle rendering is missing\n"
 			<< "\t\tsome triangles.\n";
@@ -514,8 +519,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 			<< "\t\tyielded different image than immediate-mode\n"
 			<< "\t\tindependent triangle rendering.\n";
 		r.dlTri.imageMatch = false;
-	} else
-		r.dlTri.imageMatch = true;
+	}
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on independent triangles
@@ -551,9 +555,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// Verify that the image is the same as that produced by
 	// rendering independent triangles:
 	testImage.read(0, 0);
-	if (colorGen.allPresent(testImage, 0, lastID))
-		r.daTri.imageOK = true;
-	else {
+	if (!colorGen.allPresent(testImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tDrawArrays independent triangle rendering is missing\n"
 			<< "\t\tsome triangles.\n";
@@ -568,8 +570,60 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 			<< "\t\tyielded different image than immediate-mode\n"
 			<< "\t\tindependent triangle rendering.\n";
 		r.daTri.imageMatch = false;
-	} else
-		r.daTri.imageMatch = true;
+	}
+
+	////////////////////////////////////////////////////////////
+	// Locked DrawArrays on independent triangles
+	//	XXX This is probably unrealistically favorable to
+	//	locked arrays.
+	////////////////////////////////////////////////////////////
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	w.swap();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (glLockArraysEXT)
+		glLockArraysEXT(0, nVertices);
+
+	measurements.resize(0);
+	for (int i3 = 0; i3 < 5; ++i3) {
+		env->quiesce();
+		double t = time.time(static_cast<TIME_FUNC>(glFinish),
+			static_cast<TIME_FUNC>(coloredLit_daIndTri),
+			static_cast<TIME_FUNC>(glFinish));
+		w.swap();
+		measurements.push_back(nTris / t);
+	}
+
+	if (glUnlockArraysEXT)
+		glUnlockArraysEXT();
+
+	if (glLockArraysEXT) {
+		sort(measurements.begin(), measurements.end());
+		r.ldaTri.tps = (measurements[1]+measurements[2]+measurements[3])
+			/ 3.0;
+		r.ldaTri.tpsLow = measurements[1];
+		r.ldaTri.tpsHigh = measurements[3];
+	}
+
+	// Verify that the image is the same as that produced by
+	// rendering independent triangles:
+	testImage.read(0, 0);
+	if (!colorGen.allPresent(testImage, 0, lastID)) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tLocked DrawArrays independent triangle rendering is\n"
+			<< "\t\tmissing some triangles.\n";
+		r.ldaTri.imageOK = false;
+	}
+	imageReg = testImage.reg(imTriImage);
+	if (imageReg.stats[0].max()
+	    + imageReg.stats[1].max()
+	    + imageReg.stats[2].max() != 0.0) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tLocked DrawArrays independent triangle rendering\n"
+			<< "\t\tyielded different image than immediate-mode\n"
+			<< "\t\tindependent triangle rendering.\n";
+		r.ldaTri.imageMatch = false;
+	}
 
 	delete[] c4ub_n3f_v3f;
 
@@ -594,6 +648,8 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 		env, "display-listed independent triangle");
 	doComparison(oldR.daTri, newR.daTri, newR.config, same, name,
 		env, "DrawArrays independent triangle");
+	doComparison(oldR.ldaTri, newR.ldaTri, newR.config, same, name,
+		env, "Locked DrawArrays independent triangle");
 
 	if (same && env->options.verbosity) {
 		env->log << name << ":  SAME "
@@ -633,6 +689,7 @@ ColoredLitPerf::Result::put(ostream& s) const {
 	imTri.put(s);
 	dlTri.put(s);
 	daTri.put(s);
+	ldaTri.put(s);
 } // ColoredLitPerf::Result::put
 
 bool
@@ -645,6 +702,7 @@ ColoredLitPerf::Result::get(istream& s) {
 	imTri.get(s);
 	dlTri.get(s);
 	daTri.get(s);
+	ldaTri.get(s);
 	return s.good();
 } // ColoredLitPerf::Result::get
 
