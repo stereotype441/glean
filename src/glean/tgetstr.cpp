@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,28 +26,10 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tgetstr.cpp:  implementation of OpenGL glGetString() tests
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "lex.h"
-#include "glutils.h"
 #include "tgetstr.h"
-#include "misc.h"
+#include <algorithm>
 
 #ifdef __WIN__
 using namespace std;
@@ -56,144 +38,37 @@ using namespace std;
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-GetStringTest::GetStringTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // GetStringTest::GetStringTest()
-
-GetStringTest::~GetStringTest() {
-} // GetStringTest::~GetStringTest
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-GetStringTest::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, 258, 258);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-GetStringTest::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-GetStringTest::runOne(Result& r) {
+GetStringTest::runOne(GetStringResult& r, Window&) {
 	r.vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 	r.renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	r.version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 	r.extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-	env->log << name << ":  PASS " << r.config->conciseDescription()<<'\n';
+	r.pass = true;
+} // GetStringTest::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+GetStringTest::logOne(GetStringResult& r) {
+	logPassFail(r);
+	logConcise(r);
 	if (env->options.verbosity) {
 		env->log << "\tvendor:     " << r.vendor << '\n';
 		env->log << "\trenderer:   " << r.renderer << '\n';
 		env->log << "\tversion:    " << r.version << '\n';
 		env->log << "\textensions: " << r.extensions << '\n';
 	}
-} // GetStringTest::runOne
+} // GetStringTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-GetStringTest::compareOne(Result& oldR, Result& newR) {
+GetStringTest::compareOne(GetStringResult& oldR, GetStringResult& newR) {
 	if (oldR.vendor == newR.vendor && oldR.renderer == newR.renderer
 	 && oldR.version == newR.version && oldR.extensions == newR.extensions){
 		if (env->options.verbosity)
@@ -281,60 +156,6 @@ GetStringTest::compareOne(Result& oldR, Result& newR) {
 		}
 	}
 } // GetStringTest::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-GetStringTest::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // GetStringTest::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-GetStringTest::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n'
-		<< vendor << '\n'
-		<< renderer << '\n'
-		<< version << '\n'
-		<< extensions << '\n';
-} // GetStringTest::Result::put
-
-bool
-GetStringTest::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	getline(s, vendor);
-	getline(s, renderer);
-	getline(s, version);
-	getline(s, extensions);
-	return s.good();
-} // GetStringTest::Result::get
-
-vector<GetStringTest::Result*>
-GetStringTest::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // GetStringTest::getResults
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

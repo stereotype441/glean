@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -36,8 +36,6 @@
 
 #include "tbasic.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-
 namespace GLEAN {
 
 #define MAX_TEX_UNITS 4
@@ -45,9 +43,13 @@ namespace GLEAN {
 class TexCombineTest: public BasicTest {
     public:
 	TexCombineTest(const char* testName, const char* filter,
-		const char* description);
+		       const char* description):
+	    BasicTest(testName, filter, "GL_EXT_texture_env_combine",
+		      description) {
+	}
 
-	virtual void runOne(Result& r);
+	virtual void runOne(BasicResult& r, Window& w);
+	virtual void logOne(BasicResult& r);
 
     private:
 	// Our model of GL machine state
@@ -93,7 +95,7 @@ class TexCombineTest: public BasicTest {
 		const GLfloat prevColor[4], GLfloat result[4]) const;
 	void PrintMachineState(const glmachine &machine) const;
 	void ReportFailure(const glmachine &machine, const GLfloat expected[4],
-		const GLfloat rendered[4], Result &r);
+		const GLfloat rendered[4], BasicResult &r);
 	void TexEnv(glmachine &machine, int texUnit, GLenum target,
 		GLenum value);
 	void SetupTestEnv(glmachine &machine, int texUnit, int testNum,
@@ -101,9 +103,9 @@ class TexCombineTest: public BasicTest {
 	void SetupColors(struct glmachine &machine);
 	int CountTestCombinations(const test_param testParams[]) const;
 	bool RunSingleTextureTest(glmachine &machine,
-		const test_param testParams[], Result &r);
+		const test_param testParams[], BasicResult &r);
         int CountMultiTextureTestCombinations(const glmachine &machine) const;
-	bool RunMultiTextureTest(glmachine &machine, Result &r);
+	bool RunMultiTextureTest(glmachine &machine, BasicResult &r);
 
 	PFNGLACTIVETEXTUREARBPROC p_glActiveTextureARB;
 	PFNGLMULTITEXCOORD2FARBPROC p_glMultiTexCoord2fARB;

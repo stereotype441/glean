@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -56,18 +56,17 @@
 #ifndef __tpgos_h__
 #define __tpgos_h__
 
-#include "test.h"
-
-class DrawingSurfaceConfig;		// Forward reference.
+#include "tbase.h"
 
 namespace GLEAN {
 
-// Auxiliary struct for holding a glPolygonOffset result
-struct POResult {
-	static const int maxtests = 100;
-	int              testcount;
+#define WIN_SIZE 100
 
-	struct {
+// Auxiliary struct for holding a glPolygonOffset result
+class POResult: public BaseResult {
+public:
+	bool pass; // not logged to file
+	struct PartialResult {
 		float factor;
 		float units;
 		float near;
@@ -76,111 +75,62 @@ struct POResult {
 		float punchthrough_translation;
 		bool  badEdge;
 		bool  badMiddle;
-	} data[maxtests];
+	};
+	vector<PartialResult> data;
 	
-	POResult() {
-		testcount = 0;
-		for (int i = 0; i < maxtests; i++) {
-			data[i].factor                   = 0.0;
-			data[i].units                    = 0.0;
-			data[i].near                     = 0.0;
-			data[i].far                      = 0.0;
-			data[i].punchthrough             = false;
-			data[i].punchthrough_translation = 0.0;
-			data[i].badEdge                  = false;
-			data[i].badMiddle                = false;
-		}
+	void putresults(ostream& s) const {
+		s << data.size() << '\n';
+		for (vector<PartialResult>::const_iterator p = data.begin();
+		     p != data.end(); ++p)
+			s << ' ' << p->factor
+			  << ' ' << p->units
+			  << ' ' << p->near
+			  << ' ' << p->far
+			  << ' ' << p->punchthrough
+			  << ' ' << p->punchthrough_translation
+			  << ' ' << p->badEdge
+			  << ' ' << p->badMiddle
+			  << '\n';
 	}
 	
-	void put(ostream& s) const {
-		s << testcount;
-		for (int i = 0; i < testcount; i++) {
-			s << ' ' << data[i].factor
-			  << ' ' << data[i].units
-			  << ' ' << data[i].near
-			  << ' ' << data[i].far
-			  << ' ' << data[i].punchthrough
-			  << ' ' << data[i].punchthrough_translation
-			  << ' ' << data[i].badEdge
-			  << ' ' << data[i].badMiddle;
+	bool getresults(istream& s) {
+		int n;
+		s >> n;
+		for (int i = 0; i < n; ++i) {
+			PartialResult p;
+			s >> p.factor
+			  >> p.units
+			  >> p.near
+			  >> p.far
+			  >> p.punchthrough
+			  >> p.punchthrough_translation
+			  >> p.badEdge
+			  >> p.badMiddle;
+			data.push_back(p);
 		}
-		s << '\n';
-	}
-	
-	void get(istream& s) {
-		s >> testcount;
-		for (int i = 0; i < testcount; i++) {
-			s >> data[i].factor
-			  >> data[i].units
-			  >> data[i].near
-			  >> data[i].far
-			  >> data[i].punchthrough
-			  >> data[i].punchthrough_translation
-			  >> data[i].badEdge
-			  >> data[i].badMiddle;
-		}
+		return s.good();
 	}
 
 	void addtest(float factor, float units, float near, float far,
 		     bool punchthrough, float punchthrough_translation,
 		     bool badEdge, bool badMiddle) {
-		if (testcount + 1 >= maxtests) return; /* ERROR! */
-		data[testcount].factor       = factor;
-		data[testcount].units        = units;
-		data[testcount].near         = near;
-		data[testcount].far          = far;
-		data[testcount].punchthrough = punchthrough;
-		data[testcount].punchthrough_translation
-			= punchthrough_translation;
-		data[testcount].badEdge      = badEdge;
-		data[testcount].badMiddle    = badMiddle;
-		++testcount;
+		PartialResult p;
+		p.factor                   = factor;
+		p.units                    = units;
+		p.near                     = near;
+		p.far                      = far;
+		p.punchthrough             = punchthrough;
+		p.punchthrough_translation = punchthrough_translation;
+		p.badEdge                  = badEdge;
+		p.badMiddle                = badMiddle;
+		data.push_back(p);
 	}
 };
 
 
-class PgosTest: public Test {
+class PgosTest: public BaseTest<POResult> {
 public:
-	PgosTest(const char* testName, const char* filter,
-		 const char* description);
-	PgosTest(const char* testName, const char* filter,
-		 const char* extensions, const char* description);
-	virtual ~PgosTest();
-	
-	const char* filter;	// Drawing surface configuration filter.
-	const char* extensions;	// Required extensions.
-	const char* description; // Verbose description of test.
-
-	virtual void run(Environment& env);	// Run test, save results.
-	
-	virtual void compare(Environment& env); // Compare two previous runs.
-
-	// Class for a single test result.  All pgos tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	public:
-		DrawingSurfaceConfig* config;
-		bool pass;
-
-		POResult po;
-		
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-		
-		Result() { }
-		virtual ~Result() { }
-	};
-	
-	vector<Result*> results;
-	
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-	
-	void logDescription();
-	void logStats(Result& r, GLEAN::Environment* env);
-	
+	GLEAN_CLASS_WH(PgosTest, POResult, WIN_SIZE, WIN_SIZE);
 }; // class PgosTest
 
 } // namespace GLEAN

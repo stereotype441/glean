@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
 // 
@@ -205,7 +205,7 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
     if (drawMethod == GLVERTEX_MODE)
     {
         glBegin(mode);
-        for (int x=0; x<indicesCount; x++)
+        for (unsigned int x=0; x<indicesCount; x++)
         {
             int directIndex = getIndex(x);
             if (parameterBits & COLOR_BIT) sendColor(directIndex);
@@ -258,7 +258,7 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         if (drawMethod == GLARRAYELEMENT_MODE)
         {
             glBegin(mode);
-            for (int x=0; x<indicesCount; x++)
+            for (unsigned int x=0; x<indicesCount; x++)
             {
                 glArrayElement(getIndex(x));
             }

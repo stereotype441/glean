@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,17 +26,22 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tchgperf.cpp:  Some basic tests of attribute-change performance.
+
+#include "tchgperf.h"
+#include <algorithm>
+#include "rand.h"
+#include "image.h"
+#include "timer.h"
+#include "geomutil.h"
+
+#if 0
 #ifdef __UNIX__
 #include <unistd.h>
 #endif
 
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 #include "dsconfig.h"
 #include "dsfilt.h"
 #include "dsurf.h"
@@ -44,17 +49,13 @@
 #include "environ.h"
 #include "rc.h"
 #include "glutils.h"
-#include "geomutil.h"
 #include "timer.h"
-#include "rand.h"
-#include "image.h"
 #include "tchgperf.h"
 #include "misc.h"
-
+#endif
 
 namespace {
 
-const int drawingSize = 128;	// must be power-of-2, 128 or greater
 GLEAN::Image redImage(64, 64, GL_RGB, GL_UNSIGNED_BYTE, 1.0, 0.0, 0.0, 0.0);
 GLuint redTex;
 GLEAN::Image greenImage(64, 64, GL_RGB, GL_UNSIGNED_BYTE, 0.0, 1.0, 0.0, 0.0);
@@ -139,10 +140,22 @@ bindDraw() {
 			v0 += 2;
 		}
 	}
-} // noBindDraw
+} // BindDraw
+
+class BindDrawTimer: public GLEAN::Timer {
+	virtual void op()     { bindDraw(); }
+	virtual void preop()  { glFinish(); }
+	virtual void postop() { glFinish(); }
+};
+
+class NoBindDrawTimer: public GLEAN::Timer {
+	virtual void op()     { noBindDraw(); }
+	virtual void preop()  { glFinish();   }
+	virtual void postop() { glFinish();   }
+};
 
 void
-logStats(GLEAN::TexBindPerf::Result& r, GLEAN::Environment* env) {
+logStats(GLEAN::TexBindPerfResult& r, GLEAN::Environment* env) {
 	env->log << "\tApproximate texture binding time = " << r.bindTime
 		<< " microseconds.\n\tRange of valid measurements = ["
 		<< r.lowerBound << ", " << r.upperBound << "]\n";
@@ -153,130 +166,11 @@ logStats(GLEAN::TexBindPerf::Result& r, GLEAN::Environment* env) {
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-TexBindPerf::TexBindPerf(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // TexBindPerf::TexBindPerf()
-
-TexBindPerf::~TexBindPerf() {
-} // TexBindPerf::~TexBindPerf
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-TexBindPerf::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, drawingSize + 2, drawingSize + 2);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-TexBindPerf::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-TexBindPerf::runOne(Result& r, Window& w) {
-	Timer time;
-	time.calibrate((Timer::FUNCPTR) glFinish, (Timer::FUNCPTR) glFinish);
-
+TexBindPerf::runOne(TexBindPerfResult& r, Window& w) {
 	glGenTextures(1, &redTex);
 	glBindTexture(GL_TEXTURE_2D, redTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -316,16 +210,20 @@ TexBindPerf::runOne(Result& r, Window& w) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	BindDrawTimer   bindDrawTimer;
+	NoBindDrawTimer noBindDrawTimer;
+
+	bindDrawTimer.calibrate();
+	noBindDrawTimer.calibrate();
+
 	vector<float> measurements;
 	for (int i = 0; i < 5; ++i) {
 		env->quiesce();
-		double tBind = time.time((Timer::FUNCPTR)glFinish,
-		    (Timer::FUNCPTR) bindDraw, (Timer::FUNCPTR) glFinish);
+		double tBind = bindDrawTimer.time();
 		w.swap();	// So the user can see something happening.
 
 		env->quiesce();
-		double tNoBind = time.time((Timer::FUNCPTR) glFinish,
-		    (Timer::FUNCPTR) noBindDraw, (Timer::FUNCPTR) glFinish);
+		double tNoBind = noBindDrawTimer.time();
 		w.swap();
 
 		double bindTime = 1E6 * (tBind - tNoBind) / nTris;
@@ -347,17 +245,24 @@ TexBindPerf::runOne(Result& r, Window& w) {
 	r.bindTime = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
 	r.lowerBound = measurements[1];
 	r.upperBound = measurements[3];
-
-	env->log << name << ":  PASS "
-		<< r.config->conciseDescription() << '\n';
-	logStats(r, env);
+	r.pass = true;
 } // TexBindPerf::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+TexBindPerf::logOne(TexBindPerfResult& r) {
+	logPassFail(r);
+	logConcise(r);
+	logStats(r, env);
+} // TexBindPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-TexBindPerf::compareOne(Result& oldR, Result& newR) {
+TexBindPerf::compareOne(TexBindPerfResult& oldR, TexBindPerfResult& newR) {
 	if (newR.bindTime < oldR.lowerBound) {
 		int percent = static_cast<int>(
 			100.0 * (oldR.bindTime - newR.bindTime) / newR.bindTime
@@ -392,56 +297,6 @@ TexBindPerf::compareOne(Result& oldR, Result& newR) {
 		logStats(newR, env);
 	}
 } // TexBindPerf::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-TexBindPerf::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // TexBindPerf::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-TexBindPerf::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-
-	s << bindTime << ' ' << lowerBound << ' ' << upperBound << '\n';
-} // TexBindPerf::Result::put
-
-bool
-TexBindPerf::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-
-	s >> bindTime >> lowerBound >> upperBound;
-	return s.good();
-} // TexBindPerf::Result::get
-
-vector<TexBindPerf::Result*>
-TexBindPerf::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // TexBindPerf::getResults
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

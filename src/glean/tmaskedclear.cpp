@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,51 +26,17 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tmaskedclear.cpp:  Test color/index masking with glClear.
 
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cmath>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
-#include "geomutil.h"
-#include "rand.h"
-#include "stats.h"
-#include "image.h"
 #include "tmaskedclear.h"
-#include "misc.h"
-
+#include "rand.h"
+#include "image.h"
 
 namespace GLEAN {
 
-///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-MaskedClearTest::MaskedClearTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	BasicTest(aName, aFilter, aDescription) {
-} // MaskedClearTest::MaskedClearTest()
-
-MaskedClearTest::~MaskedClearTest() {
-} // MaskedClearTest::~MaskedClearTest
-
-
-
 void
-MaskedClearTest::failRGB(Result &r, GLint chan, GLfloat expected, GLfloat actual, GLint buffer)
+MaskedClearTest::failRGB(BasicResult &r, GLint chan, GLfloat expected,
+			 GLfloat actual, GLint buffer)
 {
 	static const char *chanNames[] = { "Red", "Green", "Blue", "Alpha" };
 	static const char *bufferNames[] = { "GL_FRONT", "GL_BACK" };
@@ -89,7 +55,8 @@ MaskedClearTest::failRGB(Result &r, GLint chan, GLfloat expected, GLfloat actual
 }
 
 void
-MaskedClearTest::failCI(Result& r, GLuint expected, GLuint actual, GLint buffer)
+MaskedClearTest::failCI(BasicResult& r, GLuint expected, GLuint actual,
+			GLint buffer)
 {
 	static const char *bufferNames[] = { "GL_FRONT", "GL_BACK" };
 	GLint mask;
@@ -103,7 +70,7 @@ MaskedClearTest::failCI(Result& r, GLuint expected, GLuint actual, GLint buffer)
 }
 
 void
-MaskedClearTest::failZ(Result& r, GLfloat expected, GLfloat actual)
+MaskedClearTest::failZ(BasicResult& r, GLfloat expected, GLfloat actual)
 {
 	GLboolean mask;
 	glGetBooleanv(GL_DEPTH_WRITEMASK, &mask);
@@ -116,7 +83,7 @@ MaskedClearTest::failZ(Result& r, GLfloat expected, GLfloat actual)
 }
 
 void
-MaskedClearTest::failStencil(Result& r, GLuint expected, GLuint actual)
+MaskedClearTest::failStencil(BasicResult& r, GLuint expected, GLuint actual)
 {
 	GLint mask;
 	glGetIntegerv(GL_STENCIL_WRITEMASK, &mask);
@@ -131,7 +98,7 @@ MaskedClearTest::failStencil(Result& r, GLuint expected, GLuint actual)
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-MaskedClearTest::runOne(Result& r) {
+MaskedClearTest::runOne(BasicResult& r, Window&) {
 
 	bool passed = true;
 
@@ -273,20 +240,25 @@ MaskedClearTest::runOne(Result& r) {
 			}
 		}
 	}
+	r.pass = passed;
+} // MaskedClearTest::runOne
 
-	if (passed) {
-		r.pass = true;
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+MaskedClearTest::logOne(BasicResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
 	}
-}
-
+} // MaskedClearTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
 MaskedClearTest maskedClearTest("maskedClear", "window",
-
 	"This test checks that glClear works correctly with glColorMask,\n"
 	"glIndexMask, glDepthMask and glStencilMask.\n");
 

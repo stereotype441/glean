@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -27,8 +27,6 @@
 // END_COPYRIGHT
 
 
-
-
 // tgetstr.h:  Check OpenGL vendor, renderer, version, and extension strings
 
 // See tbasic.cpp for the basic test structure.
@@ -37,49 +35,39 @@
 #ifndef __tgetstr_h__
 #define __tgetstr_h__
 
-#include "test.h"
+#include "tbase.h"
 
 class DrawingSurfaceConfig;		// Forward reference.
 
 namespace GLEAN {
 
-class GetStringTest: public Test {
-    public:
-	GetStringTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~GetStringTest();
+class GetStringResult: public BaseResult {
+public:
+	bool pass;
+	string vendor;
+	string renderer;
+	string version;
+	string extensions;
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+	void putresults(ostream& s) const {
+		s << vendor << '\n';
+		s << renderer << '\n';
+		s << version << '\n';
+		s << extensions << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		getline(s, vendor);
+		getline(s, renderer);
+		getline(s, version);
+		getline(s, extensions);
+		return s.good();
+	}
+};
 
-	virtual void run(Environment& env);	// Run test, save results.
-
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-		string vendor;
-		string renderer;
-		string version;
-		string extensions;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-
+class GetStringTest: public BaseTest<GetStringResult> {
+public:
+	GLEAN_CLASS(GetStringTest, GetStringResult);
 }; // class GetStringTest
 
 } // namespace GLEAN

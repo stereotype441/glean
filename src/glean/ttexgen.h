@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -37,25 +37,28 @@
 #include "tbasic.h"
 #include "geomrend.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-
 namespace GLEAN {
 
 class TexgenTest: public BasicTest {
-    public:
+public:
 	TexgenTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~TexgenTest();
-
-	virtual void runOne(Result& r);
-
-    private:
-	void FailMessage(Result &r, const std::string& texgenMode, GeomRenderer::DrawMethod, 
-                     bool arraysCompiled, int retainedMode, const std::string& colorMismatch) const;
-    void renderSphere(int retainedMode, GeomRenderer& sphereRenderer);
-	bool compareColors(GLfloat* color0, GLfloat* color1, std::string& failureInfo) const;
-    bool verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, 
-                        GLfloat* upperRightColor, std::string& failureInfo) const;
+		   const char* description):
+		BasicTest(testName, filter, description) {
+	}
+	virtual void runOne(BasicResult& r, Window& w);
+	virtual void logOne(BasicResult& r);
+	
+private:
+	void FailMessage(BasicResult &r, const std::string& texgenMode,
+			 GeomRenderer::DrawMethod, 
+			 bool arraysCompiled, int retainedMode,
+			 const std::string& colorMismatch) const;
+	void renderSphere(int retainedMode, GeomRenderer& sphereRenderer);
+	bool compareColors(GLfloat* color0, GLfloat* color1,
+			   std::string& failureInfo) const;
+	bool verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, 
+			    GLfloat* upperRightColor,
+			    std::string& failureInfo) const;
 
 }; // class TexgenTest
 

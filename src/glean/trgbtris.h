@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,58 +26,36 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // trgbtris.h:  example image-based test to show use of TIFF images
 
 #ifndef __trgbtris_h__
 #define __trgbtris_h__
 
-#include "test.h"
-
-class DrawingSurfaceConfig;		// Forward reference.
-class GLEAN::Window;
+#include "tbase.h"
 
 namespace GLEAN {
 
-class RGBTriStripTest: public Test {
-    public:
-	RGBTriStripTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~RGBTriStripTest();
+#define drawingSize 64
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+class RGBTriStripResult: public BaseResult {
+public:
+	bool pass;
+	int  imageNumber;
 
-	virtual void run(Environment& env);	// Run test, save results.
+	void putresults(ostream& s) const {
+		s << imageNumber << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		s >> imageNumber;
+		return s.good();
+	}
+};
 
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-		int imageNumber;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-
+class RGBTriStripTest: public BaseTest<RGBTriStripResult> {
+public:
+	GLEAN_CLASS_WH(RGBTriStripTest, RGBTriStripResult,
+		       drawingSize, drawingSize);
 }; // class RGBTriStripTest
 
 } // namespace GLEAN

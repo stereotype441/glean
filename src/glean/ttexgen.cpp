@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -52,47 +52,21 @@
 //
 // Author: Brian Sharp (brian@maniacal.org) December 2000
 
-
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cmath>
-#include <stdlib.h>
-#include <stdio.h>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
 #include "ttexgen.h"
-#include "misc.h"
+#include <stdio.h>
 #include "geomutil.h"
+
 
 const GLuint viewSize=50;
 
 
 namespace GLEAN {
 
-///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-TexgenTest::TexgenTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	BasicTest(aName, aFilter, aDescription) {
-} // TexgenTest::TexgenTest()
-
-TexgenTest::~TexgenTest() {
-} // TexgenTest::~TexgenTest
-
 void
-TexgenTest::FailMessage(Result &r, const std::string& texgenMode, GeomRenderer::DrawMethod method,
-                        bool arraysCompiled, int retainedMode, const std::string& colorMismatch) const {
+TexgenTest::FailMessage(BasicResult &r, const std::string& texgenMode,
+			GeomRenderer::DrawMethod method, bool arraysCompiled,
+			int retainedMode,
+			const std::string& colorMismatch) const {
 	env->log << name << ":  FAIL "
              << r.config->conciseDescription() << '\n';
 	env->log << "\t" << "during mode " << texgenMode << ", ";
@@ -193,7 +167,7 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-TexgenTest::runOne(Result& r) {
+TexgenTest::runOne(BasicResult& r, Window&) {
     
     // Temporary buffer to store pixels we've read back for verification.
     GLfloat pixels[50*50*3];
@@ -349,11 +323,19 @@ TexgenTest::runOne(Result& r) {
 
 	// success
 	r.pass = true;
-	env->log << name << ":  PASS "
-             << r.config->conciseDescription() << '\n';
-	glDeleteTextures(1, &checkerTextureHandle);
-}
-    
+} // TexgenTest::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+TexgenTest::logOne(BasicResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	}
+} // TexgenTest::logOne
+
 void
 TexgenTest::renderSphere(int retainedMode, GeomRenderer& sphereRenderer)
 {
@@ -368,7 +350,7 @@ TexgenTest::renderSphere(int retainedMode, GeomRenderer& sphereRenderer)
     {
         assert(sphereRenderer.renderPrimitives(GL_TRIANGLES)); 
     }
-}
+} // TexgenTest::renderSphere
     
     
 ///////////////////////////////////////////////////////////////////////////////

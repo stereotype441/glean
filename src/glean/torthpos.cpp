@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -26,9 +26,6 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // torthopos.cpp:  Test positioning of primitives in orthographic projection.
 // Some applications use OpenGL extensively for 2D rendering:  portable
 // GUI toolkits, heads-up display generators, etc.  These apps require
@@ -37,6 +34,12 @@
 // see the OpenGL Programming Guide (the Red Book).  In the second edition,
 // see the OpenGL Correctness Tips on page 601.
 
+#include "torthpos.h"
+#include "image.h"
+#include "rand.h"
+#include "geomutil.h"
+
+#if 0
 #ifdef __UNIX__
 #include <unistd.h>
 #endif
@@ -51,17 +54,12 @@
 #include "environ.h"
 #include "rc.h"
 #include "glutils.h"
-#include "geomutil.h"
-#include "rand.h"
-#include "image.h"
 #include "torthpos.h"
 #include "misc.h"
+#endif
 
 
 namespace {
-
-const int drawingSize = 256;
-const int windowSize = drawingSize + 2;	// one-pixel border on all sides
 
 void
 logStats1(const char* title, GLEAN::OPResult& r,
@@ -327,127 +325,10 @@ subdivideRects(int minX, int maxX, int minY, int maxY,
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosPoints::OrthoPosPoints(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosPoints::OrthoPosPoints()
-
-OrthoPosPoints::~OrthoPosPoints() {
-} // OrthoPosPoints::~OrthoPosPoints
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosPoints::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosPoints::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
-
 void
-OrthoPosPoints::runOne(Result& r, Window& w) {
+OrthoPosPoints::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -500,98 +381,52 @@ OrthoPosPoints::runOne(Result& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r.im, env, "Immediate-mode points");
-
-	// XXX It's a bit of overkill to have all this mechanism for just
-	// one simple test... but at least it provides all the framework
-	// you'd need if you wanted to specify the vertex data in
-	// different ways.
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	verify(w, passed, name, r.config, r, env, "Immediate-mode points");
+	r.pass = passed;
 } // OrthoPosPoints::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosPoints::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosPoints::logOne
+
+void
+OrthoPosPoints::logStats(OPResult& r) {
+	logStats1("Immediate-mode points", r, env);
+} // OrthoPosPoints::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosPoints::compareOne(Result& oldR, Result& newR) {
+OrthoPosPoints::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
-		env, "immediate-mode points");
+	doComparison(oldR, newR, newR.config, same, name,
+		     env, "immediate-mode points");
 
 	if (same && env->options.verbosity) {
 		env->log << name << ":  SAME "
-			<< newR.config->conciseDescription()
-			<< "\n";
+			 << newR.config->conciseDescription()
+			 << "\n";
 	}
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosPoints::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosPoints::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosPoints::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosPoints::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosPoints::Result::put
-
-bool
-OrthoPosPoints::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosPoints::Result::get
-
-vector<OrthoPosPoints::Result*>
-OrthoPosPoints::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosPoints::getResults
-
-void
-OrthoPosPoints::logStats(OrthoPosPoints::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode points", r.im, env);
-} // OrthoPosPoints::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -624,127 +459,11 @@ OrthoPosPoints orthoPosPointsTest("orthoPosPoints",
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosVLines::OrthoPosVLines(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosVLines::OrthoPosVLines()
-
-OrthoPosVLines::~OrthoPosVLines() {
-} // OrthoPosVLines::~OrthoPosVLines
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosVLines::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosVLines::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-OrthoPosVLines::runOne(Result& r, Window& w) {
+OrthoPosVLines::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -803,25 +522,38 @@ OrthoPosVLines::runOne(Result& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r.im, env,
+	verify(w, passed, name, r.config, r, env,
 		"Immediate-mode vertical lines");
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	r.pass = passed;
 } // OrthoPosVLines::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosVLines::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosVLines::logOne
+
+void
+OrthoPosVLines::logStats(OPResult& r) {
+	logStats1("Immediate-mode vertical lines", r, env);
+} // OrthoPosVLines::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosVLines::compareOne(Result& oldR, Result& newR) {
+OrthoPosVLines::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
+	doComparison(oldR, newR, newR.config, same, name,
 		env, "immediate-mode vertical lines");
 
 	if (same && env->options.verbosity) {
@@ -832,65 +564,11 @@ OrthoPosVLines::compareOne(Result& oldR, Result& newR) {
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosVLines::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosVLines::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosVLines::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosVLines::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosVLines::Result::put
-
-bool
-OrthoPosVLines::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosVLines::Result::get
-
-vector<OrthoPosVLines::Result*>
-OrthoPosVLines::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosVLines::getResults
-
-void
-OrthoPosVLines::logStats(OrthoPosVLines::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode vertical lines", r.im, env);
-} // OrthoPosVLines::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -931,127 +609,11 @@ OrthoPosVLines orthoPosVLinesTest("orthoPosVLines",
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosHLines::OrthoPosHLines(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosHLines::OrthoPosHLines()
-
-OrthoPosHLines::~OrthoPosHLines() {
-} // OrthoPosHLines::~OrthoPosHLines
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosHLines::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosHLines::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-OrthoPosHLines::runOne(Result& r, Window& w) {
+OrthoPosHLines::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -1105,25 +667,38 @@ OrthoPosHLines::runOne(Result& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r.im, env,
-		"Immediate-mode horizontal lines");
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode horizontal lines");
+	r.pass = passed;
 } // OrthoPosHLines::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosHLines::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosHLines::logOne
+
+void
+OrthoPosHLines::logStats(OPResult& r) {
+	logStats1("Immediate-mode horizontal lines", r, env);
+} // OrthoPosHLines::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosHLines::compareOne(Result& oldR, Result& newR) {
+OrthoPosHLines::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
+	doComparison(oldR, newR, newR.config, same, name,
 		env, "immediate-mode horizontal lines");
 
 	if (same && env->options.verbosity) {
@@ -1134,65 +709,11 @@ OrthoPosHLines::compareOne(Result& oldR, Result& newR) {
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosHLines::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosHLines::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosHLines::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosHLines::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosHLines::Result::put
-
-bool
-OrthoPosHLines::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosHLines::Result::get
-
-vector<OrthoPosHLines::Result*>
-OrthoPosHLines::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosHLines::getResults
-
-void
-OrthoPosHLines::logStats(OrthoPosHLines::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode horizontal lines", r.im, env);
-} // OrthoPosHLines::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -1233,127 +754,11 @@ OrthoPosHLines orthoPosHLinesTest("orthoPosHLines",
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosTinyQuads::OrthoPosTinyQuads(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosTinyQuads::OrthoPosTinyQuads()
-
-OrthoPosTinyQuads::~OrthoPosTinyQuads() {
-} // OrthoPosTinyQuads::~OrthoPosTinyQuads
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosTinyQuads::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosTinyQuads::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-OrthoPosTinyQuads::runOne(Result& r, Window& w) {
+OrthoPosTinyQuads::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -1409,25 +814,38 @@ OrthoPosTinyQuads::runOne(Result& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r.im, env,
-		"Immediate-mode 1x1 quads");
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode 1x1 quads");
+	r.pass = passed;
 } // OrthoPosTinyQuads::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosTinyQuads::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosTinyQuads::logOne
+
+void
+OrthoPosTinyQuads::logStats(OPResult& r) {
+	logStats1("Immediate-mode 1x1 quads", r, env);
+} // OrthoPosTinyQuads::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosTinyQuads::compareOne(Result& oldR, Result& newR) {
+OrthoPosTinyQuads::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
+	doComparison(oldR, newR, newR.config, same, name,
 		env, "immediate-mode 1x1 quads");
 
 	if (same && env->options.verbosity) {
@@ -1438,65 +856,11 @@ OrthoPosTinyQuads::compareOne(Result& oldR, Result& newR) {
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosTinyQuads::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosTinyQuads::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosTinyQuads::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosTinyQuads::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosTinyQuads::Result::put
-
-bool
-OrthoPosTinyQuads::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosTinyQuads::Result::get
-
-vector<OrthoPosTinyQuads::Result*>
-OrthoPosTinyQuads::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosTinyQuads::getResults
-
-void
-OrthoPosTinyQuads::logStats(OrthoPosTinyQuads::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode 1x1 quads", r.im, env);
-} // OrthoPosTinyQuads::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -1529,127 +893,11 @@ OrthoPosTinyQuads orthoPosTinyQuadsTest("orthoPosTinyQuads",
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosRandRects::OrthoPosRandRects(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosRandRects::OrthoPosRandRects()
-
-OrthoPosRandRects::~OrthoPosRandRects() {
-} // OrthoPosRandRects::~OrthoPosRandRects
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandRects::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosRandRects::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-OrthoPosRandRects::runOne(Result& r, Window& w) {
+OrthoPosRandRects::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -1693,25 +941,38 @@ OrthoPosRandRects::runOne(Result& r, Window& w) {
 	RandomDouble rand(1618);
 	subdivideRects(1, drawingSize + 1, 1, drawingSize + 1,
 		rand, true, true);
-	verify(w, passed, name, r.config, r.im, env,
-		"Immediate-mode axis-aligned rectangles");
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode axis-aligned rectangles");
+	r.pass = passed;
 } // OrthoPosRandRects::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosRandRects::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosRandRects::logOne
+
+void
+OrthoPosRandRects::logStats(OPResult& r) {
+	logStats1("Immediate-mode axis-aligned rectangles", r, env);
+} // OrthoPosRandRects::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosRandRects::compareOne(Result& oldR, Result& newR) {
+OrthoPosRandRects::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
+	doComparison(oldR, newR, newR.config, same, name,
 		env, "immediate-mode axis-aligned rectangles");
 
 	if (same && env->options.verbosity) {
@@ -1722,65 +983,11 @@ OrthoPosRandRects::compareOne(Result& oldR, Result& newR) {
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosRandRects::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandRects::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosRandRects::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandRects::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosRandRects::Result::put
-
-bool
-OrthoPosRandRects::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosRandRects::Result::get
-
-vector<OrthoPosRandRects::Result*>
-OrthoPosRandRects::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosRandRects::getResults
-
-void
-OrthoPosRandRects::logStats(OrthoPosRandRects::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode axis-aligned rectangles", r.im, env);
-} // OrthoPosRandRects::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -1813,127 +1020,11 @@ OrthoPosRandRects orthoPosRandRectsTest("orthoPosRandRects",
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-OrthoPosRandTris::OrthoPosRandTris(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // OrthoPosRandTris::OrthoPosRandTris()
-
-OrthoPosRandTris::~OrthoPosRandTris() {
-} // OrthoPosRandTris::~OrthoPosRandTris
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandTris::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p != configs.end(); ++p) {
-			Window w(ws, **p, windowSize, windowSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-OrthoPosRandTris::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-OrthoPosRandTris::runOne(Result& r, Window& w) {
+OrthoPosRandTris::runOne(OPResult& r, Window& w) {
 	bool passed = true;
 
 	GLUtils::useScreenCoords(windowSize, windowSize);
@@ -1989,25 +1080,38 @@ OrthoPosRandTris::runOne(Result& r, Window& w) {
 		}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r.im, env,
-		"Immediate-mode triangles");
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode triangles");
+	r.pass = passed;
 } // OrthoPosRandTris::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosRandTris::logOne(OPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosRandTris::logOne
+
+void
+OrthoPosRandTris::logStats(OPResult& r) {
+	logStats1("Immediate-mode triangles", r, env);
+} // OrthoPosRandTris::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-OrthoPosRandTris::compareOne(Result& oldR, Result& newR) {
+OrthoPosRandTris::compareOne(OPResult& oldR, OPResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.im, newR.im, newR.config, same, name,
+	doComparison(oldR, newR, newR.config, same, name,
 		env, "immediate-mode triangles");
 
 	if (same && env->options.verbosity) {
@@ -2018,65 +1122,11 @@ OrthoPosRandTris::compareOne(Result& oldR, Result& newR) {
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logStats(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logStats(newR);
 	}
 } // OrthoPosRandTris::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandTris::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // OrthoPosRandTris::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandTris::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	im.put(s);
-} // OrthoPosRandTris::Result::put
-
-bool
-OrthoPosRandTris::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	im.get(s);
-
-	return s.good();
-} // OrthoPosRandTris::Result::get
-
-vector<OrthoPosRandTris::Result*>
-OrthoPosRandTris::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // OrthoPosRandTris::getResults
-
-void
-OrthoPosRandTris::logStats(OrthoPosRandTris::Result& r, GLEAN::Environment* env) {
-	logStats1("Immediate-mode triangles", r.im, env);
-} // OrthoPosRandTris::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -59,6 +59,17 @@ namespace GLEAN {
 class Environment;		// Mutually-recursive and forward references.
 class DrawingSurfaceConfig;
 
+// Base class for a single test result.  A test may have many results
+// (for example, one per drawing surface configuration), so in general
+// individual tests will have a vector of these objects.
+class Result {
+public:
+	virtual void put(ostream& s) const = 0;
+	virtual bool get(istream& s) = 0;
+	Result() { }
+	virtual ~Result() { }
+};
+
 class Test {
     public:
 	Test(const char* testName);
@@ -78,18 +89,6 @@ class Test {
 
 	virtual void compare(Environment& env) = 0;
 				// Compare two previous runs.
-
-	// Base class for a single test result.  A test may have many results
-	// (for example, one per drawing surface configuration), so in general
-	// individual tests will have a vector of these objects.
-	class Result {
-	    public:
-		virtual void put(ostream& s) const = 0;
-		virtual bool get(istream& s) = 0;
-		Result() { }
-		virtual ~Result() { }
-	};
-
 
 	// Exceptions:
 	struct Error { };	// Base class for all exceptions.

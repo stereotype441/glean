@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -26,76 +26,71 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tvtxperf.cpp:  Test performance of various ways to specify vertex data
 
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include "codedid.h"
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
+#include "tvtxperf.h"
 #include "geomutil.h"
 #include "timer.h"
 #include "rand.h"
 #include "image.h"
-#include "tvtxperf.h"
-#include "misc.h"
-
-// XXX This is included as a fix for an MSVC bug; doing something like 
-// static_cast<TIME_FUNC>(glFinish), it seems to want to call glFinish 
-// and then cast the return value.  So we create an intermediate pointer
-// which seems to solve the problem, albeit precariously.
-#ifdef __WIN__
-typedef GLvoid (__stdcall* GLFINISH_FUNCTYPE) (void);
-#else
-typedef GLvoid (*GLFINISH_FUNCTYPE) (void);
-#endif
-
+#include "codedid.h"
 
 namespace {
-
-const int drawingSize = 256;
-
-// The current Timer code requires that any parameters to the function
-// being timed must be passed through global variables.  This probably
-// should be changed, but in the meantime, here are the types and globals
-// used to pass geometry to the various benchmark functions.
-
 struct C4UB_N3F_V3F {
 	GLubyte c[4];
 	GLfloat n[3];
 	GLfloat v[3];
 };
-
+	
 struct C4UB_T2F_V3F {
 	GLubyte c[4];
 	GLfloat t[2];
 	GLfloat v[3];
 };
 
-int nVertices;
-int dList;
-GLuint* indices;
-C4UB_N3F_V3F* c4ub_n3f_v3f;
-C4UB_T2F_V3F* c4ub_t2f_v3f;
+class TvtxBaseTimer: public GLEAN::Timer {
+public:
+	int nVertices;
+	GLuint* indices;
+	int nTris;
+	GLEAN::Window* w;
+	GLEAN::Environment* env;
 
+	TvtxBaseTimer(int v, GLuint* i, int t, GLEAN::Window* win,
+		      GLEAN::Environment* e) {
+		nVertices = v;
+		indices   = i;
+		nTris     = t;
+		w         = win;
+		env       = e;
+	}
 
-void
-coloredLit_imIndTri() {
-	const C4UB_N3F_V3F* p = c4ub_n3f_v3f;
-	glBegin(GL_TRIANGLES);
+	virtual double compute(double t) { return nTris/t; }
+	virtual void premeasure() {
+		// Clear both front and back buffers and swap, to avoid
+		// confusing this test with results of the previous
+		// test:
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		w->swap();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	virtual void postmeasure() { w->swap(); }
+	virtual void preop() { env->quiesce(); glFinish(); }
+	virtual void postop() { glFinish(); }
+};
+
+class ColoredLit_imIndTri: public TvtxBaseTimer {
+public:
+	C4UB_N3F_V3F* data;
+	ColoredLit_imIndTri(int v, C4UB_N3F_V3F* c, int t, GLEAN::Window* w,
+			    GLEAN::Environment* env):
+		TvtxBaseTimer(v, 0, t, w, env) {
+		data = c;
+	}
+	
+	virtual void op() {
+		C4UB_N3F_V3F* p = data;
+		glBegin(GL_TRIANGLES);
 		// Assume that the data is complete, thus allowing us
 		// to unroll 3X and do one tri per iteration rather than
 		// one vertex.
@@ -111,13 +106,22 @@ coloredLit_imIndTri() {
 			glVertex3fv(p[2].v);
 			p += 3;
 		}
-	glEnd();
-} // coloredLit_imIndTri
+		glEnd();
+	}
+}; // coloredLit_imIndTri
 
-void
-coloredTex_imIndTri() {
-	const C4UB_T2F_V3F* p = c4ub_t2f_v3f;
-	glBegin(GL_TRIANGLES);
+class ColoredTex_imIndTri: public TvtxBaseTimer {
+public:
+	C4UB_T2F_V3F* data;
+	ColoredTex_imIndTri(int v, C4UB_T2F_V3F* c, int t, GLEAN::Window* w,
+			    GLEAN::Environment* env):
+		TvtxBaseTimer(v, 0, t, w, env) {
+		data = c;
+	}
+
+	virtual void op() {
+		C4UB_T2F_V3F* p = data;
+		glBegin(GL_TRIANGLES);
 		// Assume that the data is complete, thus allowing us
 		// to unroll 3X and do one tri per iteration rather than
 		// one vertex.
@@ -133,144 +137,153 @@ coloredTex_imIndTri() {
 			glVertex3fv(p[2].v);
 			p += 3;
 		}
-	glEnd();
-} // coloredTex_imIndTri
+		glEnd();
+	}
+}; // coloredTex_imIndTri
 
-void
-coloredLit_imTriStrip() {
-	glBegin(GL_TRIANGLE_STRIP);
-
-	// Duff's device.  Yes, this is legal C (and C++).
-	// See Stroustrup, 3rd ed., p. 141
-	const C4UB_N3F_V3F* p = c4ub_n3f_v3f;
-	int n = (nVertices + 3) >> 2;
-	switch (nVertices & 0x3) {
-		case 0:	do {
-				glColor4ubv(p->c);
-				glNormal3fv(p->n);
-				glVertex3fv(p->v);
-				++p;
-		case 3:
-				glColor4ubv(p->c);
-				glNormal3fv(p->n);
-				glVertex3fv(p->v);
-				++p;
-		case 2:
-				glColor4ubv(p->c);
-				glNormal3fv(p->n);
-				glVertex3fv(p->v);
-				++p;
-		case 1:
-				glColor4ubv(p->c);
-				glNormal3fv(p->n);
-				glVertex3fv(p->v);
-				++p;
-			} while (--n > 0);
+class ColoredLit_imTriStrip: public TvtxBaseTimer {
+public:
+	C4UB_N3F_V3F* data;
+	ColoredLit_imTriStrip(int v, C4UB_N3F_V3F* c, int t,
+			      GLEAN::Window* w, GLEAN::Environment* env):
+		TvtxBaseTimer(v, 0, t, w, env) {
+		data = c;
 	}
 
-	glEnd();
-} // coloredLit_imTriStrip
+	virtual void op() {
+		C4UB_N3F_V3F* p = data;
+		glBegin(GL_TRIANGLE_STRIP);
 
-void
-coloredTex_imTriStrip() {
-	glBegin(GL_TRIANGLE_STRIP);
-
-	const C4UB_T2F_V3F* p = c4ub_t2f_v3f;
-	int n = (nVertices + 3) >> 2;
-	switch (nVertices & 0x3) {
+		int n = (nVertices + 3) >> 2;
+		// Duff's device.  Yes, this is legal C (and C++).
+		// See Stroustrup, 3rd ed., p. 141
+		switch (nVertices & 0x3) {
 		case 0:	do {
-				glColor4ubv(p->c);
-				glTexCoord2fv(p->t);
-				glVertex3fv(p->v);
-				++p;
+			glColor4ubv(p->c);
+			glNormal3fv(p->n);
+			glVertex3fv(p->v);
+			++p;
 		case 3:
-				glColor4ubv(p->c);
-				glTexCoord2fv(p->t);
-				glVertex3fv(p->v);
-				++p;
+			glColor4ubv(p->c);
+			glNormal3fv(p->n);
+			glVertex3fv(p->v);
+			++p;
 		case 2:
-				glColor4ubv(p->c);
-				glTexCoord2fv(p->t);
-				glVertex3fv(p->v);
-				++p;
+			glColor4ubv(p->c);
+			glNormal3fv(p->n);
+			glVertex3fv(p->v);
+			++p;
 		case 1:
-				glColor4ubv(p->c);
-				glTexCoord2fv(p->t);
-				glVertex3fv(p->v);
-				++p;
-			} while (--n > 0);
+			glColor4ubv(p->c);
+			glNormal3fv(p->n);
+			glVertex3fv(p->v);
+			++p;
+		} while (--n > 0);
+		}
+		glEnd();
 	}
+}; // coloredLit_imTriStrip
 
-	glEnd();
-} // coloredTex_imTriStrip
-
-void
-daIndTri() {
-	glDrawArrays(GL_TRIANGLES, 0, nVertices);
-} // daIndTri
-
-void
-daTriStrip() {
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, nVertices);
-} // daTriStrip
-
-void
-deIndTri() {
-	glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT, indices);
-} // deIndTri
-
-void
-deTriStrip() {
-	glDrawElements(GL_TRIANGLE_STRIP, nVertices, GL_UNSIGNED_INT, indices);
-} // deTriStrip
-
-void
-callDList() {
-	glCallList(dList);
-} // callDList
-
-void
-measure(GLEAN::Timer& time, GLEAN::Timer::FUNCPTR function,
-    GLEAN::Environment* env, GLEAN::Window& w, int nTris, GLEAN::VPResult& r) {
-	// Clear both front and back buffers and swap, to avoid confusing
-	// this test with results of the previous test:
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	w.swap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Make several measurements, to reduce influence of random factors:
-	const int nMeasurements = 5;	// Must be >= 3
-	vector<double> measurements;
-	for (int i = 0; i < nMeasurements; ++i) {
-		env->quiesce();
+class ColoredTex_imTriStrip: public TvtxBaseTimer {
+public:
+	C4UB_T2F_V3F* data;
+	
+	ColoredTex_imTriStrip(int v, C4UB_T2F_V3F* c, int t,
+			      GLEAN::Window* w, GLEAN::Environment* env):
+		TvtxBaseTimer(v, 0, t, w, env) {
+		data = c;
+	}
+	
+	virtual void op() {
+		C4UB_T2F_V3F* p = data;
+		glBegin(GL_TRIANGLE_STRIP);
 		
-		// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
-		// It was done this way to get around an MSVC compiler error where TIME_FUNC
-		// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
-		// change the default function type to __stdcall overall via some compiler
-		// switch?
-		GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-		double t = time.time(
-			reinterpret_cast<GLEAN::Timer::FUNCPTR>(glFinishPointer),
-			function,
-			reinterpret_cast<GLEAN::Timer::FUNCPTR>(glFinishPointer));
-		w.swap();	// give the user something to watch
-		measurements.push_back(nTris / t);
+		int n = (nVertices + 3) >> 2;
+		// Duff's device.  Yes, this is legal C (and C++).
+		// See Stroustrup, 3rd ed., p. 141
+		switch (nVertices & 0x3) {
+		case 0:	do {
+			glColor4ubv(p->c);
+			glTexCoord2fv(p->t);
+			glVertex3fv(p->v);
+			++p;
+		case 3:
+			glColor4ubv(p->c);
+			glTexCoord2fv(p->t);
+			glVertex3fv(p->v);
+			++p;
+		case 2:
+			glColor4ubv(p->c);
+			glTexCoord2fv(p->t);
+			glVertex3fv(p->v);
+			++p;
+		case 1:
+			glColor4ubv(p->c);
+			glTexCoord2fv(p->t);
+			glVertex3fv(p->v);
+			++p;
+		} while (--n > 0);
+		}
+		glEnd();
 	}
+}; // coloredTex_imTriStrip
 
-	// Throw out the fastest and slowest measurement, and return
-	// the arithmetic mean, fastest, and slowest of those that remain:
-	sort(measurements.begin(), measurements.end());
-	double sum = 0.0;
-	for (int j = 1; j < nMeasurements - 1; ++j)
-		sum += measurements[j];
-	r.tps = sum / (nMeasurements - 2.0);
-	r.tpsLow = measurements[1];
-	r.tpsHigh = measurements[nMeasurements - 2];
-} // measure
+class daIndTriTimer: public TvtxBaseTimer {
+public:
+	daIndTriTimer(int v, GLuint* i, int t, GLEAN::Window* w,
+		      GLEAN::Environment* env):
+		TvtxBaseTimer(v, i, t, w, env) {
+	}
+	virtual void op() {glDrawArrays(GL_TRIANGLES, 0, nVertices); }
+}; // daIndTriTimer
+
+class daTriStripTimer: public TvtxBaseTimer {
+public:
+	daTriStripTimer(int v, int t, GLEAN::Window* w,
+			GLEAN::Environment* env):
+		TvtxBaseTimer(v, 0, t, w, env) {
+	}
+	virtual void op() { glDrawArrays(GL_TRIANGLE_STRIP, 0, nVertices); }
+}; // daTriStripTimer
+
+class deIndTriTimer: public TvtxBaseTimer {
+public:
+	deIndTriTimer(int v, GLuint* i, int t, GLEAN::Window* w,
+		      GLEAN::Environment* env):
+		TvtxBaseTimer(v, i, t, w, env) {
+	}
+	virtual void op() {
+		glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT,
+			       indices);
+	}
+}; // deIndTriTimer
+
+class deTriStripTimer: public TvtxBaseTimer {
+public:
+	deTriStripTimer(int v, GLuint* i, int t, GLEAN::Window* w,
+			GLEAN::Environment* env):
+		TvtxBaseTimer(v, i, t, w, env) {
+	}
+	virtual void op() {
+		glDrawElements(GL_TRIANGLE_STRIP, nVertices, GL_UNSIGNED_INT,
+			       indices);
+	}
+}; // deTriStripTimer
+
+
+class callDListTimer: public TvtxBaseTimer {
+public:
+	int dList;
+	callDListTimer(int d, int t, GLEAN::Window* w,
+		       GLEAN::Environment* env):
+		TvtxBaseTimer(0, 0, t, w, env) {
+		dList    = d;
+	}
+	virtual void op() { glCallList(dList); }
+}; // callDList
 
 void
-logStats1(const char* title, GLEAN::VPResult& r,
+logStats1(const char* title, GLEAN::VPSubResult& r,
     GLEAN::Environment* env) {
 	env->log << '\t' << title << " rate = "
 		<< r.tps << " tri/sec.\n"
@@ -304,8 +317,8 @@ failHeader(bool& pass, const string& name,
 } // failHeader
 
 void
-doComparison(const GLEAN::VPResult& oldR,
-    const GLEAN::VPResult& newR,
+doComparison(const GLEAN::VPSubResult& oldR,
+    const GLEAN::VPSubResult& newR,
     GLEAN::DrawingSurfaceConfig* config,
     bool& same, const string& name, GLEAN::Environment* env,
     const char* title) {
@@ -345,8 +358,8 @@ bool
 imagesDiffer(GLEAN::Image& testImage, GLEAN::Image& goldenImage) {
 	GLEAN::Image::Registration imageReg(testImage.reg(goldenImage));
 	return (imageReg.stats[0].max()
-	    + imageReg.stats[1].max()
-	    + imageReg.stats[2].max()) != 0.0;
+		+ imageReg.stats[1].max()
+		+ imageReg.stats[2].max()) != 0.0;
 } // imagesDiffer
 
 void
@@ -365,7 +378,7 @@ void
 verify(GLEAN::Image& testImage, GLEAN::RGBCodedID& colorGen,
     int firstID, int lastID, GLEAN::Image& refImage,
     bool& passed, string& name, GLEAN::DrawingSurfaceConfig* config,
-    GLEAN::VPResult& res, GLEAN::Environment* env, const char* title) {
+    GLEAN::VPSubResult& res, GLEAN::Environment* env, const char* title) {
 
 	// Verify that the entire range of RGB coded identifiers is
 	// present in the image.  (This is an indicator that all triangles
@@ -390,128 +403,12 @@ verify(GLEAN::Image& testImage, GLEAN::RGBCodedID& colorGen,
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-ColoredLitPerf::ColoredLitPerf(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // ColoredLitPerf::ColoredLitPerf()
-
-ColoredLitPerf::~ColoredLitPerf() {
-} // ColoredLitPerf::~ColoredLitPerf
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-ColoredLitPerf::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test only one config, otherwise this would take forever.
-		if (configs.size()) {
-			vector<DrawingSurfaceConfig*>::const_iterator
-			    p = configs.begin();
-			Window w(ws, **p, drawingSize, drawingSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-ColoredLitPerf::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ColoredLitPerf::runOne(Result& r, Window& w) {
+ColoredLitPerf::runOne(VPResult& r, Window& w) {
+	bool passed = true;
 	PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
 	PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
 	if (GLUtils::haveExtension("GL_EXT_compiled_vertex_array")) {
@@ -523,7 +420,6 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	Image imTriImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
 	Image testImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
-	bool passed = true;
 
 	// Make colors deterministic, so we can check them:
 	RGBCodedID colorGen(r.config->r, r.config->g, r.config->b);
@@ -539,10 +435,10 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// so pi * (drawingSize/2)**2 / nTris = 3 implies...
 	const int nTris = static_cast<int>
 		(((3.14159 / 4.0) * drawingSize * drawingSize) / 3.0 + 0.5);
-	nVertices = nTris * 3;
+	int nVertices = nTris * 3;
 	int lastID = min(IDModulus - 1, nTris - 1);
 
-	c4ub_n3f_v3f = new C4UB_N3F_V3F[nVertices];
+	C4UB_N3F_V3F *c4ub_n3f_v3f = new C4UB_N3F_V3F[nVertices];
 	SpiralTri2D it(nTris, 0, drawingSize, 0, drawingSize);
 	int k = 0;
 	for (int j = 0; j < nTris; ++j) {
@@ -586,7 +482,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		k += 3;
 	}
 
-	indices = new GLuint[nVertices];
+	GLuint *indices = new GLuint[nVertices];
 	for (k = 0; k < nVertices; ++k)
 		indices[k] = k;
 
@@ -644,40 +540,31 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	glShadeModel(GL_FLAT);
 
-	Timer time;
-
-	// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
-	// It was done this way to get around an MSVC compiler error where TIME_FUNC
-	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
-	// change the default function type to __stdcall overall via some compiler
-	// switch?
-	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-	time.calibrate(reinterpret_cast<Timer::FUNCPTR>(glFinishPointer),
-		reinterpret_cast<Timer::FUNCPTR>(glFinishPointer));
-
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(coloredLit_imIndTri), env, w,
-		nTris, r.imTri);
+	ColoredLit_imIndTri coloredLit_imIndTri(nVertices, c4ub_n3f_v3f,
+						nTris, &w, env);
+	coloredLit_imIndTri.measure(5, &r.imTri.tpsLow, &r.imTri.tps,
+				    &r.imTri.tpsHigh);
 	imTriImage.read(0, 0);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.imTri, env,
-		"Immediate-mode independent triangle");
+	       passed, name, r.config, r.imTri, env,
+	       "Immediate-mode independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Display-listed independent triangles
 	////////////////////////////////////////////////////////////
-	dList = glGenLists(1);
+	int dList = glGenLists(1);
 	glNewList(dList, GL_COMPILE);
-		coloredLit_imIndTri();
+	coloredLit_imIndTri.op();
 	glEndList();
-	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
-		r.dlTri);
+	callDListTimer callDList(dList, nTris, &w, env);
+	callDList.measure(5, &r.dlTri.tpsLow, &r.dlTri.tps, &r.dlTri.tpsHigh);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.dlTri, env,
-		"Display-listed independent triangle");
+	       passed, name, r.config, r.dlTri, env,
+	       "Display-listed independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on independent triangles
@@ -692,8 +579,8 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
-		nTris, r.daTri);
+	daIndTriTimer daIndTri(nVertices, indices, nTris, &w, env);
+	daIndTri.measure(5, &r.daTri.tpsLow, &r.daTri.tps, &r.daTri.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTri, env,
 		"DrawArrays independent triangle");
@@ -705,8 +592,8 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
-		nTris, r.ldaTri);
+	daIndTri.measure(5, &r.ldaTri.tpsLow, &r.ldaTri.tps,
+			 &r.ldaTri.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
@@ -718,27 +605,26 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
-		nTris, r.deTri);
+	deIndTriTimer deIndTri(nVertices, indices, nTris, &w, env);
+	deIndTri.measure(5, &r.deTri.tpsLow, &r.deTri.tps, &r.deTri.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.deTri, env,
-		"DrawElements independent triangle");
+	       passed, name, r.config, r.deTri, env,
+	       "DrawElements independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
-		nTris, r.ldeTri);
+	deIndTri.measure(5, &r.ldeTri.tpsLow, &r.ldeTri.tps,
+			 &r.ldeTri.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.ldeTri, env,
-		"Locked DrawElements independent triangle");
-
+	       passed, name, r.config, r.ldeTri, env,
+	       "Locked DrawElements independent triangle");
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -779,25 +665,27 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// Immediate-mode triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(coloredLit_imTriStrip), env,
-		w, nTris, r.imTS);
+	ColoredLit_imTriStrip coloredLit_imTriStrip(nVertices, c4ub_n3f_v3f,
+						    nTris, &w, env);
+	coloredLit_imTriStrip.measure(5, &r.imTS.tpsLow, &r.imTS.tps,
+				      &r.imTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.imTS, env,
-		"Immediate-mode triangle strip");
+	       passed, name, r.config, r.imTS, env,
+	       "Immediate-mode triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Display-listed triangle strips
 	////////////////////////////////////////////////////////////
 	dList = glGenLists(1);
 	glNewList(dList, GL_COMPILE);
-		coloredLit_imTriStrip();
+	coloredLit_imTriStrip.op();
 	glEndList();
-	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
-		r.dlTS);
+	callDList.dList = dList;
+	callDList.measure(5, &r.dlTS.tpsLow, &r.dlTS.tps, &r.dlTS.tpsHigh);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.dlTS, env,
-		"Display-listed triangle strip");
+	       passed, name, r.config, r.dlTS, env,
+	       "Display-listed triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on triangle strips
@@ -812,51 +700,49 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
-		nTris, r.daTS);
+	daTriStripTimer daTriStrip(nVertices, nTris, &w, env);
+	daTriStrip.measure(5, &r.daTS.tpsLow, &r.daTS.tps, &r.daTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.daTS, env,
-		"DrawArrays triangle strip");
+	       passed, name, r.config, r.daTS, env,
+	       "DrawArrays triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawArrays on triangle strips
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
-		nTris, r.ldaTS);
+	daTriStrip.measure(5, &r.ldaTS.tpsLow, &r.ldaTS.tps, &r.ldaTS.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTS.tps = r.ldaTS.tpsLow = r.ldaTS.tpsHigh = 0.0;
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.ldaTS, env,
-		"Locked DrawArrays triangle strip");
+	       passed, name, r.config, r.ldaTS, env,
+	       "Locked DrawArrays triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
-		nTris, r.deTS);
+	deTriStripTimer deTriStrip(nVertices, indices, nTris, &w, env);
+	deTriStrip.measure(5, &r.deTS.tpsLow, &r.deTS.tps, &r.deTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.deTS, env,
-		"DrawElements triangle strip");
+	       passed, name, r.config, r.deTS, env,
+	       "DrawElements triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
-		nTris, r.ldeTS);
+	deTriStrip.measure(5, &r.ldeTS.tpsLow, &r.ldeTS.tps, &r.ldeTS.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTS.tps = r.ldeTS.tpsLow = r.ldeTS.tpsHigh = 0.0;
+	
 	verify(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.ldeTS, env,
 		"Locked DrawElements triangle strip");
-
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -864,20 +750,27 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	delete[] c4ub_n3f_v3f;
 	delete[] indices;
-
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	
+	r.pass = passed;
 } // ColoredLitPerf::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+ColoredLitPerf::logOne(VPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else env->log << '\n'; // because verify logs failure
+	logStats(r, env);
+} // ColoredLitPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
+ColoredLitPerf::compareOne(VPResult& oldR, VPResult& newR) {
 	bool same = true;
 
 	doComparison(oldR.imTri, newR.imTri, newR.config, same, name,
@@ -925,79 +818,8 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 	}
 } // ColoredLitPerf::compareOne
 
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
 void
-ColoredLitPerf::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // ColoredLitPerf::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-ColoredLitPerf::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	imTri.put(s);
-	dlTri.put(s);
-	daTri.put(s);
-	ldaTri.put(s);
-	deTri.put(s);
-	ldeTri.put(s);
-	imTS.put(s);
-	dlTS.put(s);
-	daTS.put(s);
-	ldaTS.put(s);
-	deTS.put(s);
-	ldeTS.put(s);
-} // ColoredLitPerf::Result::put
-
-bool
-ColoredLitPerf::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	imTri.get(s);
-	dlTri.get(s);
-	daTri.get(s);
-	ldaTri.get(s);
-	deTri.get(s);
-	ldeTri.get(s);
-	imTS.get(s);
-	dlTS.get(s);
-	daTS.get(s);
-	ldaTS.get(s);
-	deTS.get(s);
-	ldeTS.get(s);
-
-	return s.good();
-} // ColoredLitPerf::Result::get
-
-vector<ColoredLitPerf::Result*>
-ColoredLitPerf::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // ColoredLitPerf::getResults
-
-void
-ColoredLitPerf::logStats(ColoredLitPerf::Result& r, GLEAN::Environment* env) {
+ColoredLitPerf::logStats(VPResult& r, GLEAN::Environment* env) {
 	logStats1("Immediate-mode independent triangle", r.imTri, env);
 	logStats1("Display-listed independent triangle", r.dlTri, env);
 	logStats1("DrawArrays independent triangle", r.daTri, env);
@@ -1035,133 +857,12 @@ ColoredLitPerf coloredLitPerfTest("coloredLitPerf", "window, rgb, z, fast",
 	);
 
 
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-ColoredTexPerf::ColoredTexPerf(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // ColoredTexPerf::ColoredTexPerf()
-
-ColoredTexPerf::~ColoredTexPerf() {
-} // ColoredTexPerf::~ColoredTexPerf
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-ColoredTexPerf::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test only one config, otherwise this would take forever.
-		if (configs.size()) {
-			vector<DrawingSurfaceConfig*>::const_iterator
-			    p = configs.begin();
-			Window w(ws, **p, drawingSize, drawingSize);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-ColoredTexPerf::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ColoredTexPerf::runOne(Result& r, Window& w) {
+ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
 	PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
 	if (GLUtils::haveExtension("GL_EXT_compiled_vertex_array")) {
@@ -1189,10 +890,10 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	// so pi * (drawingSize/2)**2 / nTris = 3 implies...
 	const int nTris = static_cast<int>
 		(((3.14159 / 4.0) * drawingSize * drawingSize) / 3.0 + 0.5);
-	nVertices = nTris * 3;
+	int nVertices = nTris * 3;
 	int lastID = min(IDModulus - 1, nTris - 1);
 
-	c4ub_t2f_v3f = new C4UB_T2F_V3F[nVertices];
+	C4UB_T2F_V3F *c4ub_t2f_v3f = new C4UB_T2F_V3F[nVertices];
 	SpiralTri2D it(nTris, 0, drawingSize, 0, drawingSize);
 	int k = 0;
 	for (int j = 0; j < nTris; ++j) {
@@ -1233,7 +934,7 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 		k += 3;
 	}
 
-	indices = new GLuint[nVertices];
+	GLuint *indices = new GLuint[nVertices];
 	for (k = 0; k < nVertices; ++k)
 		indices[k] = k;
 
@@ -1311,40 +1012,31 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 
 	glShadeModel(GL_FLAT);
 
-	Timer time;
-
-	// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
-	// It was done this way to get around an MSVC compiler error where TIME_FUNC
-	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
-	// change the default function type to __stdcall overall via some compiler
-	// switch?
-	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-	time.calibrate(reinterpret_cast<Timer::FUNCPTR>(glFinishPointer),
-		reinterpret_cast<Timer::FUNCPTR>(glFinishPointer));
-
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(coloredTex_imIndTri), env, w,
-		nTris, r.imTri);
+	ColoredTex_imIndTri coloredTex_imIndTri(nVertices, c4ub_t2f_v3f,
+						nTris, &w, env);
+	coloredTex_imIndTri.measure(5, &r.imTri.tpsLow, &r.imTri.tps,
+				    &r.imTri.tpsHigh);
 	imTriImage.read(0, 0);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.imTri, env,
-		"Immediate-mode independent triangle");
+	       passed, name, r.config, r.imTri, env,
+	       "Immediate-mode independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Display-listed independent triangles
 	////////////////////////////////////////////////////////////
-	dList = glGenLists(1);
+	int dList = glGenLists(1);
 	glNewList(dList, GL_COMPILE);
-		coloredTex_imIndTri();
+	coloredTex_imIndTri.op();
 	glEndList();
-	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
-		r.dlTri);
+	callDListTimer callDList(dList, nTris, &w, env);
+	callDList.measure(5, &r.dlTri.tpsLow, &r.dlTri.tps, &r.dlTri.tpsHigh);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.dlTri, env,
-		"Display-listed independent triangle");
+	       passed, name, r.config, r.dlTri, env,
+	       "Display-listed independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on independent triangles
@@ -1359,11 +1051,11 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 		c4ub_t2f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
-		nTris, r.daTri);
+	daIndTriTimer daIndTri(nVertices, indices, nTris, &w, env);
+	daIndTri.measure(5, &r.daTri.tpsLow, &r.daTri.tps, &r.daTri.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.daTri, env,
-		"DrawArrays independent triangle");
+	       passed, name, r.config, r.daTri, env,
+	       "DrawArrays independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawArrays on independent triangles
@@ -1372,40 +1064,39 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(daIndTri), env, w,
-		nTris, r.ldaTri);
+	daIndTri.measure(5, &r.ldaTri.tpsLow, &r.ldaTri.tps,
+			 &r.ldaTri.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTri.tps = r.ldaTri.tpsLow = r.ldaTri.tpsHigh = 0.0;
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.ldaTri, env,
-		"Locked DrawArrays independent triangle");
+	       passed, name, r.config, r.ldaTri, env,
+	       "Locked DrawArrays independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
-		nTris, r.deTri);
+	deIndTriTimer deIndTri(nVertices, indices, nTris, &w, env);
+	deIndTri.measure(5, &r.deTri.tpsLow, &r.deTri.tps, &r.deTri.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.deTri, env,
-		"DrawElements independent triangle");
+	       passed, name, r.config, r.deTri, env,
+	       "DrawElements independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(deIndTri), env, w,
-		nTris, r.ldeTri);
+	deIndTri.measure(5, &r.ldeTri.tpsLow, &r.ldeTri.tps,
+			 &r.ldeTri.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.ldeTri, env,
-		"Locked DrawElements independent triangle");
-
+	       passed, name, r.config, r.ldeTri, env,
+	       "Locked DrawElements independent triangle");
 
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1445,25 +1136,27 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// Immediate-mode triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(coloredTex_imTriStrip), env,
-		w, nTris, r.imTS);
+	ColoredTex_imTriStrip coloredTex_imTriStrip(nVertices, c4ub_t2f_v3f,
+						    nTris, &w, env);
+	coloredTex_imTriStrip.measure(5, &r.imTS.tpsLow, &r.imTS.tps,
+				      &r.imTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.imTS, env,
-		"Immediate-mode triangle strip");
+	       passed, name, r.config, r.imTS, env,
+	       "Immediate-mode triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Display-listed triangle strips
 	////////////////////////////////////////////////////////////
 	dList = glGenLists(1);
 	glNewList(dList, GL_COMPILE);
-		coloredTex_imTriStrip();
+	coloredTex_imTriStrip.op();
 	glEndList();
-	measure(time, static_cast<Timer::FUNCPTR>(callDList), env, w, nTris,
-		r.dlTS);
+	callDList.dList = dList;
+	callDList.measure(5, &r.dlTS.tpsLow, &r.dlTS.tps, &r.dlTS.tpsHigh);
 	glDeleteLists(dList, 1);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.dlTS, env,
-		"Display-listed triangle strip");
+	       passed, name, r.config, r.dlTS, env,
+	       "Display-listed triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on triangle strips
@@ -1478,19 +1171,18 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 		c4ub_t2f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
-		nTris, r.daTS);
+	daTriStripTimer daTriStrip(nVertices, nTris, &w, env);
+	daTriStrip.measure(5, &r.daTS.tpsLow, &r.daTS.tps, &r.daTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.daTS, env,
-		"DrawArrays triangle strip");
+	       passed, name, r.config, r.daTS, env,
+	       "DrawArrays triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawArrays on triangle strips
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(daTriStrip), env, w,
-		nTris, r.ldaTS);
+	daTriStrip.measure(5, &r.ldaTS.tpsLow, &r.ldaTS.tps, &r.ldaTS.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
@@ -1502,26 +1194,25 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
-	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
-		nTris, r.deTS);
+	deTriStripTimer deTriStrip(nVertices, indices, nTris, &w, env);
+	deTriStrip.measure(5, &r.deTS.tpsLow, &r.deTS.tps, &r.deTS.tpsHigh);
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.deTS, env,
-		"DrawElements triangle strip");
+	       passed, name, r.config, r.deTS, env,
+	       "DrawElements triangle strip");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawElements on triangle strips
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-	measure(time, static_cast<Timer::FUNCPTR>(deTriStrip), env, w,
-		nTris, r.ldeTS);
+	deTriStrip.measure(5, &r.ldeTS.tpsLow, &r.ldeTS.tps, &r.ldeTS.tpsHigh);
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTS.tps = r.ldeTS.tpsLow = r.ldeTS.tpsHigh = 0.0;
 	verify(testImage, colorGen, 0, lastID, imTriImage,
-		passed, name, r.config, r.ldeTS, env,
-		"Locked DrawElements triangle strip");
+	       passed, name, r.config, r.ldeTS, env,
+	       "Locked DrawElements triangle strip");
 
 
 	glDisableClientState(GL_COLOR_ARRAY);
@@ -1531,19 +1222,26 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	delete[] c4ub_t2f_v3f;
 	delete[] indices;
 
-	if (passed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-	else
-		env->log << '\n';
-	logStats(r, env);
+	r.pass = passed;
 } // ColoredTexPerf::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+ColoredTexPerf::logOne(VPResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else env->log << '\n'; // because verify logs failure
+	logStats(r, env);
+} // ColoredTexPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-ColoredTexPerf::compareOne(Result& oldR, Result& newR) {
+ColoredTexPerf::compareOne(VPResult& oldR, VPResult& newR) {
 	bool same = true;
 
 	doComparison(oldR.imTri, newR.imTri, newR.config, same, name,
@@ -1591,79 +1289,8 @@ ColoredTexPerf::compareOne(Result& oldR, Result& newR) {
 	}
 } // ColoredTexPerf::compareOne
 
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
 void
-ColoredTexPerf::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // ColoredTexPerf::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-ColoredTexPerf::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	imTri.put(s);
-	dlTri.put(s);
-	daTri.put(s);
-	ldaTri.put(s);
-	deTri.put(s);
-	ldeTri.put(s);
-	imTS.put(s);
-	dlTS.put(s);
-	daTS.put(s);
-	ldaTS.put(s);
-	deTS.put(s);
-	ldeTS.put(s);
-} // ColoredTexPerf::Result::put
-
-bool
-ColoredTexPerf::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	imTri.get(s);
-	dlTri.get(s);
-	daTri.get(s);
-	ldaTri.get(s);
-	deTri.get(s);
-	ldeTri.get(s);
-	imTS.get(s);
-	dlTS.get(s);
-	daTS.get(s);
-	ldaTS.get(s);
-	deTS.get(s);
-	ldeTS.get(s);
-
-	return s.good();
-} // ColoredTexPerf::Result::get
-
-vector<ColoredTexPerf::Result*>
-ColoredTexPerf::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // ColoredTexPerf::getResults
-
-void
-ColoredTexPerf::logStats(ColoredTexPerf::Result& r, GLEAN::Environment* env) {
+ColoredTexPerf::logStats(VPResult& r, GLEAN::Environment* env) {
 	logStats1("Immediate-mode independent triangle", r.imTri, env);
 	logStats1("Display-listed independent triangle", r.dlTri, env);
 	logStats1("DrawArrays independent triangle", r.daTri, env);
@@ -1699,6 +1326,5 @@ ColoredTexPerf coloredTexPerfTest("coloredTexPerf", "window, rgb, z, fast",
 	"for each of the specification methods.\n"
 
 	);
-
 
 } // namespace GLEAN

@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -41,39 +41,9 @@
 //
 // Author: Brian Paul (brianp@valinux.com)  November 2000
 
-
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cmath>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
 #include "tpaths.h"
-#include "misc.h"
-
 
 namespace GLEAN {
-
-///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-PathsTest::PathsTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	BasicTest(aName, aFilter, aDescription) {
-} // PathsTest::PathsTest()
-
-PathsTest::~PathsTest() {
-} // PathsTest::~PathsTest
-
 
 void
 PathsTest::SetPathState(Path path, State state) const {
@@ -245,7 +215,7 @@ PathsTest::PathName(Path path) const {
 
 
 void
-PathsTest::FailMessage(Result &r, Path path, State state) const {
+PathsTest::FailMessage(BasicResult &r, Path path, State state) const {
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n';
 	if (state == ALWAYS_PASS) {
@@ -265,7 +235,7 @@ PathsTest::FailMessage(Result &r, Path path, State state) const {
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-PathsTest::runOne(Result& r) {
+PathsTest::runOne(BasicResult& r, Window&) {
 
 	Path p, paths[1000];
 	int i, numPaths = 0;
@@ -371,10 +341,18 @@ PathsTest::runOne(Result& r) {
 
 	// success
 	r.pass = true;
-	env->log << name << ":  PASS "
-		 << r.config->conciseDescription() << '\n';
-}
+} // PathsTest::runOne
 
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+PathsTest::logOne(BasicResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	}
+} // PathsTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
