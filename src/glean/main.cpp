@@ -89,6 +89,12 @@ main(int argc, char* argv[]) {
                     || !strcmp(argv[i], "--tests")) {
                         ++i;
                         selectTests(o, allTestNames, argc, argv, i);
+		    } else if (!strcmp(argv[i], "--listtests")) {
+			for (vector<string>::const_iterator
+			    t = allTestNames.begin(); t != allTestNames.end();
+			    ++t)
+				cout << *t << '\n';
+				exit(0);
 #	    if defined(__X11__)
 		} else if (!strcmp(argv[i], "-display")
 		    || !strcmp(argv[i], "--display")) {
@@ -279,6 +285,7 @@ usage(char* command) {
 "       --visuals 'filter-string'  # select subset of visuals (FBConfigs,\n"
 "                                  # pixel formats) to test\n"
 "       (-t|--tests) {(+|-)test}   # choose tests to include (+) or exclude (-)\n"
+"       --listtests                # list test names and exit\n"
 "       --help                     # display usage information\n"
 #if defined(__X11__)
 "       -display X11-display-name  # select X11 display to use\n"
