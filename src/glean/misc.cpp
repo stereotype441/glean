@@ -32,6 +32,7 @@
 // misc.cpp:  implementation of miscellaneous functions
 
 #include <cctype>
+#include <cmath>
 #include "misc.h"
 
 namespace GLEAN {
@@ -54,6 +55,20 @@ SkipWhitespace(istream& s) {
 		}
 	}
 } // SkipWhitespace
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Utility routine to compute error, expressed in bits
+//	Typically used to convert a floating-point error (in the range [0,1])
+//	to the number of bits in the representation of a color.
+///////////////////////////////////////////////////////////////////////////////
+double
+ErrorBits(double absError, int repBits) {
+	if (absError <= 0.0)
+		return 0.0;
+	double log2Error = 1.4426950408889634 * log(absError) + repBits;
+	return (log2Error <= 0.0)? 0.0: log2Error;
+} // ErrorBits
 
 
 } // namespace GLEAN

@@ -42,6 +42,7 @@ using namespace std;
 namespace GLEAN {
 
 void SkipWhitespace(istream& s);
+double ErrorBits(double absError, int repBits);
 
 } // namespace GLEAN
 
