@@ -45,9 +45,9 @@ RGBCodedID::RGBCodedID(int r, int g, int b) {
 	rBits = min(8, r);	// 8 because we use GLubyte color values
 	gBits = min(8, g);
 	bBits = min(8, b);
-	nsRBits = r - rBits;
-	nsGBits = g - gBits;
-	nsBBits = b - bBits;
+	nsRBits = 8 - rBits;
+	nsGBits = 8 - gBits;
+	nsBBits = 8 - bBits;
 	rMask = (1 << rBits) - 1;
 	gMask = (1 << gBits) - 1;
 	bMask = (1 << bBits) - 1;
