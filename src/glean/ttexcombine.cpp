@@ -71,6 +71,7 @@
 #include <unistd.h>
 #endif
 
+#include <assert.h>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
