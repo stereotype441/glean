@@ -74,6 +74,10 @@ constructing a test:
 	Default width and height for any windows to be created by the
 	test.
 
+	A pointer to an array of other tests that must be run before
+	running the current test.  This makes the results of
+	"prerequisite" tests available.
+
 To use BaseTest, declare a new class derived from BaseTest,
 parameterized by your result class.  Then override the runOne(),
 compareOne(), and logOne() member functions.  runOne() runs a test and
@@ -124,7 +128,14 @@ class GLEAN::DrawingSurfaceConfig;		// Forward reference.
 #define GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, ONE)                     \
 	TEST(const char* aName, const char* aFilter,                          \
 	     const char* aDescription):                                       \
-		BaseTest<RESULT>(aName, aFilter, aDescription) {                      \
+		BaseTest<RESULT>(aName, aFilter, aDescription) {              \
+                fWidth  = WIDTH;                                              \
+                fHeight = HEIGHT;                                             \
+                testOne = ONE;                                                \
+	}                                                                     \
+	TEST(const char* aName, const char* aFilter, Test** thePrereqs,       \
+	     const char* aDescription):                                       \
+		BaseTest<RESULT>(aName, aFilter, thePrereqs, aDescription) {  \
                 fWidth  = WIDTH;                                              \
                 fHeight = HEIGHT;                                             \
                 testOne = ONE;                                                \
@@ -183,7 +194,17 @@ public:
 		description = aDescription;
 		fWidth      = 258;
 		fHeight     = 258;
-		testOne     = false;
+		testOne     = false; 
+	}
+	BaseTest(const char* aName, const char* aFilter, Test** thePrereqs,
+		 const char* aDescription):
+			Test(aName, thePrereqs) {
+		filter      = aFilter;
+		extensions  = 0;
+		description = aDescription;
+		fWidth      = 258;
+		fHeight     = 258;
+		testOne     = false; 
 	}
 	BaseTest(const char* aName, const char* aFilter,
 		 const char* anExtensionList,
@@ -234,6 +255,9 @@ public:
 
 	virtual void run(Environment& environment) {
 		if (hasRun) return; // no multiple invocations
+		// Invoke the prerequisite tests, if any:
+		for (Test** t = prereqs; t != 0 && *t != 0; ++t)
+			(*t)->run(environment);
 		env = &environment; // make environment available
 		logDescription();   // log invocation
 		WindowSystem& ws = env->winSys;

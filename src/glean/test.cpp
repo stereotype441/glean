@@ -61,6 +61,16 @@ int Test::testCount;		// Also initialized to zero.
 ///////////////////////////////////////////////////////////////////////////////
 Test::Test(const char* testName):
     name(testName) {
+	prereqs = 0;
+	hasRun = false;
+	nextTest = testList;
+	testList = this;
+	++testCount;
+} // Test::Test()
+
+Test::Test(const char* testName, Test** thePrereqs):
+    name(testName) {
+	prereqs = thePrereqs;
 	hasRun = false;
 	nextTest = testList;
 	testList = this;

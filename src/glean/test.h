@@ -77,12 +77,17 @@ public:
 class Test {
     public:
 	Test(const char* testName);
+	Test(const char* testName, Test** prereqs);
 	virtual ~Test();
 
 	string name;		// Test name.  Should avoid characters
 				// that aren't universally available in
 				// filenames, since it might be used to
 				// construct such names.
+
+	Test** prereqs;		// Pointer to array of prerequisite tests.
+				// These will always be run before the
+				// current test.
 	
 	bool hasRun;		// True if test has been run.
 
