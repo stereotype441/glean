@@ -47,14 +47,6 @@
 using namespace std;
 #endif
 
-#ifdef __WIN__
-typedef GLvoid (__stdcall* GLLOCKARRAYSEXT_FUNCTYPE)(GLint, GLsizei);
-typedef GLvoid (__stdcall* GLUNLOCKARRAYSEXT_FUNCTYPE)();
-#else
-typedef GLvoid (* GLLOCKARRAYSEXT_FUNCTYPE)(GLint, GLsizei);
-typedef GLvoid (* GLUNLOCKARRAYSEXT_FUNCTYPE)();
-#endif
-
 namespace GLEAN {
 
 
@@ -255,11 +247,11 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         // Should we lock?
         if (compileArrays)
         {
-            GLLOCKARRAYSEXT_FUNCTYPE glLockArraysEXT = 
-                reinterpret_cast<GLLOCKARRAYSEXT_FUNCTYPE>(GLUtils::getProcAddress("glLockArraysEXT"));
-//            std::cout << "glLockArraysEXT is [" << glLockArraysEXT << "]" << std::endl;
+            PFNGLLOCKARRAYSEXTPROC glLockArraysEXT = 0;
+            assert(GLUtils::haveExtension("GL_EXT_compiled_vertex_array"));
+            glLockArraysEXT = reinterpret_cast<PFNGLLOCKARRAYSEXTPROC>
+                (GLUtils::getProcAddress("glLockArraysEXT"));
             glLockArraysEXT(0, arrayLength);
-//            std::cout << "Made it through the lock" << std::endl;
         }
 
         // Okay, arrays configured; what exactly are we doing?
@@ -285,11 +277,11 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         // Done.  If we locked, unlock.
         if (compileArrays)
         {
-            GLUNLOCKARRAYSEXT_FUNCTYPE glUnlockArraysEXT = 
-                reinterpret_cast<GLUNLOCKARRAYSEXT_FUNCTYPE>(GLUtils::getProcAddress("glUnlockArraysEXT"));
-//            std::cout << "glUnlockArraysEXT is [" << glUnlockArraysEXT << "]" << std::endl;
+            PFNGLUNLOCKARRAYSEXTPROC glUnlockArraysEXT = 0;
+            assert(GLUtils::haveExtension("GL_EXT_compiled_vertex_array"));
+            glUnlockArraysEXT = reinterpret_cast<PFNGLUNLOCKARRAYSEXTPROC>
+                (GLUtils::getProcAddress("glUnlockArraysEXT"));
             glUnlockArraysEXT();
-//            std::cout << "Made it through the unlock" << std::endl;
         }
     }
 
