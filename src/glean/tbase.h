@@ -119,7 +119,7 @@ and tbasic.cpp.
 
 #include "test.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
+class GLEAN::DrawingSurfaceConfig;		// Forward reference.
 
 #define GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, ONE)                     \
 	TEST(const char* aName, const char* aFilter,                          \
