@@ -6,6 +6,17 @@ Not in any particular order.
 
 Description:
 
+	Change the common.mak defaults for Linux to match the OpenGL
+	ABI standard.
+
+Submitted by:
+
+	Allen Akin <akin@pobox.com>
+
+------------------------------------------------------------------------
+
+Description:
+
 	Test glDrawBuffer, especially the GL_FRONT_AND_BACK and GL_NONE
 	options with glDrawPixels, points, lines, triangles.
 
