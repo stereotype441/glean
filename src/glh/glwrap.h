@@ -303,123 +303,350 @@ typedef void (GLAPIENTRY * PFNGLMULTTRANSPOSEMATRIXFARBPROC) ( const GLfloat m[1
 typedef void (GLAPIENTRY * PFNGLSAMPLEPASSARBPROC) (GLenum pass);
 typedef void (GLAPIENTRY * PFNGLSAMPLECOVERAGEARBPROC) (GLclampf value, GLboolean invert);
 
-#ifndef GL_VERSION_1_2
-// OpenGL 1.2 function pointer types and enumerants, to allow glean to
-// be compiled on OpenGL 1.1 systems.
+// OpenGL 1.2 enumerants, to allow glean to be compiled on OpenGL 1.1 systems.
+// (This odd workaround is needed to handle problems with some copies of
+// glext.h that are floating around the net.)
 
+#ifndef GL_PACK_SKIP_IMAGES
 #define GL_PACK_SKIP_IMAGES			0x806B
+#endif
+#ifndef GL_PACK_IMAGE_HEIGHT
 #define GL_PACK_IMAGE_HEIGHT			0x806C
+#endif
+#ifndef GL_UNPACK_SKIP_IMAGES
 #define GL_UNPACK_SKIP_IMAGES			0x806D
+#endif
+#ifndef GL_UNPACK_IMAGE_HEIGHT
 #define GL_UNPACK_IMAGE_HEIGHT			0x806E
+#endif
+#ifndef GL_TEXTURE_3D
 #define GL_TEXTURE_3D				0x806F
+#endif
+#ifndef GL_PROXY_TEXTURE_3D
 #define GL_PROXY_TEXTURE_3D			0x8070
+#endif
+#ifndef GL_TEXTURE_DEPTH
 #define GL_TEXTURE_DEPTH			0x8071
+#endif
+#ifndef GL_TEXTURE_WRAP_R
 #define GL_TEXTURE_WRAP_R			0x8072
+#endif
+#ifndef GL_MAX_3D_TEXTURE_SIZE
 #define GL_MAX_3D_TEXTURE_SIZE			0x8073
+#endif
+#ifndef GL_TEXTURE_BINDING_3D
 #define GL_TEXTURE_BINDING_3D			0x806A
+#endif
+#ifndef GL_RESCALE_NORMAL
 #define GL_RESCALE_NORMAL			0x803A
+#endif
+#ifndef GL_CLAMP_TO_EDGE
 #define GL_CLAMP_TO_EDGE			0x812F
+#endif
+#ifndef GL_MAX_ELEMENTS_VERTICES
 #define GL_MAX_ELEMENTS_VERTICES		0x80E8
+#endif
+#ifndef GL_MAX_ELEMENTS_INDICES
 #define GL_MAX_ELEMENTS_INDICES			0x80E9
+#endif
+#ifndef GL_BGR
 #define GL_BGR					0x80E0
+#endif
+#ifndef GL_BGRA
 #define GL_BGRA					0x80E1
+#endif
+#ifndef GL_UNSIGNED_BYTE_3_3_2
 #define GL_UNSIGNED_BYTE_3_3_2			0x8032
+#endif
+#ifndef GL_UNSIGNED_BYTE_2_3_3_REV
 #define GL_UNSIGNED_BYTE_2_3_3_REV		0x8362
+#endif
+#ifndef GL_UNSIGNED_SHORT_5_6_5
 #define GL_UNSIGNED_SHORT_5_6_5			0x8363
+#endif
+#ifndef GL_UNSIGNED_SHORT_5_6_5_REV
 #define GL_UNSIGNED_SHORT_5_6_5_REV		0x8364
+#endif
+#ifndef GL_UNSIGNED_SHORT_4_4_4_4
 #define GL_UNSIGNED_SHORT_4_4_4_4		0x8033
+#endif
+#ifndef GL_UNSIGNED_SHORT_4_4_4_4_REV
 #define GL_UNSIGNED_SHORT_4_4_4_4_REV		0x8365
+#endif
+#ifndef GL_UNSIGNED_SHORT_5_5_5_1
 #define GL_UNSIGNED_SHORT_5_5_5_1		0x8034
+#endif
+#ifndef GL_UNSIGNED_SHORT_1_5_5_5_REV
 #define GL_UNSIGNED_SHORT_1_5_5_5_REV		0x8366
+#endif
+#ifndef GL_UNSIGNED_INT_8_8_8_8
 #define GL_UNSIGNED_INT_8_8_8_8			0x8035
+#endif
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
 #define GL_UNSIGNED_INT_8_8_8_8_REV		0x8367
+#endif
+#ifndef GL_UNSIGNED_INT_10_10_10_2
 #define GL_UNSIGNED_INT_10_10_10_2		0x8036
+#endif
+#ifndef GL_UNSIGNED_INT_2_10_10_10_REV
 #define GL_UNSIGNED_INT_2_10_10_10_REV		0x8368
+#endif
+#ifndef GL_LIGHT_MODEL_COLOR_CONTROL
 #define GL_LIGHT_MODEL_COLOR_CONTROL		0x81F8
+#endif
+#ifndef GL_SINGLE_COLOR
 #define GL_SINGLE_COLOR				0x81F9
+#endif
+#ifndef GL_SEPARATE_SPECULAR_COLOR
 #define GL_SEPARATE_SPECULAR_COLOR		0x81FA
+#endif
+#ifndef GL_TEXTURE_MIN_LOD
 #define GL_TEXTURE_MIN_LOD			0x813A
+#endif
+#ifndef GL_TEXTURE_MAX_LOD
 #define GL_TEXTURE_MAX_LOD			0x813B
+#endif
+#ifndef GL_TEXTURE_BASE_LEVEL
 #define GL_TEXTURE_BASE_LEVEL			0x813C
+#endif
+#ifndef GL_TEXTURE_MAX_LEVEL
 #define GL_TEXTURE_MAX_LEVEL			0x813D
+#endif
+#ifndef GL_SMOOTH_POINT_SIZE_RANGE
 #define GL_SMOOTH_POINT_SIZE_RANGE		0x0B12
+#endif
+#ifndef GL_SMOOTH_POINT_SIZE_GRANULARITY
 #define GL_SMOOTH_POINT_SIZE_GRANULARITY	0x0B13
+#endif
+#ifndef GL_SMOOTH_LINE_WIDTH_RANGE
 #define GL_SMOOTH_LINE_WIDTH_RANGE		0x0B22
+#endif
+#ifndef GL_SMOOTH_LINE_WIDTH_GRANULARITY
 #define GL_SMOOTH_LINE_WIDTH_GRANULARITY	0x0B23
+#endif
+#ifndef GL_ALIASED_POINT_SIZE_RANGE
 #define GL_ALIASED_POINT_SIZE_RANGE		0x846D
+#endif
+#ifndef GL_ALIASED_LINE_WIDTH_RANGE
 #define GL_ALIASED_LINE_WIDTH_RANGE		0x846E
+#endif
+#ifndef GL_COLOR_TABLE
 #define GL_COLOR_TABLE				0x80D0
+#endif
+#ifndef GL_POST_CONVOLUTION_COLOR_TABLE
 #define GL_POST_CONVOLUTION_COLOR_TABLE		0x80D1
+#endif
+#ifndef GL_POST_COLOR_MATRIX_COLOR_TABLE
 #define GL_POST_COLOR_MATRIX_COLOR_TABLE	0x80D2
+#endif
+#ifndef GL_PROXY_COLOR_TABLE
 #define GL_PROXY_COLOR_TABLE			0x80D3
+#endif
+#ifndef GL_PROXY_POST_CONVOLUTION_COLOR_TABLE
 #define GL_PROXY_POST_CONVOLUTION_COLOR_TABLE	0x80D4
+#endif
+#ifndef GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE
 #define GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE	0x80D5
+#endif
+#ifndef GL_COLOR_TABLE_SCALE
 #define GL_COLOR_TABLE_SCALE			0x80D6
+#endif
+#ifndef GL_COLOR_TABLE_BIAS
 #define GL_COLOR_TABLE_BIAS			0x80D7
+#endif
+#ifndef GL_COLOR_TABLE_FORMAT
 #define GL_COLOR_TABLE_FORMAT			0x80D8
+#endif
+#ifndef GL_COLOR_TABLE_WIDTH
 #define GL_COLOR_TABLE_WIDTH			0x80D9
+#endif
+#ifndef GL_COLOR_TABLE_RED_SIZE
 #define GL_COLOR_TABLE_RED_SIZE			0x80DA
+#endif
+#ifndef GL_COLOR_TABLE_GREEN_SIZE
 #define GL_COLOR_TABLE_GREEN_SIZE		0x80DB
+#endif
+#ifndef GL_COLOR_TABLE_BLUE_SIZE
 #define GL_COLOR_TABLE_BLUE_SIZE		0x80DC
+#endif
+#ifndef GL_COLOR_TABLE_ALPHA_SIZE
 #define GL_COLOR_TABLE_ALPHA_SIZE		0x80DD
+#endif
+#ifndef GL_COLOR_TABLE_LUMINANCE_SIZE
 #define GL_COLOR_TABLE_LUMINANCE_SIZE		0x80DE
+#endif
+#ifndef GL_COLOR_TABLE_INTENSITY_SIZE
 #define GL_COLOR_TABLE_INTENSITY_SIZE		0x80DF
+#endif
+#ifndef GL_CONVOLUTION_1D
 #define GL_CONVOLUTION_1D			0x8010
+#endif
+#ifndef GL_CONVOLUTION_2D
 #define GL_CONVOLUTION_2D			0x8011
+#endif
+#ifndef GL_SEPARABLE_2D
 #define GL_SEPARABLE_2D				0x8012
+#endif
+#ifndef GL_CONVOLUTION_BORDER_MODE
 #define GL_CONVOLUTION_BORDER_MODE		0x8013
+#endif
+#ifndef GL_CONVOLUTION_FILTER_SCALE
 #define GL_CONVOLUTION_FILTER_SCALE		0x8014
+#endif
+#ifndef GL_CONVOLUTION_FILTER_BIAS
 #define GL_CONVOLUTION_FILTER_BIAS		0x8015
+#endif
+#ifndef GL_REDUCE
 #define GL_REDUCE				0x8016
+#endif
+#ifndef GL_CONVOLUTION_FORMAT
 #define GL_CONVOLUTION_FORMAT			0x8017
+#endif
+#ifndef GL_CONVOLUTION_WIDTH
 #define GL_CONVOLUTION_WIDTH			0x8018
+#endif
+#ifndef GL_CONVOLUTION_HEIGHT
 #define GL_CONVOLUTION_HEIGHT			0x8019
+#endif
+#ifndef GL_MAX_CONVOLUTION_WIDTH
 #define GL_MAX_CONVOLUTION_WIDTH		0x801A
+#endif
+#ifndef GL_MAX_CONVOLUTION_HEIGHT
 #define GL_MAX_CONVOLUTION_HEIGHT		0x801B
+#endif
+#ifndef GL_POST_CONVOLUTION_RED_SCALE
 #define GL_POST_CONVOLUTION_RED_SCALE		0x801C
+#endif
+#ifndef GL_POST_CONVOLUTION_GREEN_SCALE
 #define GL_POST_CONVOLUTION_GREEN_SCALE		0x801D
+#endif
+#ifndef GL_POST_CONVOLUTION_BLUE_SCALE
 #define GL_POST_CONVOLUTION_BLUE_SCALE		0x801E
+#endif
+#ifndef GL_POST_CONVOLUTION_ALPHA_SCALE
 #define GL_POST_CONVOLUTION_ALPHA_SCALE		0x801F
+#endif
+#ifndef GL_POST_CONVOLUTION_RED_BIAS
 #define GL_POST_CONVOLUTION_RED_BIAS		0x8020
+#endif
+#ifndef GL_POST_CONVOLUTION_GREEN_BIAS
 #define GL_POST_CONVOLUTION_GREEN_BIAS		0x8021
+#endif
+#ifndef GL_POST_CONVOLUTION_BLUE_BIAS
 #define GL_POST_CONVOLUTION_BLUE_BIAS		0x8022
+#endif
+#ifndef GL_POST_CONVOLUTION_ALPHA_BIAS
 #define GL_POST_CONVOLUTION_ALPHA_BIAS		0x8023
+#endif
+#ifndef GL_CONSTANT_BORDER
 #define GL_CONSTANT_BORDER			0x8151
+#endif
+#ifndef GL_REPLICATE_BORDER
 #define GL_REPLICATE_BORDER			0x8153
+#endif
+#ifndef GL_CONVOLUTION_BORDER_COLOR
 #define GL_CONVOLUTION_BORDER_COLOR		0x8154
+#endif
+#ifndef GL_COLOR_MATRIX
 #define GL_COLOR_MATRIX				0x80B1
+#endif
+#ifndef GL_COLOR_MATRIX_STACK_DEPTH
 #define GL_COLOR_MATRIX_STACK_DEPTH		0x80B2
+#endif
+#ifndef GL_MAX_COLOR_MATRIX_STACK_DEPTH
 #define GL_MAX_COLOR_MATRIX_STACK_DEPTH		0x80B3
+#endif
+#ifndef GL_POST_COLOR_MATRIX_RED_SCALE
 #define GL_POST_COLOR_MATRIX_RED_SCALE		0x80B4
+#endif
+#ifndef GL_POST_COLOR_MATRIX_GREEN_SCALE
 #define GL_POST_COLOR_MATRIX_GREEN_SCALE	0x80B5
+#endif
+#ifndef GL_POST_COLOR_MATRIX_BLUE_SCALE
 #define GL_POST_COLOR_MATRIX_BLUE_SCALE		0x80B6
+#endif
+#ifndef GL_POST_COLOR_MATRIX_ALPHA_SCALE
 #define GL_POST_COLOR_MATRIX_ALPHA_SCALE	0x80B7
+#endif
+#ifndef GL_POST_COLOR_MATRIX_RED_BIAS
 #define GL_POST_COLOR_MATRIX_RED_BIAS		0x80B8
+#endif
+#ifndef GL_POST_COLOR_MATRIX_GREEN_BIAS
 #define GL_POST_COLOR_MATRIX_GREEN_BIAS		0x80B9
+#endif
+#ifndef GL_POST_COLOR_MATRIX_BLUE_BIAS
 #define GL_POST_COLOR_MATRIX_BLUE_BIAS		0x80BA
+#endif
+#ifndef GL_POST_COLOR_MATRIX_ALPHA_BIAS
 #define GL_POST_COLOR_MATRIX_ALPHA_BIAS		0x80BB
+#endif
+#ifndef GL_HISTOGRAM
 #define GL_HISTOGRAM				0x8024
+#endif
+#ifndef GL_PROXY_HISTOGRAM
 #define GL_PROXY_HISTOGRAM			0x8025
+#endif
+#ifndef GL_HISTOGRAM_WIDTH
 #define GL_HISTOGRAM_WIDTH			0x8026
+#endif
+#ifndef GL_HISTOGRAM_FORMAT
 #define GL_HISTOGRAM_FORMAT			0x8027
+#endif
+#ifndef GL_HISTOGRAM_RED_SIZE
 #define GL_HISTOGRAM_RED_SIZE			0x8028
+#endif
+#ifndef GL_HISTOGRAM_GREEN_SIZE
 #define GL_HISTOGRAM_GREEN_SIZE			0x8029
+#endif
+#ifndef GL_HISTOGRAM_BLUE_SIZE
 #define GL_HISTOGRAM_BLUE_SIZE			0x802A
+#endif
+#ifndef GL_HISTOGRAM_ALPHA_SIZE
 #define GL_HISTOGRAM_ALPHA_SIZE			0x802B
+#endif
+#ifndef GL_HISTOGRAM_LUMINANCE_SIZE
 #define GL_HISTOGRAM_LUMINANCE_SIZE		0x802C
+#endif
+#ifndef GL_HISTOGRAM_SINK
 #define GL_HISTOGRAM_SINK			0x802D
+#endif
+#ifndef GL_MINMAX
 #define GL_MINMAX				0x802E
+#endif
+#ifndef GL_MINMAX_FORMAT
 #define GL_MINMAX_FORMAT			0x802F
+#endif
+#ifndef GL_MINMAX_SINK
 #define GL_MINMAX_SINK				0x8030
+#endif
+#ifndef GL_TABLE_TOO_LARGE
 #define GL_TABLE_TOO_LARGE			0x8031
+#endif
+#ifndef GL_BLEND_EQUATION
 #define GL_BLEND_EQUATION			0x8009
+#endif
+#ifndef GL_MIN
 #define GL_MIN					0x8007
+#endif
+#ifndef GL_MAX
 #define GL_MAX					0x8008
+#endif
+#ifndef GL_FUNC_ADD
 #define GL_FUNC_ADD				0x8006
+#endif
+#ifndef GL_FUNC_SUBTRACT
 #define GL_FUNC_SUBTRACT			0x800A
+#endif
+#ifndef GL_FUNC_REVERSE_SUBTRACT
 #define GL_FUNC_REVERSE_SUBTRACT		0x800B
+#endif
+#ifndef GL_BLEND_COLOR
 #define	GL_BLEND_COLOR				0x8005
+#endif
 
+#ifndef GL_VERSION_1_2
+// OpenGL 1.2 function pointer types, to allow glean to
+// be compiled on OpenGL 1.1 systems.
 typedef void (GLAPIENTRY * PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (GLAPIENTRY * PFNGLTEXIMAGE3DPROC) (GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (GLAPIENTRY * PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
