@@ -999,7 +999,8 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		// 0. Set up texture units
 		ResetMachine(machine);
 		int divisor = 1;
-		for (int u = 0; u < machine.NumTexUnits; u++) {
+		int u;
+		for (u = 0; u < machine.NumTexUnits; u++) {
 			const int m = (testNum / divisor) % numModes;
 			const GLenum mode = combineModes[m];
 
@@ -1034,13 +1035,13 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		for (int u = 0; u < machine.NumTexUnits; u++)
 			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 0);
 		glVertex2f(-1.0, -1.0);
-		for (int u = 0; u < machine.NumTexUnits; u++)
+		for (u = 0; u < machine.NumTexUnits; u++)
 			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 0);
 		glVertex2f( 1.0, -1.0);
-		for (int u = 0; u < machine.NumTexUnits; u++)
+		for (u = 0; u < machine.NumTexUnits; u++)
 			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 1, 1);
 		glVertex2f( 1.0,  1.0);
-		for (int u = 0; u < machine.NumTexUnits; u++)
+		for (u = 0; u < machine.NumTexUnits; u++)
 			p_glMultiTexCoord2fARB(GL_TEXTURE0_ARB + u, 0, 1);
 		glVertex2f(-1.0,  1.0);
 		glEnd();
@@ -1050,7 +1051,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
                 // 2. Compute expected result
 		GLfloat prevColor[4];
 		GLfloat expected[4];
-		for (int u = 0; u < machine.NumTexUnits; u++) {
+		for (u = 0; u < machine.NumTexUnits; u++) {
 			if (u == 0) {
 				COPY4(prevColor, machine.FragColor);
 			} else {
