@@ -1,3 +1,13 @@
+1.0 to 1.1:
+===========
+
+Updated documentation to reflect glean's new home page on
+sourceforge.net.
+
+Adam Haberlach <adam@newsnipple.com> of Be added support for
+BeOS, as well as the "teapot" test.
+
+
 0.6 to 1.0:
 ===========
 
