@@ -127,11 +127,13 @@ PathsTest::SetPathState(Path path, State state) const {
 		break;
 	case STENCIL:
 		if (state == ALWAYS_PASS) {
-			glStencilFunc(GL_GEQUAL, 0, ~0);
+			// pass if reference <= stencil value (ref = 0)
+			glStencilFunc(GL_LEQUAL, 0, ~0);
 			glEnable(GL_STENCIL_TEST);
 		}
 		else if (state == ALWAYS_FAIL) {
-			glStencilFunc(GL_LESS, 0, ~0);
+			// pass if reference > stencil value (ref = 0)
+			glStencilFunc(GL_GREATER, 0, ~0);
 			glEnable(GL_STENCIL_TEST);
 		}
 		else {
