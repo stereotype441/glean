@@ -60,21 +60,40 @@ useScreenCoords(int windowW, int windowH) {
 } // useScreenCoords
 
 ///////////////////////////////////////////////////////////////////////////////
-// haveExtension:  See if the current rendering context supports a given
-//	extension.
+// haveExtensions:  See if the current rendering context supports a given
+//	set of extensions.
 ///////////////////////////////////////////////////////////////////////////////
 bool
-haveExtension(const char* name) {
-	const char* extensions = reinterpret_cast<const char*>
+haveExtensions(const char* required) {
+	const char* available = reinterpret_cast<const char*>
 		(glGetString(GL_EXTENSIONS));
-	Lex lexer(extensions);
 
-	for (lexer.next(); lexer.token != Lex::END; lexer.next())
-		if (lexer.token == Lex::ID && lexer.id == name)
-			return true;
+	if (!required)
+		return true;
+	if (!available)
+		return false;
 
-	return false;
-} // haveExtension
+	bool haveAll = true;
+	Lex lRequired(required);
+	for (lRequired.next(); lRequired.token != Lex::END; lRequired.next()) {
+		if (lRequired.token != Lex::ID)
+			continue;
+		bool haveOne = false;
+		Lex lAvailable(available);
+		for (lAvailable.next(); lAvailable.token != Lex::END;
+		    lAvailable.next())
+			if (lAvailable.token == Lex::ID
+			  && lAvailable.id == lRequired.id) {
+				haveOne = true;
+				break;
+			}
+		haveAll &= haveOne;
+		if (!haveAll)
+			break;
+	}
+
+	return haveAll;
+} // haveExtensions
 
 ///////////////////////////////////////////////////////////////////////////////
 // getProcAddress: Get address of an OpenGL or window-system-binding function.

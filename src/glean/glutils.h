@@ -46,10 +46,13 @@ namespace GLUtils {
 void useScreenCoords(int windowW, int windowH);
 
 // Check to see if the current rendering context supports a given
-// extension.  (This is here, rather than in RenderingContext, because
-// it can only be applied to the ``current'' context rather than to
-// any arbitrary context.)
-bool haveExtension(const char* name);
+// extension or set of extensions.  (This is here, rather than in
+// RenderingContext, because it can only be applied to the ``current''
+// context rather than to any arbitrary context.)
+bool haveExtensions(const char* required);
+inline bool haveExtension(const char* name) {
+	return haveExtensions(name);
+}
 
 // Get a pointer to a function (usually, an extension function).
 // Like haveExtension, we have to do this here rather than in
