@@ -46,6 +46,8 @@ class TexCombineTest: public BasicTest {
 		       const char* description):
 	    BasicTest(testName, filter, "GL_EXT_texture_env_combine",
 		      description) {
+		fWidth = 2;
+		fHeight = 2;
 	}
 
 	virtual void runOne(BasicResult& r, Window& w);
@@ -103,9 +105,9 @@ class TexCombineTest: public BasicTest {
 	void SetupColors(struct glmachine &machine);
 	int CountTestCombinations(const test_param testParams[]) const;
 	bool RunSingleTextureTest(glmachine &machine,
-		const test_param testParams[], BasicResult &r);
+		const test_param testParams[], BasicResult &r, Window& w);
         int CountMultiTextureTestCombinations(const glmachine &machine) const;
-	bool RunMultiTextureTest(glmachine &machine, BasicResult &r);
+	bool RunMultiTextureTest(glmachine &machine, BasicResult &r, Window& w);
 
 	PFNGLACTIVETEXTUREARBPROC p_glActiveTextureARB;
 	PFNGLMULTITEXCOORD2FARBPROC p_glMultiTexCoord2fARB;

@@ -813,7 +813,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 //
 bool
 TexCombineTest::RunSingleTextureTest(glmachine &machine,
-	const test_param testParams[], BasicResult &r) {
+	const test_param testParams[], BasicResult &r, Window& w) {
 
 	assert(machine.NumTexUnits == 1);
 	SetupColors(machine);
@@ -835,6 +835,7 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 		glTexCoord2f(0, 1);  glVertex2f(-1.0,  1.0);
 		glEnd();
 		glReadPixels(0, 0, 1, 1, GL_RGBA, GL_FLOAT, renderedResult);
+		w.swap();
 
 		// 2. Compute expected result
 		GLfloat expected[4];
@@ -901,7 +902,8 @@ TexCombineTest::CountMultiTextureTestCombinations(const glmachine &machine) cons
 // Test texenv-combine with multiple texture units.
 //
 bool
-TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r) {
+TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
+    Window& w) {
 
 	static const GLenum combineModes[5] = {
 		GL_REPLACE,
@@ -963,6 +965,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r) {
 		glVertex2f(-1.0,  1.0);
 		glEnd();
 		glReadPixels(0, 0, 1, 1, GL_RGBA, GL_FLOAT, renderedResult);
+		w.swap();
 
                 // 2. Compute expected result
 		GLfloat prevColor[4];
@@ -1006,7 +1009,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r) {
 
 // XXX should we run a number of individual tests instead?
 void
-TexCombineTest::runOne(BasicResult& r, Window&) {
+TexCombineTest::runOne(BasicResult& r, Window& w) {
 	// Grab pointers to the extension functions.  It's safe to use
 	// these without testing them because we already know that we
 	// won't be invoked except on contexts that support the
@@ -1022,15 +1025,15 @@ TexCombineTest::runOne(BasicResult& r, Window&) {
 	Machine.NumTexUnits = 1;
 
 	// Do single texture unit tests first.
-	bool passed = RunSingleTextureTest(Machine, ReplaceParams, r);
+	bool passed = RunSingleTextureTest(Machine, ReplaceParams, r, w);
 	if (passed)
-		passed = RunSingleTextureTest(Machine, AddParams, r);
+		passed = RunSingleTextureTest(Machine, AddParams, r, w);
 	if (passed)
-		passed = RunSingleTextureTest(Machine, AddSignedParams, r);
+		passed = RunSingleTextureTest(Machine, AddSignedParams, r, w);
 	if (passed)
-		passed = RunSingleTextureTest(Machine, ModulateParams, r);
+		passed = RunSingleTextureTest(Machine, ModulateParams, r, w);
 	if (passed)
-		passed = RunSingleTextureTest(Machine, InterpolateParams, r);
+		passed = RunSingleTextureTest(Machine, InterpolateParams, r, w);
 
 	// Now do some multi-texture tests
 	if (passed) {
@@ -1039,7 +1042,7 @@ TexCombineTest::runOne(BasicResult& r, Window&) {
 			// six texture units is enough to test
 			if (Machine.NumTexUnits > 6)
 				Machine.NumTexUnits = 6;
-			passed = RunMultiTextureTest(Machine, r);
+			passed = RunMultiTextureTest(Machine, r, w);
 		}
 	}
 	r.pass = passed;
