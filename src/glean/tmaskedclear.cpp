@@ -241,7 +241,7 @@ MaskedClearTest::runOne(BasicResult& r) {
 		}
 	}
 	r.pass = passed;
-}
+} // MaskedClearTest::runOne
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -106,7 +106,7 @@ BasicPerfTest::logOne(BasicPerfResult& r) {
 	logPassFail(r);
 	logConcise(r);
 	logStats(r);
-} // BasicTest::logOne
+} // BasicPerfTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

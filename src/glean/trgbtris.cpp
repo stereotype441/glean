@@ -71,6 +71,8 @@ namespace GLEAN {
 ///////////////////////////////////////////////////////////////////////////////
 void
 RGBTriStripTest::runOne(RGBTriStripResult& r, Window& w) {
+	r->imageNumber = 1 + (r->config - configs.begin());
+	
 	GLUtils::useScreenCoords(drawingSize + 2, drawingSize + 2);
 
 	int nPoints = 20;	// Exact value doesn't really matter.

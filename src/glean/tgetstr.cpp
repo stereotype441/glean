@@ -62,7 +62,7 @@ GetStringTest::logOne(GetStringResult& r) {
 		env->log << "\tversion:    " << r.version << '\n';
 		env->log << "\textensions: " << r.extensions << '\n';
 	}
-} // BasicTest::logOne
+} // GetStringTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

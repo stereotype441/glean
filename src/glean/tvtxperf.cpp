@@ -764,7 +764,7 @@ ColoredLitPerf::logOne(VPResult& r) {
 		logConcise(r);
 	} else env->log << '\n'; // because verify logs failure
 	logStats(r, env);
-}
+} // ColoredLitPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
@@ -1235,7 +1235,7 @@ ColoredTexPerf::logOne(VPResult& r) {
 		logConcise(r);
 	} else env->log << '\n'; // because verify logs failure
 	logStats(r, env);
-}
+} // ColoredTexPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

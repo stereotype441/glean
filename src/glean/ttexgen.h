@@ -27,40 +27,41 @@
 // END_COPYRIGHT
 
 
+// ttexgen.h:  Basic test of GL texture coordinate generation.
+// Author: Brian Sharp (brian@maniacal.org)  December 2000
 
 
-// rc.h:  utilities for manipulating rendering contexts
+#ifndef __ttexgen_h__
+#define __ttexgen_h__
 
-#ifndef __rc_h__
-#define __rc_h__
-
-#include "glwrap.h"
+#include "tbasic.h"
+#include "geomrend.h"
 
 namespace GLEAN {
 
-class WindowSystem;		// Forward and mutually-recursive references
-class DrawingSurfaceConfig;
+class TexgenTest: public BasicTest {
+public:
+	TexgenTest(const char* testName, const char* filter,
+		   const char* description):
+		BasicTest(testName, filter, description) {
+	}
+	virtual void runOne(BasicResult& r);
+	virtual void logOne(BasicResult& r);
+	
+private:
+	void FailMessage(BasicResult &r, const std::string& texgenMode,
+			 GeomRenderer::DrawMethod, 
+			 bool arraysCompiled, int retainedMode,
+			 const std::string& colorMismatch) const;
+	void renderSphere(int retainedMode, GeomRenderer& sphereRenderer);
+	bool compareColors(GLfloat* color0, GLfloat* color1,
+			   std::string& failureInfo) const;
+	bool verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, 
+			    GLfloat* upperRightColor,
+			    std::string& failureInfo) const;
 
-class RenderingContext {
-    public:
-	RenderingContext(WindowSystem& ws, DrawingSurfaceConfig& c,
-		RenderingContext* share = 0, bool direct = true);
-	~RenderingContext();
-
-	// Exceptions:
-	struct Error { };		// Base class for all errors.
-
-	// Members:
-	WindowSystem* winSys;		// Window system that owns this context.
-
-#   if defined(__X11__)
-	GLXContext rc;
-#   elif defined(__WIN__)
-	::HGLRC rc;
-#   endif
-
-}; // class RenderingContext
+}; // class TexgenTest
 
 } // namespace GLEAN
 
-#endif // __rc_h__
+#endif // __ttexgen_h__

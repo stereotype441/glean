@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
 // 
@@ -33,6 +33,8 @@
 
 #ifndef __geomutil_h__
 #define __geomutil_h__
+
+#include <vector>
 
 namespace GLEAN {
 
@@ -69,6 +71,29 @@ class SpiralTri2D {
 	inline float* operator() (int i)
 		{ return v + 6 * i; }
 }; // SpiralTri2D
+
+class Sphere3D {
+    std::vector<float> vertices;
+    std::vector<float> normals;
+    int numVertices;
+    std::vector<unsigned int> indices;
+    int numIndices;
+ public:
+    Sphere3D(float radius, int slices, int stacks);
+
+    // This returns the vertices: 3 floats per vertex in a tightly packed array (no padding between vertices).
+    const float* getVertices() const;
+    int getNumVertices() const;
+
+    // This returns the normals; same data format as the vertices.  And of course the number of normals is
+    // the same as the number of vertices.
+    const float* getNormals() const;    
+
+    // This returns a series of vertices that form triangles from the vertices (the indices specify loose
+    // triangles, not tristrips or fans or whatnot.  So each triplet of indices is an individual triangle.)
+    const unsigned int* getIndices() const;
+    int getNumIndices() const;
+};
 
 } // namespace GLEAN
 

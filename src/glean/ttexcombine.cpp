@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -1066,7 +1066,7 @@ TexCombineTest::runOne(BasicResult& r) {
 			<< CountMultiTextureTestCombinations(Machine)
 			<< " multitexture combinations\n";
 	}
-}
+} // TexCombineTest::runOne
 
 
 ///////////////////////////////////////////////////////////////////////////////

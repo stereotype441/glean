@@ -256,7 +256,7 @@ TexBindPerf::logOne(TexBindPerfResult& r) {
 	logPassFail(r);
 	logConcise(r);
 	logStats(r, env);
-} // BasicTest::logOne
+} // TexBindPerf::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

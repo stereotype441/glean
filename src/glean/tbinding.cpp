@@ -170,7 +170,7 @@ MakeCurrentTest::logOne(MakeCurrentResult& r) {
 			 << r.descriptions[r.testSequence[k]]
 			 << '\n';
 	}
-} // BasicTest::logOne
+} // MakeCurrentTestTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

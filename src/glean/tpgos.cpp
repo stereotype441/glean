@@ -528,7 +528,7 @@ PgosTest::logOne(POResult& r) {
 	logPassFail(r);
 	logConcise(r);
 	for (i = 0; i < r.data.size(); i++) logStats1(r, i, env);
-} // PgosTest::logStats
+} // PgosTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

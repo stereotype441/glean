@@ -106,7 +106,7 @@ CPP_PROJ=/nologo /MLd $(WARNING_LEVEL) /Gm /GX /ZI /Od $(DEFINES) $(INCLUDE_DIRS
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=$(LIBS) /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\$(FTARGET).pdb" /debug /machine:I386 /include:"__imp__glGetString@4" /out:"$(GLEAN_BIN_DIR)\$(TARGET)" /pdbtype:sept $(LIB_DIRS) 
+LINK32_FLAGS=$(LIBS) /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\$(FTARGET).pdb" /debug /machine:I386 /include:"__imp__glGetString@4" /out:"$(GLEAN_BIN_DIR)\$(TARGET)" /pdbtype:sept $(LIB_DIRS) /nodefaultlib:libcd.lib /nodefaultlib:libc.lib
 
 "$(GLEAN_BIN_DIR)\$(TARGET)" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)

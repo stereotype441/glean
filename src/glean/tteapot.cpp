@@ -3171,7 +3171,7 @@ TeapotTest::runOne(TeapotResult& res, Window& w) {
 	
 	res.fTps = (endX - startX) / (finish - start);
 	res.pass = true;
-} // BasicTest::runOne
+} // TeapotTest::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
@@ -3181,7 +3181,7 @@ TeapotTest::logOne(TeapotResult& r) {
 	logPassFail(r);
 	env->log << "Teapots/Sec: " << r.fTps << "  ";
 	logConcise(r);
-}
+} // TeapotTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
@@ -3203,7 +3203,7 @@ TeapotTest::compareOne(TeapotResult& oldR, TeapotResult& newR) {
 			 << newR.fTps
 			 << '\n';
 	}
-} // BasicTest::compareOne
+} // TeapotTest::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

@@ -341,7 +341,7 @@ PathsTest::runOne(BasicResult& r, Window&) {
 
 	// success
 	r.pass = true;
-}
+} // PathsTest::runOne
 
 
 ///////////////////////////////////////////////////////////////////////////////
