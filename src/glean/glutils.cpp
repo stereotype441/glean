@@ -1,6 +1,6 @@
 // BEGIN_COPYRIGHT
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999, 2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -33,6 +33,7 @@
 
 #include "glwrap.h"
 #include "environ.h"
+#include "lex.h"
 
 #include "glutils.h"
 
@@ -55,6 +56,25 @@ useScreenCoords(int windowW, int windowH) {
 	glViewport(0, 0, windowW, windowH);
 	glTranslatef(0.375, 0.375, 0.0);
 } // useScreenCoords
+
+///////////////////////////////////////////////////////////////////////////////
+// haveExtension:  See if the current rendering context supports a given
+//	extension.
+///////////////////////////////////////////////////////////////////////////////
+bool
+haveExtension(const char* name) {
+	const char* extensions = reinterpret_cast<const char*>
+		(glGetString(GL_EXTENSIONS));
+	Lex lexer(extensions);
+
+	for (;;) {
+		lexer.next();
+		if (lexer.token == Lex::ID && lexer.id == name)
+			return true;
+	}
+
+	return false;
+} // haveExtension
 
 } // namespace GLUtils
 

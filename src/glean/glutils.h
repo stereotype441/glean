@@ -1,6 +1,6 @@
 // BEGIN_COPYRIGHT
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999, 2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -44,6 +44,12 @@ namespace GLUtils {
 // object coordinates map directly to screen coordinates (using the
 // normal Cartesian convention, with (0,0) at lower left).
 void useScreenCoords(int windowW, int windowH);
+
+// Check to see if the current rendering context supports a given
+// extension.  (This is here, rather than in RenderingContext, because
+// it can only be applied to the ``current'' context rather than to
+// any arbitrary context.)
+bool haveExtension(const char* name);
 
 } // namespace GLUtils
 
