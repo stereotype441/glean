@@ -48,7 +48,8 @@ class TexCombineTest: public BasicTest {
 		      description) {
 	}
 
-	virtual void runOne(BasicResult& r);
+	virtual void runOne(BasicResult& r, Window& w);
+	virtual void logOne(BasicResult& r);
 
     private:
 	// Our model of GL machine state

@@ -46,6 +46,7 @@ class PathsTest: public BasicTest {
 	}
 
 	virtual void runOne(BasicResult& r, Window& w);
+	virtual void logOne(BasicResult& r);
 
     private:
 	enum Path {

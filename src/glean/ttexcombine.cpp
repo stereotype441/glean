@@ -1005,7 +1005,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r) {
 
 // XXX should we run a number of individual tests instead?
 void
-TexCombineTest::runOne(BasicResult& r) {
+TexCombineTest::runOne(BasicResult& r, Window&) {
 	// Grab pointers to the extension functions.  It's safe to use
 	// these without testing them because we already know that we
 	// won't be invoked except on contexts that support the
@@ -1041,12 +1041,14 @@ TexCombineTest::runOne(BasicResult& r) {
 			passed = RunMultiTextureTest(Machine, r);
 		}
 	}
+	r.pass = passed;
+} // TexCombineTest::runOne
 
-
-	if (passed) {
-		r.pass = true;
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
+void
+TexCombineTest::logOne(BasicResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
 		env->log << "\tTested "
 			<< CountTestCombinations(ReplaceParams)
 			<< " GL_REPLACE combinations\n";
@@ -1066,7 +1068,7 @@ TexCombineTest::runOne(BasicResult& r) {
 			<< CountMultiTextureTestCombinations(Machine)
 			<< " multitexture combinations\n";
 	}
-} // TexCombineTest::runOne
+} // TexCombineTest::logOne
 
 
 ///////////////////////////////////////////////////////////////////////////////

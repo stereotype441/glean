@@ -167,7 +167,7 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-TexgenTest::runOne(BasicResult& r) {
+TexgenTest::runOne(BasicResult& r, Window&) {
     
     // Temporary buffer to store pixels we've read back for verification.
     GLfloat pixels[50*50*3];

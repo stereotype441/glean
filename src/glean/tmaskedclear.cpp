@@ -98,7 +98,7 @@ MaskedClearTest::failStencil(BasicResult& r, GLuint expected, GLuint actual)
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-MaskedClearTest::runOne(BasicResult& r) {
+MaskedClearTest::runOne(BasicResult& r, Window&) {
 
 	bool passed = true;
 
