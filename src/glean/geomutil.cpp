@@ -336,8 +336,8 @@ Sphere3D::Sphere3D(float radius, int slices, int stacks)
         }
     }
 
-    assert(vertices.size() == numVertices*3);
-    assert(indices.size() == numIndices);
+    assert(static_cast<int>(vertices.size()) == numVertices*3);
+    assert(static_cast<int>(indices.size()) == numIndices);
 
 #undef VX
 #undef VY
