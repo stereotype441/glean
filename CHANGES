@@ -60,6 +60,10 @@ the user to specify (as a string) a list of names of extensions which
 must be supported by a rendering context before the test will be run on
 that context.  Modified the EXT_texture_env_combine test to use it.
 
+Fixed a bug reported by Rik Faith; comparison of two test databases
+now continues even if some results are missing from one or both
+databases.
+
 
 0.6 to 1.0:
 ===========
