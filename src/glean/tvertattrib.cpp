@@ -47,6 +47,7 @@
 
 #include "tvertattrib.h"
 #include "glutils.h"
+#include <cassert>
 
 namespace GLEAN {
 
