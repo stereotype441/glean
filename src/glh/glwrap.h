@@ -58,6 +58,7 @@
 #  if !defined(GLCALLBACK)
 #      define GLCALLBACK __stdcall
 #  endif
+#  include <GL/glext.h>
 #elif defined(__X11__)
 #  include <GL/glx.h>
    // glx.h covers Xlib.h and gl.h, among others
@@ -68,6 +69,7 @@
 #  if !defined(GLCALLBACK)
 #      define GLCALLBACK
 #  endif
+#  include <GL/glext.h>
 #else
 #  error "Improper window system configuration; must be __WIN__ or __X11__."
 #endif
