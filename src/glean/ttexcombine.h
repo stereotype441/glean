@@ -90,7 +90,10 @@ class TexCombineTest: public BasicTest {
 	static test_param AddParams[];
 	static test_param AddSignedParams[];
 	static test_param InterpolateParams[];
+	static test_param Dot3RGBParams[];
+	static test_param Dot3RGBAParams[];
 	static test_param MultitexParams[];
+	bool haveDot3;
 
 	void ResetMachine(glmachine &machine);
 	void ComputeTexCombine(const glmachine &machine, int texUnit,

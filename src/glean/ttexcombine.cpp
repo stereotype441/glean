@@ -30,6 +30,9 @@
 // ttexcombine.cpp:  Test the GL_EXT_texture_env_combine extension
 // Author: Brian Paul (brianp@valinux.com)  September 2000
 //
+// GL_EXT_texture_env_dot3 extension test
+// Author: Gareth Hughes (gareth@valinux.com)  January 2001
+//
 // The challenge with testing this extension is dealing with combinatorial
 // explosion.  There are 16 state variables in this extension:
 //
@@ -176,6 +179,38 @@ TexCombineTest::test_param TexCombineTest::InterpolateParams[] = {
 	{ 0, { 0, 0, 0, 0, 0 } }
 };
 
+TexCombineTest::test_param TexCombineTest::Dot3RGBParams[] = {
+	{ GL_COMBINE_RGB_EXT, { GL_DOT3_RGB_EXT, 0 } },
+	{ GL_COMBINE_ALPHA_EXT, { GL_MODULATE, 0 } },
+	{ GL_SOURCE0_RGB_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, 0 } },
+	{ GL_SOURCE1_RGB_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, GL_PREVIOUS_EXT, 0 } },
+	{ GL_SOURCE0_ALPHA_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, 0 } },
+	{ GL_SOURCE1_ALPHA_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, GL_PREVIOUS_EXT, 0 } },
+	{ GL_OPERAND0_RGB_EXT, { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND1_RGB_EXT, { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND0_ALPHA_EXT, { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND1_ALPHA_EXT, { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_RGB_SCALE_EXT, { 1, 2, 4, 0 } },
+	{ GL_ALPHA_SCALE, { 1, 2, 4, 0 } },
+	{ 0, { 0, 0, 0, 0, 0 } }
+};
+
+TexCombineTest::test_param TexCombineTest::Dot3RGBAParams[] = {
+	{ GL_COMBINE_RGB_EXT, { GL_DOT3_RGBA_EXT, 0 } },
+	{ GL_COMBINE_ALPHA_EXT, { GL_MODULATE, 0 } },
+	{ GL_SOURCE0_RGB_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, 0 } },
+	{ GL_SOURCE1_RGB_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, GL_PREVIOUS_EXT, 0 } },
+	{ GL_SOURCE0_ALPHA_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, 0 } },
+	{ GL_SOURCE1_ALPHA_EXT, { GL_TEXTURE, GL_CONSTANT_EXT, GL_PRIMARY_COLOR_EXT, GL_PREVIOUS_EXT, 0 } },
+	{ GL_OPERAND0_RGB_EXT, { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND1_RGB_EXT, { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND0_ALPHA_EXT, { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_OPERAND1_ALPHA_EXT, { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 0 } },
+	{ GL_RGB_SCALE_EXT, { 1, 2, 4, 0 } },
+	{ GL_ALPHA_SCALE, { 1, 2, 4, 0 } },
+	{ 0, { 0, 0, 0, 0, 0 } }
+};
+
 
 static void
 problem(const char *s) {
@@ -216,7 +251,7 @@ void
 TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 				const GLfloat prevColor[4],
 				GLfloat result[4]) const {
-	GLfloat term0[4], term1[4], term2[4];
+	GLfloat term0[4], term1[4], term2[4], dot;
 	const GLfloat *fragColor = machine.FragColor;
 	const GLfloat *constColor = machine.EnvColor[texUnit];
 	const GLfloat *texColor = machine.TexColor[texUnit];
@@ -446,6 +481,15 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 		result[1] = term0[1] * term2[1] + term1[1] * (1.0 - term2[1]);
 		result[2] = term0[2] * term2[2] + term1[2] * (1.0 - term2[2]);
 		break;
+	case GL_DOT3_RGB_EXT:
+	case GL_DOT3_RGBA_EXT:
+		dot = ((term0[0] - 0.5) * (term1[0] - 0.5) +
+		       (term0[1] - 0.5) * (term1[1] - 0.5) +
+		       (term0[2] - 0.5) * (term1[2] - 0.5));
+		result[0] = dot;
+		result[1] = dot;
+		result[2] = dot;
+		break;
 	default:
 		problem("bad rgbCombine");
 		return;
@@ -472,11 +516,35 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 		return;
 	}
 
+	if (machine.COMBINE_RGB[texUnit] == GL_DOT3_RGBA_EXT) {
+	   result[3] = result[0];
+	}
+
+	   
 	// scaling
-	result[0] *= machine.RGB_SCALE[texUnit];
-	result[1] *= machine.RGB_SCALE[texUnit];
-	result[2] *= machine.RGB_SCALE[texUnit];
-	result[3] *= machine.ALPHA_SCALE[texUnit];
+	// GH: Remove this crud when the ARB extension is done.  It
+	// most likely won't have this scale factor restriction.
+	switch (machine.COMBINE_RGB[texUnit]) {
+	case GL_DOT3_RGB_EXT:
+	case GL_DOT3_RGBA_EXT:
+	   result[0] *= 4.0;
+	   result[1] *= 4.0;
+	   result[2] *= 4.0;
+	   break;
+	default:
+	   result[0] *= machine.RGB_SCALE[texUnit];
+	   result[1] *= machine.RGB_SCALE[texUnit];
+	   result[2] *= machine.RGB_SCALE[texUnit];
+	   break;
+	}
+	switch (machine.COMBINE_RGB[texUnit]) {
+	case GL_DOT3_RGBA_EXT:
+	   result[3] *= 4.0;
+	   break;
+	default:
+	   result[3] *= machine.ALPHA_SCALE[texUnit];
+	   break;
+	}
 
 	// final clamping
 	result[0] = CLAMP(result[0], 0.0, 1.0);
@@ -508,6 +576,10 @@ EnumString(GLenum pname)
 		return "GL_ADD_SIGNED_EXT";
 	case GL_INTERPOLATE_EXT:
 		return "GL_INTERPOLATE_EXT";
+	case GL_DOT3_RGB_EXT:
+		return "GL_DOT3_RGB_EXT";
+	case GL_DOT3_RGBA_EXT:
+		return "GL_DOT3_RGBA_EXT";
 	case GL_TEXTURE:
 		return "GL_TEXTURE";
 	case GL_CONSTANT_EXT:
@@ -905,12 +977,14 @@ bool
 TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
     Window& w) {
 
-	static const GLenum combineModes[5] = {
+	static const GLenum combineModes[7] = {
 		GL_REPLACE,
 		GL_ADD,
 		GL_ADD_SIGNED_EXT,
 		GL_MODULATE,
-		GL_INTERPOLATE_EXT
+		GL_INTERPOLATE_EXT,
+		GL_DOT3_RGB_EXT,
+		GL_DOT3_RGBA_EXT
 	};
 
 	const int numTests = CountMultiTextureTestCombinations(machine);
@@ -1019,6 +1093,9 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 	p_glMultiTexCoord2fARB = (PFNGLMULTITEXCOORD2FARBPROC)
 		(GLUtils::getProcAddress("glMultiTexCoord2fARB"));
 
+	// Test the availability of the DOT3 extenstion
+	haveDot3 = GLUtils::haveExtensions("GL_EXT_texture_env_dot3");
+
         // We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
 
@@ -1034,6 +1111,10 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 		passed = RunSingleTextureTest(Machine, ModulateParams, r, w);
 	if (passed)
 		passed = RunSingleTextureTest(Machine, InterpolateParams, r, w);
+	if (passed && haveDot3)
+		passed = RunSingleTextureTest(Machine, Dot3RGBParams, r, w);
+	if (passed && haveDot3)
+		passed = RunSingleTextureTest(Machine, Dot3RGBAParams, r, w);
 
 	// Now do some multi-texture tests
 	if (passed) {
@@ -1068,6 +1149,14 @@ TexCombineTest::logOne(BasicResult& r) {
 		env->log << "\tTested "
 			<< CountTestCombinations(InterpolateParams)
 			<< " GL_INTERPOLATE_EXT combinations\n";
+		if (haveDot3) {
+			env->log << "\tTested "
+				 << CountTestCombinations(Dot3RGBParams)
+				 << " GL_DOT3_RGB_EXT combinations\n";
+			env->log << "\tTested "
+				 << CountTestCombinations(Dot3RGBAParams)
+				 << " GL_DOT3_RGBA_EXT combinations\n";
+		}
 		env->log << "\tTested "
 			<< CountMultiTextureTestCombinations(Machine)
 			<< " multitexture combinations\n";
