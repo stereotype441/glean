@@ -182,7 +182,8 @@ BasicPerfTest::logStats(BasicPerfResult& r) {
 ///////////////////////////////////////////////////////////////////////////////
 BasicPerfTest basicPerfTest("basicPerf", "window",
 	"This trivial test simply verifies the internal support for basic\n"
-	"tests.  It is run on every OpenGL-capable drawing surface\n"
-	"configuration that supports creation of a window.\n");
+	"performance tests.  It is run on every OpenGL-capable drawing surface\n"
+	"configuration that supports creation of a window.  If everything is\n"
+	"working correctly, each result should be close to 0.1 second.\n");
 
 } // namespace GLEAN

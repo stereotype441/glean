@@ -358,8 +358,8 @@ TexgenTest::renderSphere(int retainedMode, GeomRenderer& sphereRenderer)
 ///////////////////////////////////////////////////////////////////////////////
 TexgenTest texgenTest("texgen", "window, rgb",
 
-	"This test verifies that the three basic OpenGL texture coordinate "
-	"modes: object_linear, eye_linear, and sphere_map, work for a simple "
+	"This test verifies that the three basic OpenGL texture coordinate\n"
+	"modes: object_linear, eye_linear, and sphere_map, work for a simple\n"
 	"case.\n");
 
 

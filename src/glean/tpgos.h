@@ -27,30 +27,13 @@
 // END_COPYRIGHT
 
 
-// tpgos.h:  Example class for pgos tests
+// tpgos.h:  Polygon offset tests.
 //
 // glPolygonOffset test code donated to the glean project by
 // Angus Dorbie <dorbie@sgi.com>, Thu, 07 Sep 2000 04:13:45 -0700
 //
 // glPolygonOffset test code integrated into glean framework by
 // Rickard E. (Rik) Faith <faith@precisioninsight.com>, October 2000
-
-// This class (derived from Test) provides a framework for a large set
-// of correctness tests that should be portable (in the sense that
-// they don't contain OS- or window-system-specific code).
-
-// Each pgos test includes a drawing surface filter string.  The test
-// will be run on all the drawing surface configurations that are
-// selected by the filter, and one result structure will be generated
-// for each such configuration.
-//
-// Each pgos test may also include an extension filter string.  The test
-// will only be run on contexts that support all the listed extensions.
-// Extension names in the string may be separated with non alphanumerics;
-// whitespace and commas are used by convention.
-
-// When comparing two runs, the drawing surface configurations are
-// used to select plausible matches among the results.
 
 
 #ifndef __tpgos_h__

@@ -26,24 +26,16 @@
 // 
 // END_COPYRIGHT
 
+
+
 // tbasic.h:  Example class for basic tests
 
-// This class (derived from BaseTest) provides a framework for a large set
-// of correctness tests that should be portable (in the sense that
-// they don't contain OS- or window-system-specific code).
+// This class illustrates the use of the BaseResult class and BaseTest
+// template class for constructing straightforward portable tests. 
+// See the file tbase.h for a discussion of this process.
 
-// Each basic test includes a drawing surface filter string.  The test
-// will be run on all the drawing surface configurations that are
-// selected by the filter, and one result structure will be generated
-// for each such configuration.
-//
-// Each basic test may also include an extension filter string.  The test
-// will only be run on contexts that support all the listed extensions.
-// Extension names in the string may be separated with non alphanumerics;
-// whitespace and commas are used by convention.
-
-// When comparing two runs, the drawing surface configurations are
-// used to select plausible matches among the results.
+// BasicTest simply runs on all drawing surface configurations that
+// permit the creation of a window, and always passes.
 
 
 #ifndef __tbasic_h__

@@ -359,8 +359,8 @@ PathsTest::logOne(BasicResult& r) {
 ///////////////////////////////////////////////////////////////////////////////
 PathsTest pathsTest("paths", "window, rgb",
 
-	"This test verifies that basic OpenGL operations such as the alpha "
-	"test, depth test, blending, stippling, and texturing work for "
+	"This test verifies that basic OpenGL operations such as the alpha\n"
+	"test, depth test, blending, stippling, and texturing work for\n"
 	"trivial cases.\n");
 
 

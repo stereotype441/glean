@@ -194,6 +194,10 @@ void GeomRenderer::setNormalPointer(GLenum type, GLsizei stride, const GLvoid* p
 // configuration (uses GL_COMPILE mode to build the list).  Fails if insufficient data has
 // been given (i.e. if you don't give it an array for an enabled parameter, if you don't
 // give it an array of indices when it needs them).
+// Note that rendering with GLVERTEX_MODE currently involves a lot of CPU overhead to
+// unpack the data and pass it to the GL; while the results will be correct, it would be
+// unwise to use this method for rendering that is to be benchmarked, because it will
+// underestimate performance significantly on some machines.
 bool GeomRenderer::renderPrimitives(GLenum mode)
 {
     if (!isReadyToRender())

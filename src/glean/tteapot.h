@@ -31,6 +31,9 @@
 
 #include "tbase.h"
 
+
+// Simple teapot-drawing benchmark provided by Adam Haberlach.
+
 namespace GLEAN {
 
 class TeapotResult: public BaseResult {

@@ -43,6 +43,10 @@
 // vary depending on the drawing surface configuration or the
 // particular type of drawing surface used).
 
+// It is possible to derive test classes directly from this class. 
+// Most people will find it more convenient to use the BaseTest
+// template class.  See tbase.h for more information.
+
 
 
 #ifndef __test_h__

@@ -26,24 +26,77 @@
 // 
 // END_COPYRIGHT
 
-// tbase.h:  Base class for (most) tests
+/*
+tbase.h:  Base template class for (most) tests
 
-// This class (derived from Test) provides a framework for a large set
-// of correctness tests that should be portable (in the sense that
-// they don't contain OS- or window-system-specific code).
+In general, a glean test is an instance of a class derived from the
+class Test.  It produces a vector of results, which are instances of a
+class derived from the class Result.  Most glean tests are "portable"
+in the sense that they don't contain OS- or window-system-specific
+code; those things are abstracted by the Environment and WindowSystem
+classes.
 
-// Each basic test includes a drawing surface filter string.  The test
-// will be run on all the drawing surface configurations that are
-// selected by the filter, and one result structure will be generated
-// for each such configuration.
-//
-// Each basic test may also include an extension filter string.  The test
-// will only be run on contexts that support all the listed extensions.
-// Extension names in the string may be separated with non alphanumerics;
-// whitespace and commas are used by convention.
+This file contains a template class and result class that serve as
+bases for portable tests, and several macros that simplify test class
+declarations.
 
-// When comparing two runs, the drawing surface configurations are
-// used to select plausible matches among the results.
+The result class, BaseResult, includes utility functions that read and
+write test results.  To use it, derive a new class from it, add
+whatever variables you need to store your test results, and override
+the getresults() and putresults() member functions to read and write
+those variables from and to a stream.
+
+The template class, BaseTest, is parameterized by the result class and
+declares member functions and variables that are common to all
+portable tests.  These include the member functions run() and
+compare() which are invoked for each test by main().  BaseTest also
+provides several variables which you might want to use when
+constructing a test:
+
+	A drawing surface filter string.  The test can be run on all
+	the drawing surface configurations that are selected by the
+	filter, and one result structure will be generated for each
+	such configuration.
+
+	A flag indicating whether the test is to be run on *all*
+	drawing surface configurations, or just one.  For tests that
+	take a long time to run, it is often sufficient to check just
+	one drawing surface configuration rather than all of them.
+
+	An extension filter string.  The test will only be run on
+	contexts that support all the listed extensions.  Extension
+	names in the string may be separated with non alphanumerics;
+	whitespace and commas are used by convention.
+	
+	A description string.  This will be printed in the test log to
+	describe the test.
+
+	Default width and height for any windows to be created by the
+	test.
+
+To use BaseTest, declare a new class derived from BaseTest,
+parameterized by your result class.  Then override the runOne(),
+compareOne(), and logOne() member functions.  runOne() runs a test and
+generates a result.  compareOne() compares one result from a test run
+with the same result from another test run.  logOne() generates a log
+message summarizing the result of the test.
+
+Your new test will need a few common declarations (such as
+constructors).  To simplify writing them, this file provides a few
+helper macros.  GLEAN_CLASS(TEST,RESULT) handles the declarations for
+a test class named TEST and a result class named RESULT, using the
+default values for window width and height and the run-once flag. 
+GLEAN_CLASS_WH() and GLEAN_CLASS_WHO() allow you to specify the width,
+height, and run-once flag if you choose.
+
+Finally, declare an object using your new test class.  This object
+must be global, so that its constructor will automatically add it to
+the list of all tests.
+
+You can find an example of this whole process in the files tbasic.h
+and tbasic.cpp.
+
+*/
 
 
 #ifndef __tbase_h__

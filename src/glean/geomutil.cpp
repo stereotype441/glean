@@ -346,27 +346,15 @@ Sphere3D::Sphere3D(float radius, int slices, int stacks)
 }
 
 // This returns the vertices: 3 floats per vertex in a tightly packed array (no padding between vertices).
-//
-// DANGER: There could be a conformant STL for which this didn't work (it could conceivably store
-// the vector backwards in memory or something), so this might break, but it's pretty unlikely
-// (every vector I've ever seen stores a generic array for the data).
 const float* Sphere3D::getVertices() const { return &(vertices[0]); }
 int Sphere3D::getNumVertices() const { return numVertices; }
 
 // This returns the normals; same data format as the vertices.  And of course the number of normals is
 // the same as the number of vertices.
-//
-// DANGER: There could be a conformant STL for which this didn't work (it could conceivably store
-// the vector backwards in memory or something), so this might break, but it's pretty unlikely
-// (every vector I've ever seen stores a generic array for the data).
 const float* Sphere3D::getNormals() const { return &(normals[0]); }
 
 // This returns a series of vertices that form triangles from the vertices (the indices specify loose
 // triangles, not tristrips or fans or whatnot.  So each triplet of indices is an individual triangle.)
-//
-// DANGER: There could be a conformant STL for which this didn't work (it could conceivably store
-// the vector backwards in memory or something), so this might break, but it's pretty unlikely
-// (every vector I've ever seen stores a generic array for the data).
 const unsigned int* Sphere3D::getIndices() const { return &(indices[0]); }
 int Sphere3D::getNumIndices() const { return numIndices; }
 

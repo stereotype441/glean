@@ -27,7 +27,7 @@
 // END_COPYRIGHT
 
 
-// ttexcombing.cpp:  Test the GL_EXT_texture_env_combine extension
+// ttexcombine.cpp:  Test the GL_EXT_texture_env_combine extension
 // Author: Brian Paul (brianp@valinux.com)  September 2000
 //
 // The challenge with testing this extension is dealing with combinatorial
