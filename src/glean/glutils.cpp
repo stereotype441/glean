@@ -69,11 +69,9 @@ haveExtension(const char* name) {
 		(glGetString(GL_EXTENSIONS));
 	Lex lexer(extensions);
 
-	for (;;) {
-		lexer.next();
+	for (lexer.next(); lexer.token != Lex::END; lexer.next())
 		if (lexer.token == Lex::ID && lexer.id == name)
 			return true;
-	}
 
 	return false;
 } // haveExtension
@@ -85,8 +83,8 @@ haveExtension(const char* name) {
 //	return value on Windows is context-dependent, and wglGetProcAddress
 //	doesn't take a rendering context as an argument.)
 ///////////////////////////////////////////////////////////////////////////////
-void*
-getProcAddress(const char* name) {
+void
+(*getProcAddress(const char* name))() {
 #if defined(__X11__)
 #   if defined(GLX_ARB_get_proc_address)
 	return glXGetProcAddressARB(reinterpret_cast<const GLubyte*>(name));
