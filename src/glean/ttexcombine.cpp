@@ -805,18 +805,18 @@ TexCombineTest::SetupTestEnv(struct glmachine &machine, int texUnit,
 void
 TexCombineTest::SetupColors(glmachine &machine) {
 
-	static const GLfloat fragColor[4] = { 0.25, 0.5,  0.75, 1.0 };
+	static const GLfloat fragColor[4] = { 0.25, 0.50, 0.75, 1.00 };
 	static const GLfloat envColors[][4] = {
-		{ 0.5, 0.5, 1.0, 1.0 },
-		{ 0.5, 1.0, 0.5, 1.0 },
-		{ 1.0, 0.5, 0.5, 1.0 },
-		{ 1.0, 1.0, 1.0, 0.5 }
+		{ 0.25, 0.50, 1.00, 1.0 },
+		{ 0.50, 0.75, 0.25, 1.0 },
+		{ 1.00, 0.25, 0.00, 1.0 },
+		{ 0.50, 0.00, 0.25, 0.5 }
 	};
 	static const GLfloat texColors[][4] = {
 		{ 1.00, 0.75, 0.25, 1.0 },
-		{ 0.25, 1.00, 0.25, 1.0 },
+		{ 0.25, 1.00, 0.00, 0.0 },
 		{ 0.25, 0.25, 1.00, 1.0 },
-		{ 0.50, 0.50, 0.50, 0.5 }
+		{ 0.00, 0.25, 0.50, 0.5 }
 	};
 
 	COPY4(machine.FragColor, fragColor);
@@ -856,6 +856,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 			}
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 				     4, 4, 0, GL_RGBA, GL_FLOAT, image);
+
 #if 0 // Debug
 			GLfloat check[16][4];
 			GLint r, g, b, a;
@@ -917,12 +918,12 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 		ComputeTexCombine(machine, 0, machine.FragColor, expected);
 
 		// 3. Compare rendered result to expected result
-		const GLfloat epsilon = 1.0 / 32.0;
 		const GLfloat dr = fabs(expected[0] - renderedResult[0]);
 		const GLfloat dg = fabs(expected[1] - renderedResult[1]);
 		const GLfloat db = fabs(expected[2] - renderedResult[2]);
-		//const GLfloat da = fabs(expected[3] - renderedResult[3]);
-		if (dr > epsilon || dg > epsilon || db > epsilon) {
+		const GLfloat da = fabs(expected[3] - renderedResult[3]);
+		if (dr > mTolerance[0] || dg > mTolerance[1] ||
+			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
 #if 0 // Debug
 			// For debugging, printing the state of the previous
@@ -1061,12 +1062,12 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		}
 
 		// 3. Compare rendered result to expected result
-		const GLfloat epsilon = 1.0 / 32.0;
 		const GLfloat dr = fabs(expected[0] - renderedResult[0]);
 		const GLfloat dg = fabs(expected[1] - renderedResult[1]);
 		const GLfloat db = fabs(expected[2] - renderedResult[2]);
-		//const GLfloat da = fabs(expected[3] - renderedResult[3]);
-		if (dr > epsilon || dg > epsilon || db > epsilon) {
+		const GLfloat da = fabs(expected[3] - renderedResult[3]);
+		if (dr > mTolerance[0] || dg > mTolerance[1] ||
+			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
 			printf("multitex test %d failed\n", testNum);
 #if 0 // Debug
@@ -1103,7 +1104,42 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 	// Test the availability of the DOT3 extenstion
 	haveDot3 = GLUtils::haveExtensions("GL_EXT_texture_env_dot3");
 
-        // We'll only render a 4-pixel polygon
+	/* compute RGB error tolerance */
+	{
+		GLint rBits, gBits, bBits, aBits;
+		GLint rTexBits, gTexBits, bTexBits, aTexBits;
+		GLfloat texImage[4][4][4];
+		/* Make dummy texture image */
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0,
+			GL_RGBA, GL_FLOAT, texImage);
+		glGetIntegerv(GL_RED_BITS, &rBits);
+		glGetIntegerv(GL_GREEN_BITS, &gBits);
+		glGetIntegerv(GL_BLUE_BITS, &bBits);
+		glGetIntegerv(GL_ALPHA_BITS, &aBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+			GL_TEXTURE_RED_SIZE, &rTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+			GL_TEXTURE_GREEN_SIZE, &gTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+			GL_TEXTURE_BLUE_SIZE, &bTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+			GL_TEXTURE_ALPHA_SIZE, &aTexBits);
+		/* find smaller of frame buffer and texture bits */
+		rBits = (rBits < rTexBits) ? rBits : rTexBits;
+		gBits = (gBits < gTexBits) ? gBits : gTexBits;
+		bBits = (bBits < bTexBits) ? bBits : bTexBits;
+		aBits = (aBits < aTexBits) ? aBits : aTexBits;
+		/* tolerance is 3 bits of error */
+		mTolerance[0] = 8.0 / (1 << rBits);
+		mTolerance[1] = 8.0 / (1 << gBits);
+		mTolerance[2] = 8.0 / (1 << bBits);
+		if (aBits == 0)
+			mTolerance[3] = 1.0;
+		else
+			mTolerance[3] = 8.0 / (1 << aBits);
+	}
+
+	// We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
 
 	Machine.NumTexUnits = 1;
