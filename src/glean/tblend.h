@@ -39,6 +39,7 @@ namespace GLEAN {
 				// for each pixel in a square image of this
 				// dimension, so if you make it too large,
 				// the tests may take quite a while to run.
+#define windowSize (drawingSize + 2)
 
 class BlendFuncResult: public BaseResult {
 public:
@@ -59,7 +60,7 @@ public:
 class BlendFuncTest: public BaseTest<BlendFuncResult> {
 public:
 	GLEAN_CLASS_WH(BlendFuncTest, BlendFuncResult,
-		       drawingSize, drawingSize);
+		       windowSize, windowSize);
 }; // class BlendFuncTest
 
 } // namespace GLEAN

@@ -508,10 +508,12 @@ PgosTest::compareOne(POResult& oldR, POResult& newR) {
 			 << "Second test has more subtests than first test\n";
 
 	if (env->options.verbosity) {
+		unsigned int i;
+		
 		env->log << env->options.db1Name << ':';
-		logOne(oldR);
+		for (i = 0; i < oldR.data.size(); i++) logStats1(oldR, i, env);
 		env->log << env->options.db2Name << ':';
-		logOne(newR);
+		for (i = 0; i < newR.data.size(); i++) logStats1(newR, i, env);
 	}
 } // PgosTest::compareOne
 
@@ -526,7 +528,7 @@ PgosTest::logOne(POResult& r) {
 	logPassFail(r);
 	logConcise(r);
 	for (i = 0; i < r.data.size(); i++) logStats1(r, i, env);
-} // OrthoPosPoints::logStats
+} // PgosTest::logStats
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

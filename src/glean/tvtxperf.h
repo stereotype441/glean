@@ -33,11 +33,9 @@
 
 #include "tbase.h"
 
-namespace {
-	const int drawingSize = 256;
-};
-
 namespace GLEAN {
+
+#define drawingSize 256
 
 // Auxiliary struct for holding a vertex-performance result:
 class VPSubResult {

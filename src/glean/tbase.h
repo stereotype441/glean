@@ -312,30 +312,6 @@ public:
 		}
 	}
 
-	virtual void compareMessage(bool& headerPrinted,
-				    const char *title,
-				    const ResultType& r,
-				    bool o,
-				    bool n,
-				    const char *tmsg,
-				    const char *fmsg) {
-		if (!headerPrinted) {
-			headerPrinted = true;
-			env->log << name
-				 << ": DIFF "
-				 << r.config->conciseDescription()
-				 << '\n';
-		}
-		
-		env->log << '\t' << env->options.db1Name;
-		if (title) env->log << ' ' << title;
-		env->log << ' ' << (o ? tmsg : fmsg) << '\n';
-
-		env->log << '\t' << env->options.db2Name;
-		if (title) env->log << ' ' << title;
-		env->log << ' ' << (n ? tmsg : fmsg) << '\n';
-	}
-
 	virtual void logPassFail(ResultType& r) {
 		env->log << name << (r.pass ? ":  PASS ": ":  FAIL ");
 	}

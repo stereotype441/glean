@@ -122,7 +122,7 @@ RGBTriStripTest::logOne(RGBTriStripResult& r) {
 		   "\tthe image to verify that the result is correct, or\n"
 		   "\tcompare it to a known-good result from a different\n"
 		   "\trun of glean.\n";
-} // BasicTest::logOne
+} // RGBTriStripTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case

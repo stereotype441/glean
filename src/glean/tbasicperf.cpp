@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -44,13 +44,19 @@
 namespace {
 class MyPerf : public GLEAN::Timer {
 public:
-	int seconds;
+	int msec;
 
 	void preop()  { glFinish(); }
-	void op()     { sleep(seconds); }
+	void op()     {
+#ifdef __WIN__
+		Sleep(msec);	/* milliseconds */
+#else
+		usleep(msec*1000); /* microseconds */
+#endif
+	}
 	void postop() { glFinish(); }
 
-	MyPerf() { seconds = 1; }
+	MyPerf() { msec = 100; }
 };
 
 
@@ -108,7 +114,7 @@ BasicPerfTest::logOne(BasicPerfResult& r) {
 void
 BasicPerfTest::compareOne(BasicPerfResult& oldR, BasicPerfResult& newR) {
 	bool same = true;
-	const char *title = "sleep()";
+	const char *title = "100mS sleep";
 
 	if (newR.timeLow < oldR.timeLow) {
 		double percent = (100.0

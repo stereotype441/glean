@@ -34,33 +34,28 @@
 
 #include "tbase.h"
 
-namespace {
-const int drawingSize = 256;
-const int windowSize = drawingSize + 2;	// one-pixel border on all sides
-}
-
 namespace GLEAN {
+
+#define drawingSize 256
+#define windowSize  (drawingSize + 2)
 
 // Auxiliary struct for holding a test result:
 class OPResult: public BaseResult {
 public:
+	bool pass;		// not saved in results file
 	bool hasGaps;		// true if gaps between prims were detected
 	bool hasOverlaps;	// true if overlaps were detected
 	bool hasBadEdges;	// true if edge-conditions were incorrect
-	bool pass;		// not written to log file (why?)
 
 	OPResult() {
-		pass = false;
 		hasGaps = hasOverlaps = hasBadEdges = false;
 	}
-	
 	void putresults(ostream& s) const {
 		s << hasGaps
 		  << ' ' << hasOverlaps
 		  << ' ' << hasBadEdges
 		  << '\n';
 	}
-	
 	bool getresults(istream& s) {
 		s >> hasGaps >> hasOverlaps >> hasBadEdges;
 		return s.good();
@@ -69,38 +64,38 @@ public:
 
 class OrthoPosPoints: public BaseTest<OPResult> {
 public:
-	static const char * const title = "immediate-mode points";
 	GLEAN_CLASS_WH(OrthoPosPoints, OPResult, windowSize, windowSize);
+	void logStats(OPResult& r);
 }; // class OrthoPosPoints
 
 class OrthoPosVLines: public BaseTest<OPResult> {
 public:
-	static const char * const title = "immediate-mode vertical lines";
 	GLEAN_CLASS_WH(OrthoPosVLines, OPResult, windowSize, windowSize);
-}; // class OrthoVLines
+	void logStats(OPResult& r);
+}; // class OrthoPosVLines
 
 class OrthoPosHLines: public BaseTest<OPResult> {
 public:
-	static const char * const title = "immeditate-mode horizontal lines";
 	GLEAN_CLASS_WH(OrthoPosHLines, OPResult, windowSize, windowSize);
+	void logStats(OPResult& r);
 }; // class OrthoPosHLines
 
 class OrthoPosTinyQuads: public BaseTest<OPResult> {
 public:
-	static const char * const title = "immediate-mode 1x1 quads";
 	GLEAN_CLASS_WH(OrthoPosTinyQuads, OPResult, windowSize, windowSize);
+	void logStats(OPResult& r);
 }; // class OrthoPosTinyQuads
 
 class OrthoPosRandRects: public BaseTest<OPResult> {
 public:
-	static char * const title = "immediate-mode axis-aligned rectangles";
 	GLEAN_CLASS_WH(OrthoPosRandRects, OPResult, windowSize, windowSize);
+	void logStats(OPResult& r);
 }; // class OrthoPosRandRects
 
 class OrthoPosRandTris: public BaseTest<OPResult> {
 public:
-	static const char * const title ="immediate-mode triangles";
 	GLEAN_CLASS_WH(OrthoPosRandTris, OPResult, windowSize, windowSize);
+	void logStats(OPResult& r);
 }; // class OrthoPosRandTris
 
 } // namespace GLEAN

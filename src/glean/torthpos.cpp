@@ -35,23 +35,55 @@
 // see the OpenGL Correctness Tips on page 601.
 
 #include "torthpos.h"
-#include "rand.h"
 #include "image.h"
+#include "rand.h"
 #include "geomutil.h"
 
+#if 0
+#ifdef __UNIX__
+#include <unistd.h>
+#endif
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include "dsconfig.h"
+#include "dsfilt.h"
+#include "dsurf.h"
+#include "winsys.h"
+#include "environ.h"
+#include "rc.h"
+#include "glutils.h"
+#include "torthpos.h"
+#include "misc.h"
+#endif
+
+
 namespace {
+
 void
-logStats1(const char* title, GLEAN::OPResult& r, GLEAN::Environment* env) {
+logStats1(const char* title, GLEAN::OPResult& r,
+    GLEAN::Environment* env) {
 	env->log << '\t' << title << ": ";
 	if (r.hasGaps || r.hasOverlaps || r.hasBadEdges) {
 		env->log << (r.hasGaps? " Gaps.": "")
-			 << (r.hasOverlaps? " Overlaps.": "")
-			 << (r.hasBadEdges? " Incorrect edges.": "")
-			 << '\n';
+			<< (r.hasOverlaps? " Overlaps.": "")
+			<< (r.hasBadEdges? " Incorrect edges.": "")
+			<< '\n';
 	} else {
 		env->log << " No gaps, overlaps, or incorrect edges.\n";
 	}
 } // logStats1
+
+void
+diffHeader(bool& same, const string& name,
+    GLEAN::DrawingSurfaceConfig* config, GLEAN::Environment* env) {
+	if (same) {
+		same = false;
+		env->log << name << ":  DIFF "
+			<< config->conciseDescription() << '\n';
+	}
+} // diffHeader
 
 void
 failHeader(bool& pass, const string& name,
@@ -64,41 +96,45 @@ failHeader(bool& pass, const string& name,
 } // failHeader
 
 void
-doComparison(GLEAN::BaseTest<GLEAN::OPResult>* that,
-	     const GLEAN::OPResult& oldR,
-	     const GLEAN::OPResult& newR,
-	     bool& same,
-	     const char* title) {
-#if 0
+doComparison(const GLEAN::OPResult& oldR,
+    const GLEAN::OPResult& newR,
     GLEAN::DrawingSurfaceConfig* config,
     bool& same,
     const string& name,
     GLEAN::Environment* env,
     const char* title) {
-#endif
-	bool headerPrinted = false;
-	same = true;
-	
 	if (newR.hasGaps != oldR.hasGaps) {
-		same = false;
-		that->compareMessage(headerPrinted, title, newR,
-				     oldR.hasGaps, newR.hasGaps,
-				     "has gaps", "does not have gaps");
+		diffHeader(same, name, config, env);
+		env->log << '\t' << env->options.db1Name
+			<< ' ' << title << ' '
+			<< (oldR.hasGaps? " has": " does not have")
+			<< " gaps\n";
+		env->log << '\t' << env->options.db2Name
+			<< ' ' << title << ' '
+			<< (newR.hasGaps? " has": " does not have")
+			<< " gaps\n";
 	}
-	
 	if (newR.hasOverlaps != oldR.hasOverlaps) {
-		same = false;
-		that->compareMessage(headerPrinted, title, newR,
-				     oldR.hasOverlaps, newR.hasOverlaps,
-				     "has overlaps", "does not have overlaps");
+		diffHeader(same, name, config, env);
+		env->log << '\t' << env->options.db1Name
+			<< ' ' << title << ' '
+			<< (oldR.hasOverlaps? " has": " does not have")
+			<< " overlaps\n";
+		env->log << '\t' << env->options.db2Name
+			<< ' ' << title << ' '
+			<< (newR.hasOverlaps? " has": " does not have")
+			<< " overlaps\n";
 	}
-	
 	if (newR.hasBadEdges != oldR.hasBadEdges) {
-		same = false;
-		that->compareMessage(headerPrinted, title, newR,
-				     oldR.hasBadEdges, newR.hasBadEdges,
-				     "has incorrect edges",
-				     "does not have incorrect edges");
+		diffHeader(same, name, config, env);
+		env->log << '\t' << env->options.db1Name
+			<< ' ' << title << ' '
+			<< (oldR.hasBadEdges? " has": " does not have")
+			<< " incorrect edges\n";
+		env->log << '\t' << env->options.db2Name
+			<< ' ' << title << ' '
+			<< (newR.hasBadEdges? " has": " does not have")
+			<< " incorrect edges\n";
 	}
 } // doComparison
 
@@ -113,11 +149,12 @@ logicalSum(GLubyte* start, int stride, int count) {
 		p += stride;
 	}
 	return sum;
-} // logicalSum
+}
 
 void
 verify(GLEAN::Window& w, bool& passed, string& name,
-       GLEAN::OPResult& res, GLEAN::Environment* env, const char* title) {
+    GLEAN::DrawingSurfaceConfig* config, GLEAN::OPResult& res,
+    GLEAN::Environment* env, const char* title) {
 
 	GLEAN::Image img(windowSize, windowSize, GL_RGB, GL_UNSIGNED_BYTE);
 	img.read(0, 0);
@@ -146,14 +183,14 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 
 	// Check the bottom horizontal edge; it must be all zero.
 	if (logicalSum(row0, 3, windowSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  bottom border (at Y==0) was touched\n";
 		res.hasBadEdges = true;
 	}
 	// Repeat the process for the top horizontal edge.
 	if (logicalSum(rowLast, 3, windowSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  top border (at Y==" << windowSize - 1
 			<< ") was touched\n";
@@ -163,14 +200,14 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 	// pixel in the "drawn" region (excluding the first and last
 	// column).
 	if (!logicalSum(row1 + 3/*skip first pixel's RGB*/, 3, drawingSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  first row (at Y==1) was not drawn\n";
 		res.hasBadEdges = true;
 	}
 	// Repeat the process for the last row.
 	if (!logicalSum(rowNextLast + 3, 3, drawingSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  last row (at Y==" << windowSize - 2
 			<< ") was not drawn\n";
@@ -179,7 +216,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 
 	// Check the left-hand vertical edge; it must be all zero.
 	if (logicalSum(row0, img.rowSizeInBytes(), windowSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  left border (at X==0) was touched\n";
 		res.hasBadEdges = true;
@@ -187,7 +224,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 	// Repeat for the right-hand vertical edge.
 	if (logicalSum(row0 + 3 * (windowSize - 1), img.rowSizeInBytes(),
 	    windowSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  right border (at X==" << windowSize - 1
 			<< ") was touched\n";
@@ -195,7 +232,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 	}
 	// Check the left-hand column; something must be nonzero.
 	if (!logicalSum(row1 + 3, img.rowSizeInBytes(), drawingSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  first column (at X==1) was not drawn\n";
 		res.hasBadEdges = true;
@@ -203,7 +240,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 	// And repeat for the right-hand column:
 	if (!logicalSum(row1 + 3 * (drawingSize - 1), img.rowSizeInBytes(),
 	    drawingSize)) {
-		failHeader(passed, name, res.config, env);
+		failHeader(passed, name, config, env);
 		env->log << '\t' << title
 			<< ":  last column (at X==" << windowSize - 2
 			<< ") was not drawn\n";
@@ -219,8 +256,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 		for (int j = 0; j < drawingSize; ++j) {
 			if (!p[0] && !p[1] && !p[2]) {
 				if (!res.hasGaps) {
-					failHeader(passed, name, res.config,
-						   env);
+					failHeader(passed, name, config, env);
 					env->log << '\t' << title
 						<< ":  found first gap at X=="
 						<< j + 1 << ", Y==" << i + 1
@@ -230,8 +266,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 			}
 			if (p[0] && p[1]) {
 				if (!res.hasOverlaps) {
-					failHeader(passed, name, res.config,
-						   env);
+					failHeader(passed, name, config, env);
 					env->log << '\t' << title
 						<< ":  found first overlap at "
 						<< "X==" << j + 1 << ", Y=="
@@ -285,36 +320,6 @@ subdivideRects(int minX, int maxX, int minY, int maxY,
 	}
 }
 
-void commonLogOne(GLEAN::BaseTest<GLEAN::OPResult>* that, GLEAN::OPResult& r,
-		  GLEAN::Environment* env, const char *title) {
-	if (r.pass) {
-		that->logPassFail(r);
-		that->logConcise(r);
-	} else env->log << '\n'; // because verify logs failure
-	logStats1(title, r, env);
-}
-
-void commonCompareOne(GLEAN::BaseTest<GLEAN::OPResult>* that,
-		      GLEAN::OPResult& oldR, GLEAN::OPResult& newR,
-		      GLEAN::Environment* env,
-		      const char *title) {
-	bool        same   = true;
-	
-	doComparison(that, oldR, newR, same, title);
-	
-	if (same && env->options.verbosity) {
-		env->log << that->name << ":  SAME ";
-		that->logConcise(newR);
-	}
-	
-	if (env->options.verbosity) {
-		env->log << env->options.db1Name << ':';
-		logStats1(title, oldR, env);
-		env->log << env->options.db2Name << ':';
-		logStats1(title, newR, env);
-	}
-}
-
 } // anonymous namespace
 
 namespace GLEAN {
@@ -324,6 +329,8 @@ namespace GLEAN {
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosPoints::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -374,8 +381,8 @@ OrthoPosPoints::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env, "Immediate-mode points");
+	r.pass = passed;
 } // OrthoPosPoints::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -383,15 +390,42 @@ OrthoPosPoints::runOne(OPResult& r, Window& w) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosPoints::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
-	
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosPoints::logOne
+
+void
+OrthoPosPoints::logStats(OPResult& r) {
+	logStats1("Immediate-mode points", r, env);
+} // OrthoPosPoints::logStats
+
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosPoints::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		     env, "immediate-mode points");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			 << newR.config->conciseDescription()
+			 << "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
 } // OrthoPosPoints::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -430,6 +464,8 @@ OrthoPosPoints orthoPosPointsTest("orthoPosPoints",
 
 void
 OrthoPosVLines::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -486,25 +522,53 @@ OrthoPosVLines::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env,
+		"Immediate-mode vertical lines");
+	r.pass = passed;
 } // OrthoPosVLines::runOne
-
-///////////////////////////////////////////////////////////////////////////////
-// compareOne:  Compare results for a single test case
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosVLines::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
-} // OrthoPosVLines::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosVLines::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosVLines::logOne
+
+void
+OrthoPosVLines::logStats(OPResult& r) {
+	logStats1("Immediate-mode vertical lines", r, env);
+} // OrthoPosVLines::logStats
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosVLines::compareOne(OPResult& oldR, OPResult& newR) {
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		env, "immediate-mode vertical lines");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
+} // OrthoPosVLines::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -550,6 +614,8 @@ OrthoPosVLines orthoPosVLinesTest("orthoPosVLines",
 
 void
 OrthoPosHLines::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -601,25 +667,53 @@ OrthoPosHLines::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode horizontal lines");
+	r.pass = passed;
 } // OrthoPosHLines::runOne
-
-///////////////////////////////////////////////////////////////////////////////
-// compareOne:  Compare results for a single test case
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosHLines::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
-} // OrthoPosHLines::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosHLines::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosHLines::logOne
+
+void
+OrthoPosHLines::logStats(OPResult& r) {
+	logStats1("Immediate-mode horizontal lines", r, env);
+} // OrthoPosHLines::logStats
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosHLines::compareOne(OPResult& oldR, OPResult& newR) {
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		env, "immediate-mode horizontal lines");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
+} // OrthoPosHLines::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -665,6 +759,8 @@ OrthoPosHLines orthoPosHLinesTest("orthoPosHLines",
 
 void
 OrthoPosTinyQuads::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -718,25 +814,53 @@ OrthoPosTinyQuads::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode 1x1 quads");
+	r.pass = passed;
 } // OrthoPosTinyQuads::runOne
-
-///////////////////////////////////////////////////////////////////////////////
-// compareOne:  Compare results for a single test case
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosTinyQuads::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
-} // OrthoPosTinyQuads::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosTinyQuads::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosTinyQuads::logOne
+
+void
+OrthoPosTinyQuads::logStats(OPResult& r) {
+	logStats1("Immediate-mode 1x1 quads", r, env);
+} // OrthoPosTinyQuads::logStats
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosTinyQuads::compareOne(OPResult& oldR, OPResult& newR) {
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		env, "immediate-mode 1x1 quads");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
+} // OrthoPosTinyQuads::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -771,8 +895,11 @@ OrthoPosTinyQuads orthoPosTinyQuadsTest("orthoPosTinyQuads",
 ///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
+
 void
 OrthoPosRandRects::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -814,25 +941,53 @@ OrthoPosRandRects::runOne(OPResult& r, Window& w) {
 	RandomDouble rand(1618);
 	subdivideRects(1, drawingSize + 1, 1, drawingSize + 1,
 		rand, true, true);
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode axis-aligned rectangles");
+	r.pass = passed;
 } // OrthoPosRandRects::runOne
-
-///////////////////////////////////////////////////////////////////////////////
-// compareOne:  Compare results for a single test case
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandRects::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
-} // OrthoPosRandRects::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosRandRects::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosRandRects::logOne
+
+void
+OrthoPosRandRects::logStats(OPResult& r) {
+	logStats1("Immediate-mode axis-aligned rectangles", r, env);
+} // OrthoPosRandRects::logStats
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosRandRects::compareOne(OPResult& oldR, OPResult& newR) {
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		env, "immediate-mode axis-aligned rectangles");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
+} // OrthoPosRandRects::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
@@ -870,6 +1025,8 @@ OrthoPosRandRects orthoPosRandRectsTest("orthoPosRandRects",
 
 void
 OrthoPosRandTris::runOne(OPResult& r, Window& w) {
+	bool passed = true;
+
 	GLUtils::useScreenCoords(windowSize, windowSize);
 
 	glFrontFace(GL_CCW);
@@ -923,25 +1080,53 @@ OrthoPosRandTris::runOne(OPResult& r, Window& w) {
 		}
 		glEnd();
 	}
-	r.pass = true;
-	verify(w, r.pass, name, r, env, title);
+	verify(w, passed, name, r.config, r, env,
+	       "Immediate-mode triangles");
+	r.pass = passed;
 } // OrthoPosRandTris::runOne
-
-///////////////////////////////////////////////////////////////////////////////
-// compareOne:  Compare results for a single test case
-///////////////////////////////////////////////////////////////////////////////
-void
-OrthoPosRandTris::compareOne(OPResult& oldR, OPResult& newR) {
-	commonCompareOne(this, oldR, newR, env, title);
-} // OrthoPosRandTris::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // logOne:  Log a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
 OrthoPosRandTris::logOne(OPResult& r) {
-	commonLogOne(this, r, env, title);
-}
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	} else {
+		env->log << '\n';
+	}
+	logStats(r);
+} // OrthoPosRandTris::logOne
+
+void
+OrthoPosRandTris::logStats(OPResult& r) {
+	logStats1("Immediate-mode triangles", r, env);
+} // OrthoPosRandTris::logStats
+
+///////////////////////////////////////////////////////////////////////////////
+// compareOne:  Compare results for a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+OrthoPosRandTris::compareOne(OPResult& oldR, OPResult& newR) {
+	bool same = true;
+
+	doComparison(oldR, newR, newR.config, same, name,
+		env, "immediate-mode triangles");
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n";
+	}
+
+	if (env->options.verbosity) {
+		env->log << env->options.db1Name << ':';
+		logStats(oldR);
+		env->log << env->options.db2Name << ':';
+		logStats(newR);
+	}
+} // OrthoPosRandTris::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
