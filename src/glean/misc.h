@@ -43,6 +43,7 @@ namespace GLEAN {
 
 void SkipWhitespace(istream& s);
 double ErrorBits(double absError, int repBits);
+double log2(double x);
 
 } // namespace GLEAN
 
