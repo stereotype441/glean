@@ -31,6 +31,7 @@
 
 // glutils.cpp:  frequently-used OpenGL operations
 
+#define GLX_GLXEXT_PROTOTYPES
 #include "glwrap.h"
 #include "environ.h"
 #include "lex.h"
