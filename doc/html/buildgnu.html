@@ -132,7 +132,14 @@ When you've finished editing the Makefile, simply type
     make install
 </PRE>
 This will build <I>glean</I> and the other tools in the suite, and install
-them in <KBD>$GLEAN_ROOT/bin</KBD>.
+everything in <KBD>$GLEAN_ROOT/bin</KBD>, <KBD>$GLEAN_ROOT/include</KBD>,
+and <KBD>$GLEAN_ROOT/lib</KBD>.  Nothing will be altered outside the
+<KBD>$GLEAN_ROOT</KBD> directory hierarchy.
+<P>
+Note that you <B>must</B> use <KBD>make install</KBD> rather than
+plain <KBD>make</KBD>, otherwise the headers and libraries won't be
+copied to <KBD>$GLEAN_ROOT</KBD> and subsequent components will fail
+to build.
 
 
 <HR>
