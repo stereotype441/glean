@@ -50,11 +50,18 @@
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
+// Constructors/Destructor:
 ///////////////////////////////////////////////////////////////////////////////
 BasicTest::BasicTest(const char* aName, const char* aFilter,
+    const char* anExtensionList, const char* aDescription):
+    	Test(aName), filter(aFilter), extensions(anExtensionList),
+	description(aDescription) {
+} // BasicTest::BasicTest()
+
+BasicTest::BasicTest(const char* aName, const char* aFilter,
     const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
+    	Test(aName), filter(aFilter), extensions(0),
+	description(aDescription) {
 } // BasicTest::BasicTest()
 
 BasicTest::~BasicTest() {
@@ -92,6 +99,12 @@ BasicTest::run(Environment& environment) {
 			RenderingContext rc(ws, **p);
 			if (!ws.makeCurrent(rc, w))
 				;	// XXX need to throw exception here
+
+			// Check for all prerequisite extensions.  Note
+			// that this must be done after the rendering
+			// context has been created and made current!
+			if (!GLUtils::haveExtensions(extensions))
+				continue;
 
 			// Create a result object and run the test:
 			Result* r = new Result();

@@ -39,6 +39,11 @@
 // will be run on all the drawing surface configurations that are
 // selected by the filter, and one result structure will be generated
 // for each such configuration.
+//
+// Each basic test may also include an extension filter string.  The test
+// will only be run on contexts that support all the listed extensions.
+// Extension names in the string may be separated with non alphanumerics;
+// whitespace and commas are used by convention.
 
 // When comparing two runs, the drawing surface configurations are
 // used to select plausible matches among the results.
@@ -57,9 +62,12 @@ class BasicTest: public Test {
     public:
 	BasicTest(const char* testName, const char* filter,
 		const char* description);
+	BasicTest(const char* testName, const char* filter,
+		const char* extensions, const char* description);
 	virtual ~BasicTest();
 
 	const char* filter;		// Drawing surface configuration filter.
+	const char* extensions;		// Required extensions.
 	const char* description;	// Verbose description of test.
 
 	virtual void run(Environment& env);	// Run test, save results.
