@@ -38,6 +38,7 @@
 #include "rand.h"
 #include "glutils.h"
 #include <algorithm>
+#include <iostream>
 #include <cmath>
 #include <float.h>
 #include <assert.h>
@@ -46,8 +47,13 @@
 using namespace std;
 #endif
 
+#ifdef __WIN__
+typedef GLvoid (__stdcall* GLLOCKARRAYSEXT_FUNCTYPE)(GLint, GLsizei);
+typedef GLvoid (__stdcall* GLUNLOCKARRAYSEXT_FUNCTYPE)();
+#else
 typedef GLvoid (* GLLOCKARRAYSEXT_FUNCTYPE)(GLint, GLsizei);
 typedef GLvoid (* GLUNLOCKARRAYSEXT_FUNCTYPE)();
+#endif
 
 namespace GLEAN {
 
@@ -75,16 +81,17 @@ void ArrayData::setData(GLint sizeIn, GLenum typeIn, GLsizei strideIn, const GLv
     pointer = pointerIn;
     if (stride == 0)
     {
+        stride = size;
         switch(type)
         {
-            case GL_BYTE:           stride = size*sizeof(GLbyte); break;
-            case GL_UNSIGNED_BYTE:  stride = size*sizeof(GLubyte); break;
-            case GL_SHORT:          stride = size*sizeof(GLshort); break;
-            case GL_UNSIGNED_SHORT: stride = size*sizeof(GLushort); break;
-            case GL_INT:            stride = size*sizeof(GLint); break;
-            case GL_UNSIGNED_INT:   stride = size*sizeof(GLuint); break;
-            case GL_FLOAT:          stride = size*sizeof(GLfloat); break;
-            case GL_DOUBLE:         stride = size*sizeof(GLdouble); break;
+            case GL_BYTE:           stride *= sizeof(GLbyte); break;
+            case GL_UNSIGNED_BYTE:  stride *= sizeof(GLubyte); break;
+            case GL_SHORT:          stride *= sizeof(GLshort); break;
+            case GL_UNSIGNED_SHORT: stride *= sizeof(GLushort); break;
+            case GL_INT:            stride *= sizeof(GLint); break;
+            case GL_UNSIGNED_INT:   stride *= sizeof(GLuint); break;
+            case GL_FLOAT:          stride *= sizeof(GLfloat); break;
+            case GL_DOUBLE:         stride *= sizeof(GLdouble); break;
             default: assert(false);
         }
     }
@@ -223,24 +230,36 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         { 
             glEnableClientState(GL_COLOR_ARRAY);
             glColorPointer(colorData.size, colorData.type, colorData.stride, colorData.pointer);
+//            std::cout << "Enabled color arrays, size [" << colorData.size << "], type [" << colorData.type 
+//                      << "], stride [" << colorData.stride << "], pointer [" << colorData.pointer << "]" << std::endl;
         }
         if (parameterBits & TEXTURE_COORD_BIT)
         { 
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
             glTexCoordPointer(texCoordData.size, texCoordData.type, texCoordData.stride, texCoordData.pointer);
+//            std::cout << "Enabled texCoord arrays, size [" << texCoordData.size << "], type [" << texCoordData.type 
+//                      << "], stride [" << texCoordData.stride << "], pointer [" << texCoordData.pointer << "]" << std::endl;
         }
         if (parameterBits & NORMAL_BIT)
         { 
             glEnableClientState(GL_NORMAL_ARRAY);
             glNormalPointer(normalData.type, normalData.stride, normalData.pointer);
+//            std::cout << "Enabled normal arrays, size [" << normalData.size << "], type [" << normalData.type 
+//                      << "], stride [" << normalData.stride << "], pointer [" << normalData.pointer << "]" << std::endl;
         }
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(vertexData.size, vertexData.type, vertexData.stride, vertexData.pointer);
+//        std::cout << "Enabled vertex arrays, size [" << vertexData.size << "], type [" << vertexData.type 
+//                  << "], stride [" << vertexData.stride << "], pointer [" << vertexData.pointer << "]" << std::endl;
 
         // Should we lock?
         if (compileArrays)
         {
-            ((GLLOCKARRAYSEXT_FUNCTYPE)GLUtils::getProcAddress("glLockArraysEXT"))(0, arrayLength);
+            GLLOCKARRAYSEXT_FUNCTYPE glLockArraysEXT = 
+                reinterpret_cast<GLLOCKARRAYSEXT_FUNCTYPE>(GLUtils::getProcAddress("glLockArraysEXT"));
+//            std::cout << "glLockArraysEXT is [" << glLockArraysEXT << "]" << std::endl;
+            glLockArraysEXT(0, arrayLength);
+//            std::cout << "Made it through the lock" << std::endl;
         }
 
         // Okay, arrays configured; what exactly are we doing?
@@ -256,6 +275,7 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         else if (drawMethod == GLDRAWARRAYS_MODE)
         {
             glDrawArrays(mode, 0, arrayLength);
+            std::cout << "Called glDrawArrays, mode [" << mode << "], from 0 to " << arrayLength << std::endl;
         }
         else if (drawMethod == GLDRAWELEMENTS_MODE)
         {
@@ -265,7 +285,11 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
         // Done.  If we locked, unlock.
         if (compileArrays)
         {
-            ((GLUNLOCKARRAYSEXT_FUNCTYPE)GLUtils::getProcAddress("glUnlockArraysEXT"))();
+            GLUNLOCKARRAYSEXT_FUNCTYPE glUnlockArraysEXT = 
+                reinterpret_cast<GLUNLOCKARRAYSEXT_FUNCTYPE>(GLUtils::getProcAddress("glUnlockArraysEXT"));
+//            std::cout << "glUnlockArraysEXT is [" << glUnlockArraysEXT << "]" << std::endl;
+            glUnlockArraysEXT();
+//            std::cout << "Made it through the unlock" << std::endl;
         }
     }
 
@@ -312,7 +336,7 @@ bool GeomRenderer::isReadyToRender()
 // This unpacks the indices depending on their format and returns the specified one.
 GLuint GeomRenderer::getIndex(int indicesIndex)
 {
-    assert(indicesIndex >= 0 && indicesIndex < indexCount);
+    assert(indicesIndex >= 0 && indicesIndex < indicesCount);
 
     switch (indicesType)
     {
@@ -346,27 +370,27 @@ void GeomRenderer::sendVertex(GLuint vertexIndex)
     switch(vertexData.type)
     {
         case GL_SHORT:
-            if (vertexData.size == 2) glVertex2sv((GLshort*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 3) glVertex3sv((GLshort*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 4) glVertex4sv((GLshort*)vertexData.pointer + vertexIndex*vertexData.stride);
+            if (vertexData.size == 2) glVertex2sv((const GLshort*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 3) glVertex3sv((const GLshort*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 4) glVertex4sv((const GLshort*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
             break;
 
         case GL_INT:
-            if (vertexData.size == 2) glVertex2iv((GLint*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 3) glVertex3iv((GLint*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 4) glVertex4iv((GLint*)vertexData.pointer + vertexIndex*vertexData.stride);
+            if (vertexData.size == 2) glVertex2iv((const GLint*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 3) glVertex3iv((const GLint*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 4) glVertex4iv((const GLint*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
             break;
 
         case GL_FLOAT:
-            if (vertexData.size == 2) glVertex2fv((GLfloat*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 3) glVertex3fv((GLfloat*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 4) glVertex4fv((GLfloat*)vertexData.pointer + vertexIndex*vertexData.stride);
+            if (vertexData.size == 2) glVertex2fv((const GLfloat*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 3) glVertex3fv((const GLfloat*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 4) glVertex4fv((const GLfloat*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
             break;
 
         case GL_DOUBLE:
-            if (vertexData.size == 2) glVertex2dv((GLdouble*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 3) glVertex3dv((GLdouble*)vertexData.pointer + vertexIndex*vertexData.stride);
-            if (vertexData.size == 4) glVertex4dv((GLdouble*)vertexData.pointer + vertexIndex*vertexData.stride);
+            if (vertexData.size == 2) glVertex2dv((const GLdouble*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 3) glVertex3dv((const GLdouble*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
+            if (vertexData.size == 4) glVertex4dv((const GLdouble*)((const char*)vertexData.pointer + vertexIndex*vertexData.stride));
             break;
     }
 }
@@ -378,43 +402,43 @@ void GeomRenderer::sendColor(GLuint colorIndex)
     switch(colorData.type)
     {
         case GL_BYTE:
-            if (colorData.size == 3) glColor3bv((GLbyte*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4bv((GLbyte*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3bv((const GLbyte*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4bv((const GLbyte*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_UNSIGNED_BYTE:
-            if (colorData.size == 3) glColor3ubv((GLubyte*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4ubv((GLubyte*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3ubv((const GLubyte*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4ubv((const GLubyte*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_SHORT:
-            if (colorData.size == 3) glColor3sv((GLshort*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4sv((GLshort*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3sv((const GLshort*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4sv((const GLshort*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_UNSIGNED_SHORT:
-            if (colorData.size == 3) glColor3usv((GLushort*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4usv((GLushort*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3usv((const GLushort*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4usv((const GLushort*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_INT:
-            if (colorData.size == 3) glColor3iv((GLint*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4iv((GLint*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3iv((const GLint*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4iv((const GLint*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_UNSIGNED_INT:
-            if (colorData.size == 3) glColor3uiv((GLuint*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4uiv((GLuint*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3uiv((const GLuint*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4uiv((const GLuint*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_FLOAT:
-            if (colorData.size == 3) glColor3fv((GLfloat*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4fv((GLfloat*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3fv((const GLfloat*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4fv((const GLfloat*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
 
         case GL_DOUBLE:
-            if (colorData.size == 3) glColor3dv((GLdouble*)colorData.pointer + colorIndex*colorData.stride);
-            if (colorData.size == 4) glColor4dv((GLdouble*)colorData.pointer + colorIndex*colorData.stride);
+            if (colorData.size == 3) glColor3dv((const GLdouble*)((const char*)colorData.pointer + colorIndex*colorData.stride));
+            if (colorData.size == 4) glColor4dv((const GLdouble*)((const char*)colorData.pointer + colorIndex*colorData.stride));
             break;
     }
 }
@@ -426,31 +450,31 @@ void GeomRenderer::sendTexCoord(GLuint texCoordIndex)
     switch(texCoordData.type)
     {
         case GL_SHORT:
-            if (texCoordData.size == 1) glTexCoord1sv((GLshort*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 2) glTexCoord2sv((GLshort*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 3) glTexCoord3sv((GLshort*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 4) glTexCoord4sv((GLshort*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
+            if (texCoordData.size == 1) glTexCoord1sv((const GLshort*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 2) glTexCoord2sv((const GLshort*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 3) glTexCoord3sv((const GLshort*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 4) glTexCoord4sv((const GLshort*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
             break;
 
         case GL_INT:
-            if (texCoordData.size == 1) glTexCoord1iv((GLint*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 2) glTexCoord2iv((GLint*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 3) glTexCoord3iv((GLint*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 4) glTexCoord4iv((GLint*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
+            if (texCoordData.size == 1) glTexCoord1iv((const GLint*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 2) glTexCoord2iv((const GLint*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 3) glTexCoord3iv((const GLint*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 4) glTexCoord4iv((const GLint*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
             break;
 
         case GL_FLOAT:
-            if (texCoordData.size == 1) glTexCoord1fv((GLfloat*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 2) glTexCoord2fv((GLfloat*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 3) glTexCoord3fv((GLfloat*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 4) glTexCoord4fv((GLfloat*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
+            if (texCoordData.size == 1) glTexCoord1fv((const GLfloat*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 2) glTexCoord2fv((const GLfloat*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 3) glTexCoord3fv((const GLfloat*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 4) glTexCoord4fv((const GLfloat*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
             break;
 
         case GL_DOUBLE:
-            if (texCoordData.size == 1) glTexCoord1dv((GLdouble*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 2) glTexCoord2dv((GLdouble*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 3) glTexCoord3dv((GLdouble*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
-            if (texCoordData.size == 4) glTexCoord4dv((GLdouble*)texCoordData.pointer + texCoordIndex*texCoordData.stride);
+            if (texCoordData.size == 1) glTexCoord1dv((const GLdouble*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 2) glTexCoord2dv((const GLdouble*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 3) glTexCoord3dv((const GLdouble*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
+            if (texCoordData.size == 4) glTexCoord4dv((const GLdouble*)((const char*)texCoordData.pointer + texCoordIndex*texCoordData.stride));
             break;
     }
 }
@@ -462,23 +486,23 @@ void GeomRenderer::sendNormal(GLuint normalIndex)
     switch(normalData.type)
     {
         case GL_BYTE:
-            glNormal3bv((GLbyte*)normalData.pointer + normalIndex*normalData.stride);
+            glNormal3bv((const GLbyte*)((const char*)normalData.pointer + normalIndex*normalData.stride));
             break;
 
         case GL_SHORT:
-            glNormal3sv((GLshort*)normalData.pointer + normalIndex*normalData.stride);
+            glNormal3sv((const GLshort*)((const char*)normalData.pointer + normalIndex*normalData.stride));
             break;
 
         case GL_INT:
-            glNormal3iv((GLint*)normalData.pointer + normalIndex*normalData.stride);
+            glNormal3iv((const GLint*)((const char*)normalData.pointer + normalIndex*normalData.stride));
             break;
 
         case GL_FLOAT:
-            glNormal3fv((GLfloat*)normalData.pointer + normalIndex*normalData.stride);
+            glNormal3fv((const GLfloat*)((const char*)normalData.pointer + normalIndex*normalData.stride));
             break;
 
         case GL_DOUBLE:
-            glNormal3dv((GLdouble*)normalData.pointer + normalIndex*normalData.stride);
+            glNormal3dv((const GLdouble*)((const char*)normalData.pointer + normalIndex*normalData.stride));
             break;
     }
 }

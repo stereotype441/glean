@@ -27,7 +27,7 @@
 // END_COPYRIGHT
 
 
-// ttexgen.h:  Basic test of GL texture coordinate generation.
+// ttexgen.cpp:  Basic test of GL texture coordinate generation.
 // This test does a basic test of the glTexGen functions, including
 // object_linear, eye_linear, and sphere_map.  We use glutSolidSphere to
 // draw a sphere, and map a check texture onto it.  We use an ortho projection
@@ -65,6 +65,7 @@
 #include "glutils.h"
 #include "ttexgen.h"
 #include "misc.h"
+#include "geomrend.h"
 
 const GLuint viewSize=50;
 
@@ -283,6 +284,37 @@ TexgenTest::runOne(Result& r) {
 		glDeleteTextures(1, &checkerTextureHandle);
 		return;
 	}
+
+    // REMOVE THIS: testing the GeomRenderer.
+/*    float verts[12] = {-5,-5,0, 5,-5,0, 5,5,0, -5,5,0};
+    unsigned char colors[19] = {255,255,255,255,0, 255,0,0,255,0, 0,255,0,255,0, 0,0,255,255};
+    unsigned int indices[4] = {0,1,2,3};
+    glDisable(GL_TEXTURE_2D);
+    glShadeModel(GL_SMOOTH);
+
+    GeomRenderer rend;
+    rend.setDrawMethod(GeomRenderer::GLARRAYELEMENT_MODE);
+    rend.setParameterBits(GeomRenderer::COLOR_BIT);
+    rend.setVArrayIndices(4,GL_UNSIGNED_INT,indices);
+    if (!rend.setArraysCompiled(true))
+    {
+        // Oh well... should we notify them somehow?
+    }
+    rend.setVertexPointer(4, 3, GL_FLOAT, 0, verts);
+    rend.setColorPointer(4, GL_UNSIGNED_BYTE, 5, colors);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    if (!rend.renderPrimitives(GL_TRIANGLE_FAN))
+    {
+        std::cout << "ERROR: rendering failed despite correct setup." << std::endl;
+    }
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    int listName;
+    rend.setDrawMethod(GeomRenderer::GLDRAWELEMENTS_MODE);
+    rend.generateDisplayList(GL_TRIANGLE_FAN, listName);
+    glCallList(listName);
+    glDeleteLists(listName, 1);
+    _sleep(1000);
+*/
     
 	// success
 	r.pass = true;
