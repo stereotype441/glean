@@ -50,9 +50,12 @@
 #ifndef __codedid_h__
 #define __codedid_h__
 
+#include <vector>
 #include "glwrap.h"
 
 namespace GLEAN {
+
+class Image;				// forward reference
 
 class RGBCodedID {
 	int rBits, gBits, bBits;	// number of signif. bits in channels
@@ -70,6 +73,12 @@ class RGBCodedID {
 
 	// Map an RGB triple to the equivalent ID number:
 	int toID(GLubyte r, GLubyte g, GLubyte b) const;
+
+	// Histogram an UNSIGNED_BYTE RGB image:
+	void histogram(Image& img, vector<int>& hist) const;
+
+	// Are all of a range of IDs present in an RGB image?
+	bool allPresent(Image& img, int first, int last) const;
 
 }; // RGBCodedID
 

@@ -30,8 +30,10 @@
 
 // codedid.h:  tool to map integer IDs into colors, and vice-versa
 
-#include "codedid.h"
 #include <algorithm>
+#include <vector>
+#include "codedid.h"
+#include "image.h"
 
 namespace GLEAN {
 
@@ -87,5 +89,56 @@ RGBCodedID::toID(GLubyte r, GLubyte g, GLubyte b) const {
 	id |= (b >> nsBBits) & bMask;
 	return id;
 } // RGBCodedID::toID
+
+///////////////////////////////////////////////////////////////////////////////
+// histogram: Compute histogram of coded IDs in an UNSIGNED_BYTE RGB image
+///////////////////////////////////////////////////////////////////////////////
+void
+RGBCodedID::histogram(Image& img, vector<int>& hist) const {
+	if (img.format() != GL_RGB || img.type() != GL_UNSIGNED_BYTE) {
+		hist.resize(0);
+		return;
+	}
+
+	int max = maxID();
+	hist.resize(max + 1);
+	for (vector<int>::iterator p = hist.begin(); p != hist.end(); ++p)
+		*p = 0;
+
+	GLubyte* row = reinterpret_cast<GLubyte*>(img.pixels());
+	for (GLsizei r = 0; r < img.height(); ++r) {
+		GLubyte* pix = row;
+		for (GLsizei c = 0; c < img.width(); ++c) {
+			int id = toID(pix[0], pix[1], pix[2]);
+			if (id <= max)
+				++hist[id];
+			pix += 3;
+		}
+		row += img.rowSizeInBytes();
+	}
+} // RGBCodedID::histogram
+
+///////////////////////////////////////////////////////////////////////////////
+// allPresent: See if all of a range of IDs are present in a given RGB image
+///////////////////////////////////////////////////////////////////////////////
+bool
+RGBCodedID::allPresent(Image& img, int first, int last) const {
+	vector<int> hist;
+	histogram(img, hist);
+	if (hist.size() == 0)
+		return false;
+	if (first >= static_cast<int>(hist.size()))
+		return false;
+	if (last >= static_cast<int>(hist.size()))
+		return false;
+	if (first > last)
+		return false;
+
+	for (vector<int>::const_iterator p = hist.begin() + first;
+	    p != hist.begin() + last + 1; ++p)
+		if (*p == 0)
+			return false;
+	return true;
+} // RGBCodedID::allPresent
 
 } // namespace GLEAN
