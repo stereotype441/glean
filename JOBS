@@ -1,0 +1,181 @@
+Suggestions for new tests and infrastructure improvements.
+Not in any particular order.
+
+
+------------------------------------------------------------------------
+
+Description:
+
+	Test glDrawBuffer, especially the GL_FRONT_AND_BACK and GL_NONE
+	options with glDrawPixels, points, lines, triangles.
+
+Submitted by:
+
+	Brian Paul <brian@precisioninsight.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Test glColorMask on front buffer and back buffer, with
+	glDrawPixels, points, lines, triangles.
+
+Submitted by:
+
+	Brian Paul <brian@precisioninsight.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Test glPolygonMode in all permutations.  Perhaps also combine
+	this with glCullFace.
+
+Submitted by:
+
+	Brian Paul <brian@precisioninsight.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Test two sided lighting, also with glPolygonMode permutations.
+
+Submitted by:
+
+	Brian Paul <brian@precisioninsight.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Test glTexEnv modes.  For extra credit, test with multitexture.
+
+Submitted by:
+
+	Brian Paul <brian@precisioninsight.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Mipmap filtering tests.  See:
+
+	http://www.zdnet.com/etestinglabs/stories/bi/0,8829,2408223,00.html
+
+Submitted by:
+
+	Allen Akin <akin@pobox.com>, in response to observation by
+	Michael Jones <mtj@intrinsic.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Support standalone Voodoo cards under Win32.  Suggest using
+	the glsetup API.
+
+	Neal says:
+
+		One problem which you may not be aware of is that its hard
+		to determine whether or not 3dfxvgl.dll can actually be
+		used safely.  The problem is that even if the driver's
+		been installed, the 3dfx card might have been taken out
+		later, leaving a driver which faults as soon as you load
+		the 3dfxvgl dll.  As far as I know, the only truly safe
+		way to deal with this is to check for the presence of
+		the Glide dlls, load glide if they're present, and then
+		use the Glide API (grGetNumBoards or something with a
+		vaguely similar name) to actually detect the presence
+		of the hardware.  If its there, you should be able to
+		load 3dfxvgl.dll safely.
+
+Submitted by:
+
+	Johan Smet <johan.smet@glo.be>,
+	Neal Tringham <neal@pseudonymz.demon.co.uk>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Support dynamic display resolution changes under Win32.
+
+	Win95 doesn't really support this well, and some drivers
+	don't handle it correctly for Win98.  One workaround would
+	be to document that users should change the display resolution
+	manually before running glean.
+
+Submitted by:
+
+	Johan Smet <johan.smet@glo.be>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Add an option to allow overwriting the results directory.
+
+Submitted by:
+
+	Neal Tringham <neal@pseudonymz.demon.co.uk>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Add an option to allow selection of a particular OpenGL
+	driver (for systems on which multiple drivers may coexist).
+
+Submitted by:
+
+	Neal Tringham <neal@pseudonymz.demon.co.uk>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Support language localization.
+
+Submitted by:
+
+	Neal Tringham <neal@pseudonymz.demon.co.uk>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Add a test that determines the mipmap LOD bias.
+
+	Gary says:
+
+		I would recommend someone write a simple test subroutine
+		that determines the LOD bias.  This could be done
+		by rendering a small texture map, e.g. 2x2 or 4x4,
+		with mipmaps at varying texel:pixel ratios and then
+		reading the pixels back from the framebuffer. The code
+		could then determine exactly where the LOD changes,
+		and thus what the implicit LOD bias is, at least for
+		non-perspective textures.
+
+Submitted by:
+
+	Gary Tarolli <tarolli@3dfx.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	Write a GLX-specific test that checks basic rendering-context
+	operations.
+
+		Bind to direct context.
+		Unbind from direct context.
+		Bind to indirect context.
+		Unbind from indirect context.
+		Permutations of the above.
+		Check shared dlists and textures.
+
+Submitted by:
+
+	Kevin Martin <kevinm@valinux.com>
