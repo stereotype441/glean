@@ -217,18 +217,22 @@ PathsTest::PathName(Path path) const {
 
 
 void
-PathsTest::FailMessage(BasicResult &r, Path path, State state) const {
+PathsTest::FailMessage(BasicResult &r, Path path, State state, GLfloat pixel[3])
+		       const {
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n';
 	if (state == ALWAYS_PASS) {
 		env->log << "\t" << PathName(path)
-			 << " should have had no effect"
-			 << " but actually modified the fragment\n";
+			 << " should have had no effect (1, 1, 1)"
+			 << " but actually modified the fragment: "
+			 << "(" << pixel[0] << "," << pixel[1] << ","
+			 << pixel[2] << ")\n";
 	}
 	else {
 		env->log << "\t" << PathName(path)
-			 << " should have culled the fragment"
-			 << " but actually didn't\n";
+			 << " should have culled the fragment (0, 0, 0)"
+			 << " but actually didn't: (" << pixel[0] << ","
+			 << pixel[1] << "," << pixel[2] << ")\n";
 	}
 }
 
@@ -277,7 +281,7 @@ PathsTest::runOne(BasicResult& r, Window&) {
 		GLfloat pixel[3];
 		glReadPixels(4, 4, 1, 1, GL_RGB, GL_FLOAT, pixel);
 		if (pixel[0] != 1.0 || pixel[1] != 1.0 || pixel[2] != 1.0) {
-			FailMessage(r, paths[i], ALWAYS_PASS);
+			FailMessage(r, paths[i], ALWAYS_PASS, pixel);
 			r.pass = false;
 			return;
 		}
@@ -308,7 +312,7 @@ PathsTest::runOne(BasicResult& r, Window&) {
 		GLfloat pixel[3];
 		glReadPixels(4, 4, 1, 1, GL_RGB, GL_FLOAT, pixel);
 		if (pixel[0] != 1.0 || pixel[1] != 1.0 || pixel[2] != 1.0) {
-			FailMessage(r, paths[i], ALWAYS_PASS);
+			FailMessage(r, paths[i], ALWAYS_PASS, pixel);
 			r.pass = false;
 			return;
 		}
@@ -335,7 +339,7 @@ PathsTest::runOne(BasicResult& r, Window&) {
 		GLfloat pixel[3];
 		glReadPixels(4, 4, 1, 1, GL_RGB, GL_FLOAT, pixel);
 		if (pixel[0] != 0.0 || pixel[1] != 0.0 || pixel[2] != 0.0) {
-			FailMessage(r, paths[i], ALWAYS_PASS);
+			FailMessage(r, paths[i], ALWAYS_FAIL, pixel);
 			r.pass = false;
 			return;
 		}

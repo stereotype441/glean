@@ -68,7 +68,8 @@ class PathsTest: public BasicTest {
 	};
 
 	const char *PathName(Path path) const;
-	void FailMessage(BasicResult &r, Path path, State state) const;
+	void FailMessage(BasicResult &r, Path path, State state,
+			 GLfloat pixel[3]) const;
 	void SetPathState(Path path, State state) const;
 
 }; // class PathsTest
