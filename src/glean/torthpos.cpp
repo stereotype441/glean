@@ -596,7 +596,8 @@ OrthoPosPoints::logStats(OrthoPosPoints::Result& r, GLEAN::Environment* env) {
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosPoints orthoPosPointsTest("orthoPosPoints", "window, rgb, z, fast",
+OrthoPosPoints orthoPosPointsTest("orthoPosPoints",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of unit-sized points under\n"
 	"orthographic projection.  (This is important for apps that\n"
@@ -894,7 +895,8 @@ OrthoPosVLines::logStats(OrthoPosVLines::Result& r, GLEAN::Environment* env) {
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosVLines orthoPosVLinesTest("orthoPosVLines", "window, rgb, z, fast",
+OrthoPosVLines orthoPosVLinesTest("orthoPosVLines",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of unit-width vertical lines\n"
 	"under orthographic projection.	(This is important for apps\n"
@@ -1195,7 +1197,8 @@ OrthoPosHLines::logStats(OrthoPosHLines::Result& r, GLEAN::Environment* env) {
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosHLines orthoPosHLinesTest("orthoPosHLines", "window, rgb, z, fast",
+OrthoPosHLines orthoPosHLinesTest("orthoPosHLines",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of unit-width horizontal lines\n"
 	"under orthographic projection.	(This is important for apps\n"
@@ -1498,7 +1501,8 @@ OrthoPosTinyQuads::logStats(OrthoPosTinyQuads::Result& r, GLEAN::Environment* en
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosTinyQuads orthoPosTinyQuadsTest("orthoPosTinyQuads", "window, rgb, z, fast",
+OrthoPosTinyQuads orthoPosTinyQuadsTest("orthoPosTinyQuads",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of 1x1-pixel quadrilaterals\n"
 	"under orthographic projection.	(This is important for apps\n"
@@ -1781,7 +1785,8 @@ OrthoPosRandRects::logStats(OrthoPosRandRects::Result& r, GLEAN::Environment* en
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosRandRects orthoPosRandRectsTest("orthoPosRandRects", "window, rgb, z, fast",
+OrthoPosRandRects orthoPosRandRectsTest("orthoPosRandRects",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of axis-aligned rectangles\n"
 	"under orthographic projection.	(This is important for apps\n"
@@ -2076,7 +2081,8 @@ OrthoPosRandTris::logStats(OrthoPosRandTris::Result& r, GLEAN::Environment* env)
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
-OrthoPosRandTris orthoPosRandTrisTest("orthoPosRandTris", "window, rgb, z, fast",
+OrthoPosRandTris orthoPosRandTrisTest("orthoPosRandTris",
+	"window, rgb > 1, z, fast",
 
 	"This test checks the positioning of random triangles under\n"
 	"orthographic projection.  (This is important for apps that\n"
