@@ -53,6 +53,7 @@ useScreenCoords(int windowW, int windowH) {
 	glLoadIdentity();
 
 	glViewport(0, 0, windowW, windowH);
+	glTranslatef(0.375, 0.375, 0.0);
 } // useScreenCoords
 
 } // namespace GLUtils
