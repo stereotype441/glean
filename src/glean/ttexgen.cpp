@@ -114,12 +114,12 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 
         // It's a viewSize x viewSize pixel block; since we drew a sphere that doesn't quite touch the 
 	// edges, we need to be careful not to sample from what should be background.
-	// These pairs are hand-picked coordinates on the image that fall on the upper-left quadrant
+	// These pairs are hand-picked coordinates on the image that fall on the bottom-left quadrant
 	// of the sphere.
 	// XXX FIX ME: these sample coordinates assume that viewSize == 50.
         GLuint samples[6][2] = {{13,13}, {4,22}, {22,4}, {20,20}, {20,10}, {10,20}};
 
-        // Run through those sample points in the upper-left corner and make sure they're all the right color.
+        // Run through those sample points in the bottom-left corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
 	  GLuint sampleOffset = (samples[samp][0] + (viewSize*samples[samp][1]))*3;
@@ -129,8 +129,8 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 	  }
 	}
 
-        // Run through those sample points in the upper-right corner and make sure they're all the right color.
-	// Note the "viewSize - samples[samp][0]" to flip it to the upper-right quadrant.
+        // Run through those sample points in the bottom-right corner and make sure they're all the right color.
+	// Note the "viewSize - samples[samp][0]" to flip it to the bottom-right quadrant.
 	for (samp=0; samp<6; samp++)
 	{
 	  GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*samples[samp][1]))*3;
@@ -140,7 +140,7 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 	  }
 	}
 
-        // Run through those sample points in the bottom-right corner and make sure they're all the right color.
+        // Run through those sample points in the upper-right corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
 	  GLuint sampleOffset = ((viewSize - samples[samp][0]) + (viewSize*(viewSize - samples[samp][1])))*3;
@@ -150,7 +150,7 @@ TexgenTest::verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* up
 	  }
 	}
 
-        // Run through those sample points in the bottom-left corner and make sure they're all the right color.
+        // Run through those sample points in the upper-left corner and make sure they're all the right color.
 	for (samp=0; samp<6; samp++)
 	{
 	  GLuint sampleOffset = (samples[samp][0] + (viewSize*(viewSize - samples[samp][1])))*3;
