@@ -34,9 +34,7 @@
 #include <cfloat>
 #include "image.h"
 
-#ifdef __WIN__
 #include <cmath>	// for fabs
-#endif
 
 
 namespace GLEAN {
