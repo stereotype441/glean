@@ -31,6 +31,13 @@ GLUtils::Material for setting lighting parameters.
 Added --listtests option, which lists all the test names in sorted
 order and then exits.
 
+Added tests for pixel-exact rendering in the 2D orthographic projection
+case that's described in the appendix of the Red Book.  (Per suggestion
+from Brian Paul <brian@valinux.com>.)
+
+Added test for MakeCurrent functionality, checking all combinations
+of direct, indirect, and null contexts.
+
 
 0.6 to 1.0:
 ===========
