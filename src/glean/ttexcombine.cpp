@@ -826,7 +826,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 	for (int u = 0; u < machine.NumTexUnits; u++) {
 		if (machine.NumTexUnits > 1)
 			p_glActiveTextureARB(GL_TEXTURE0_ARB + u);
-		glBindTexture(GL_TEXTURE_2D, 1 + u);
+		glBindTexture(GL_TEXTURE_2D, mTextures[u]);
 		glEnable(GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_NEAREST);
@@ -926,6 +926,7 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 		if (dr > mTolerance[0] || dg > mTolerance[1] ||
 			db > mTolerance[2] || da > mTolerance[3]) {
 			ReportFailure(machine, expected, renderedResult, r);
+			printf("single-texture test %d failed\n", test);
 #if 0 // Debug
 			// For debugging, printing the state of the previous
 			// test is useful to see what's changed when we've
@@ -1143,6 +1144,9 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 		//	mTolerance[2], mTolerance[3]);
 	}
 
+	// Allocate our textures
+	glGenTextures(MAX_TEX_UNITS, mTextures);
+
 	// We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
 
@@ -1173,7 +1177,12 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 			passed = RunMultiTextureTest(Machine, r, w);
 		}
 	}
+
 	r.pass = passed;
+
+	// Delete our textures
+	glDeleteTextures(MAX_TEX_UNITS, mTextures);
+
 } // TexCombineTest::runOne
 
 void

@@ -95,6 +95,7 @@ class TexCombineTest: public BasicTest {
 	static test_param MultitexParams[];
 	bool haveDot3;
 	GLfloat mTolerance[4];
+	GLuint mTextures[MAX_TEX_UNITS];
 
 	void ResetMachine(glmachine &machine);
 	void ComputeTexCombine(const glmachine &machine, int texUnit,
