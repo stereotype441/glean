@@ -802,8 +802,6 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	else
 		env->log << '\n';
 	logStats(r, env);
-env->log
-<< "\tTHIS TEST IS UNDER DEVELOPMENT; THE RESULTS ARE NOT YET USABLE.\n";
 } // ColoredLitPerf::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -934,11 +932,20 @@ ColoredLitPerf::getResults(istream& s) {
 ///////////////////////////////////////////////////////////////////////////////
 ColoredLitPerf coloredLitPerfTest("coloredLitPerf", "window, rgb, z, fast",
 
-	"This test examines rendering performance for colored, lit\n"
-	"triangles.  It checks several different ways to specify the\n"
-	"vertex data in order to determine which is fastest.  The test\n"
+	"This test examines rendering performance for colored, lit,\n"
+	"flat-shaded triangles.  It checks several different ways to\n"
+	"specify the vertex data in order to determine which is\n"
+	"fastest:  fine-grained API calls, DrawArrays, DrawElements,\n"
+	"locked (compiled) DrawArrays, and locked DrawElements; for\n"
+	"independent triangles and for triangle strips.  The test\n"
 	"result is performance measured in triangles per second for\n"
 	"each of the various vertex specification methods.\n"
+
+	"\nAs a sanity-check on the correctness of each method, the test\n"
+	"colors each triangle with a unique color, and verifies that all\n"
+	"such colors are actually present in the final image.  For\n"
+	"consistency, the test also verifies that the images are identical\n"
+	"for each of the specification methods.\n"
 
 	);
 
