@@ -570,7 +570,6 @@ PgosTest::runOne(Result& r, GLEAN::Window& w) {
 		} params[] = {
 			// Add new tests at the BOTTOM
 			{ true,  0.0, -1.0, 1.0,   100.0, false, 0.0 },
-			{ true,  0.0, -1.0, 1.0,   100.0, false, 0.0 },
 			{ true,  0.0, -1.0, 1.0,  1000.0, false, 0.0 },
 			{ true,  0.0, -1.0, 1.5, 10000.0, false, 0.0 },
 			{ true, -1.0, -1.0, 1.0,   100.0, false, 0.0 },
