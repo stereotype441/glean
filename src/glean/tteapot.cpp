@@ -3305,7 +3305,7 @@ TeapotTest::runOne(Result& res, GLEAN::Window& w) {
 	res.pass = true;
 
 	env->log << name << (res.pass? ":  PASS ": ":  FAIL ")
-		<< "Teapots/Sec: " << res.fTps << "\n"
+		<< "Teapots/Sec: " << res.fTps << "  "
 		<< res.config->conciseDescription() << '\n';
 
 } // BasicTest::runOne
