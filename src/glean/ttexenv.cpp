@@ -41,6 +41,7 @@
 //      
 
 #include "ttexenv.h"
+#include <assert.h>
 #include <stdio.h>
 #include <cmath>
 
