@@ -53,6 +53,16 @@
 #include "tvtxperf.h"
 #include "misc.h"
 
+// XXX This is included as a fix for an MSVC bug; doing something like 
+// static_cast<TIME_FUNC>(glFinish), it seems to want to call glFinish 
+// and then cast the return value.  So we create an intermediate pointer
+// which seems to solve the problem, albeit precariously.
+#ifdef __WIN__
+typedef GLvoid (__stdcall* GLFINISH_FUNCTYPE) (void);
+#else
+typedef GLvoid (*GLFINISH_FUNCTYPE) (void);
+#endif
+
 
 namespace {
 
@@ -233,9 +243,18 @@ measure(GLEAN::Timer& time, GLEAN::Timer::FUNCPTR function,
 	vector<double> measurements;
 	for (int i = 0; i < nMeasurements; ++i) {
 		env->quiesce();
+		
+		// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
+		// It was done this way to get around an MSVC compiler error where TIME_FUNC
+		// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
+		// change the default function type to __stdcall overall via some compiler
+		// switch?
+		//		GLFINISH_FUNCTYPE glFinishPointer = glFinish;
+		//		double t = time.time(reinterpret_cast<TIME_FUNC>(glFinishPointer),
 		double t = time.time(
 			static_cast<GLEAN::Timer::FUNCPTR>(glFinish),
 			function,
+			//			reinterpret_cast<TIME_FUNC>(glFinishPointer));
 			static_cast<GLEAN::Timer::FUNCPTR>(glFinish));
 		w.swap();	// give the user something to watch
 		measurements.push_back(nTris / t);
@@ -628,6 +647,15 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glShadeModel(GL_FLAT);
 
 	Timer time;
+
+	// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
+	// It was done this way to get around an MSVC compiler error where TIME_FUNC
+	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
+	// change the default function type to __stdcall overall via some compiler
+	// switch?
+	//	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
+	//	time.calibrate(reinterpret_cast<TIME_FUNC>(glFinishPointer),
+	//		reinterpret_cast<TIME_FUNC>(glFinishPointer));
 	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
 		static_cast<Timer::FUNCPTR>(glFinish));
 
@@ -1288,6 +1316,15 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	glShadeModel(GL_FLAT);
 
 	Timer time;
+
+	// XXX This really oughtn't be a reinterpret_cast, as that's kind of dangerous.
+	// It was done this way to get around an MSVC compiler error where TIME_FUNC
+	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
+	// change the default function type to __stdcall overall via some compiler
+	// switch?
+	//	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
+	//	time.calibrate(reinterpret_cast<TIME_FUNC>(glFinishPointer),
+	//		reinterpret_cast<TIME_FUNC>(glFinishPointer));
 	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
 		static_cast<Timer::FUNCPTR>(glFinish));
 

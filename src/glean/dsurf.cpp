@@ -70,7 +70,7 @@ DrawingSurface::DrawingSurface(WindowSystem& ws, DrawingSurfaceConfig& c) {
 } // DrawingSurface::DrawingSurface
 
 Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h,
-    int x = 10, int y = 10):
+    int x, int y):
     DrawingSurface(ws, c) {
 
 #if defined(__X11__)

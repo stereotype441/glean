@@ -36,6 +36,10 @@
 #include <cmath>
 #include <float.h>
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,8 +52,13 @@ RandomMesh2D::RandomMesh2D(float minX, float maxX, int xPoints,
     	m = new float[xPoints * yPoints * 2];
 	rowLength = xPoints;
 
+	// Loop var; we declare it here and not in the for loop because
+	// different compilers scope variables differently when
+	// declared in a for loop.
+	int iy;
+
 	// Drop each point squarely into the center of its grid cell:
-	for (int iy = 0; iy < yPoints; ++iy)
+	for (iy = 0; iy < yPoints; ++iy)
 		for (int ix = 0; ix < xPoints; ++ix) {
 			float* v = (*this)(iy, ix);
 			v[0] = minX + (ix * (maxX - minX)) / (xPoints - 1);
@@ -58,7 +67,7 @@ RandomMesh2D::RandomMesh2D(float minX, float maxX, int xPoints,
 	// Now perturb each interior point, but only within its cell:
 	double deltaX = 0.9 * (maxX - minX) / (xPoints - 1);
 	double deltaY = 0.9 * (maxY - minY) / (yPoints - 1);
-	for (int iy = 1; iy < yPoints - 1; ++iy)
+	for (iy = 1; iy < yPoints - 1; ++iy)
 		for (int ix = 1; ix < xPoints - 1; ++ix) {
 			float* v = (*this)(iy, ix);
 			v[0] += deltaX * (rand.next() - 0.5);

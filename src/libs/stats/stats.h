@@ -39,6 +39,10 @@
 
 #include <vector>
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 #if defined( __WIN__ )
 
 #undef min

@@ -39,6 +39,10 @@
 #include "dsurf.h"
 #include "rc.h"
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 namespace GLEAN {
 
 

@@ -49,6 +49,10 @@
 #include "tgetstr.h"
 #include "misc.h"
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////

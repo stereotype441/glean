@@ -54,6 +54,10 @@
 #include <vector>
 #include "glwrap.h"
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 namespace GLEAN {
 
 class DrawingSurface;		// Forward and mutually-recursive references.

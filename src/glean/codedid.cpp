@@ -35,6 +35,10 @@
 #include "codedid.h"
 #include "image.h"
 
+#ifdef __WIN__
+using namespace std;
+#endif
+
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////

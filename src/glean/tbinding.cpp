@@ -196,7 +196,7 @@ MakeCurrentTest::compare(Environment& environment) {
 void
 MakeCurrentTest::runOne(Result& r, Window& w) {
 
-	DrawingSurfaceConfig& config(*(r.config));
+	DrawingSurfaceConfig& config = *(r.config);
 	WindowSystem& ws = env->winSys;
 
 	// The rendering contexts to be used:
@@ -270,12 +270,18 @@ MakeCurrentTest::runOne(Result& r, Window& w) {
 	goto cleanup;
 
 failed:
-	env->log << name << ":  FAIL "
-		<< config.conciseDescription() << '\n';
-	env->log << "\tSequence of MakeCurrent operations was:\n";
-	for (int k = 0; k < static_cast<int>(testSequence.size()); ++k)
-		env->log << "\t\t" << descriptions[testSequence[k]] << '\n';
-	r.pass = false;
+	// The braces are to appease MSVC's broken for-loop variable declaration scope
+	// semantics and its tendency to complain about skipped variable initialization.
+	// Without the braces it complains that k's initialization can be skipped
+	// by jumping to "cleanup".
+	{
+	  env->log << name << ":  FAIL "
+		   << config.conciseDescription() << '\n';
+	  env->log << "\tSequence of MakeCurrent operations was:\n";
+	  for (int k = 0; k < static_cast<int>(testSequence.size()); ++k)
+	    env->log << "\t\t" << descriptions[testSequence[k]] << '\n';
+	  r.pass = false;
+	}
 
 cleanup:
 	for (i = 0; i < static_cast<int>(rcs.size()); ++i)

@@ -119,7 +119,9 @@ void
 		return 0;
 #   endif
 #elif defined(__WIN__)
-	return wglGetProcAddress(name);
+	// Gotta be a little more explicit about the cast to please MSVC.
+	typedef void (__cdecl* VOID_FUNC_VOID) ();
+	return reinterpret_cast<VOID_FUNC_VOID>(wglGetProcAddress(name));
 #elif defined(__BEWIN__)
 #	error "Need GetProcAddress (or equivalent) for BeOS"
 	return 0;
@@ -248,7 +250,7 @@ LightModel::colorControl(GLenum e) {
 // Syntactic sugar for material properties
 ///////////////////////////////////////////////////////////////////////////////
 
-Material::Material(GLenum f = GL_FRONT_AND_BACK) {
+Material::Material(GLenum f) {
 	face = f;
 } // Material::Material
 
