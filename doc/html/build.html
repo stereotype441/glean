@@ -16,6 +16,12 @@
 <H1>How do I build <I>glean</I>?</H1>
 
 <P>
+<I>Note:  Some pre-built executable versions of </I>glean<I> are available.
+Check the <A HREF="http://sourceforge.net/project/filelist.php?form_grp=430">
+</I>glean<I> downloads page on SourceForge</A> for files whose names contain
+the string </I><KBD>exe</KBD><I>.</I>
+
+<P>
 <I>glean</I> is intended to run on a variety of operating systems.
 It has been tested on Linux-based GNU systems with the XFree86
 X11 server, and on Microsoft Windows.
@@ -34,10 +40,13 @@ handling TIFF is <A HREF="ftp://ftp.sgi.com/graphics/tiff">Sam Leffler's
 libtiff</A>.  Your operating system may include this library already
 (most Linux distributions do); if not, you'll need to obtain a copy of
 the source and compile it according to the instructions contained therein.
+The pre-built executables for <I>glean</I> on Windows have been statically
+linked with libTIFF, so there's no need to provide it separately if you're
+using those executables.
 
 <P>
-Some of the tools in the <I>glean</I> suite use <A
-HREF="http://reality.sgi.com/opengl/glut3/glut3.html">Mark
+Some of the tools in the <I>glean</I> suite (though not <I>glean</I>
+itself) use <A HREF="http://reality.sgi.com/opengl/glut3/glut3.html">Mark
 Kilgard's GLUT library</A>.  Again, your OS (or your <A
 HREF="http://www.mesa3d.org/">MESA</A> distribution) may already include
 GLUT, but if not, you'll need to grab a copy and install it.
