@@ -70,13 +70,15 @@ endif # MacOSX
 
 # Locations of useful include and library files:
 ifeq ($(PLATFORM), Unix)
-	XINC:=/usr/include/X11
+	# Note:  Do *not* list standard system #include directories here,
+	# because some compilers complain about them.
+	XINC:=-I/usr/include/X11
 	XLIB:=/usr/X11R6/lib
-	GLINC:=/usr/include
+	GLINC:=#-I/usr/include
 	GLLIB:=/usr/lib
-	GLUTINC:=/usr/include
+	GLUTINC:=#-I/usr/include
 	GLUTLIB:=/usr/lib
-	TIFFINC:=/usr/include
+	TIFFINC:=#-I/usr/include
 	TIFFLIB:=/usr/lib
 	EXTRALIBS:=
 endif # Unix
@@ -158,10 +160,10 @@ INC:=		# -I options for local include directories
 _INC=\
 	$(INC) \
 	-I$(GLEAN_ROOT)/include \
-	-I$(GLINC) \
-	-I$(GLUTINC) \
-	-I$(XINC) \
-	-I$(TIFFINC)
+	$(GLINC) \
+	$(GLUTINC) \
+	$(XINC) \
+	$(TIFFINC)
 OPT:=		# Optimization options
 ifeq ($(PLATFORM), Unix)
 _OPT=\
