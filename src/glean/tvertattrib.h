@@ -30,21 +30,44 @@
 #ifndef __tvertattrib_h__
 #define __tvertattrib_h__
 
-#include "tbasic.h"
+#include "tbase.h"
 
 namespace GLEAN {
 
-class VertAttribTest: public BasicTest
+
+class VertAttribResult: public BaseResult
 {
 public:
-	VertAttribTest(const char* testName, const char* filter,
-		       const char* description):
-		BasicTest(testName, filter, description)
+	bool pass;
+	int numNVtested, numARBtested, num20tested;
+	
+	VertAttribResult()
 	{
+		numNVtested = numARBtested = num20tested = 0;
 	}
 
-	virtual void runOne(BasicResult& r, Window& w);
-	virtual void logOne(BasicResult& r);
+	virtual void putresults(ostream& s) const
+	{
+		s << pass
+		  << ' ' << numNVtested
+		  << ' ' << numARBtested
+		  << ' ' << num20tested
+		  << '\n';
+	}
+
+	virtual bool getresults(istream& s)
+	{
+		s >> pass >> numNVtested >> numARBtested >> num20tested;
+		return s.good();
+	}
+};
+
+
+class VertAttribTest: public BaseTest<VertAttribResult>
+{
+public:
+	GLEAN_CLASS(VertAttribTest, VertAttribResult);
+	virtual void logStats(VertAttribResult& r);
 
 private:
 	enum Aliasing {
@@ -53,16 +76,16 @@ private:
 		OPTIONAL
 	};
 
-	void FailMessage(BasicResult &r, const char *msg, const char *ext) const;
-	bool TestAttribs(BasicResult &r,
-			 const char *extensionName,
-			 PFNGLVERTEXATTRIB4FVARBPROC attrib4fv,
+	void FailMessage(VertAttribResult &r, const char *msg,
+			 const char *ext, int dlistMode) const;
+	bool TestAttribs(VertAttribResult &r,
+			 int attribFunc,
 			 PFNGLGETVERTEXATTRIBFVARBPROC getAttribfv,
 			 Aliasing aliasing,
 			 int numAttribs);
-	bool TestNVfuncs(BasicResult &r);
-	bool TestARBfuncs(BasicResult &r, bool shader);
-	bool Test20funcs(BasicResult &r);
+	bool TestNVfuncs(VertAttribResult &r);
+	bool TestARBfuncs(VertAttribResult &r, bool shader);
+	bool Test20funcs(VertAttribResult &r);
 };
 
 } // namespace GLEAN
