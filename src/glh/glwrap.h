@@ -302,6 +302,83 @@ typedef void (GLAPIENTRY * PFNGLMULTTRANSPOSEMATRIXDARBPROC) ( const GLdouble m[
 typedef void (GLAPIENTRY * PFNGLMULTTRANSPOSEMATRIXFARBPROC) ( const GLfloat m[16] );
 typedef void (GLAPIENTRY * PFNGLSAMPLEPASSARBPROC) (GLenum pass);
 typedef void (GLAPIENTRY * PFNGLSAMPLECOVERAGEARBPROC) (GLclampf value, GLboolean invert);
+
+#if 0 /* #ifndef GL_VERSION_1_2 */
+/* These are the OpenGL 1.2 functions.  They're commented out for now,
+   pending review. */
+typedef void (GLAPIENTRY * PFNGLDRAWRANGEELEMENTS) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
+typedef void (GLAPIENTRY * PFNGLTEXIMAGE3D) (GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+typedef void (GLAPIENTRY * PFNGLTEXSUBIMAGE3D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+typedef void (GLAPIENTRY * PFNGLCOPYTEXSUBIMAGE3D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+typedef void (GLAPIENTRY * PFNGLCOLORTABLE) (GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
+typedef void (GLAPIENTRY * PFNGLCOLORSUBTABLE) (GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data);
+typedef void (GLAPIENTRY * PFNGLCOLORTABLEPARAMETERIV) (GLenum target, GLenum pname, const GLint *params);
+typedef void (GLAPIENTRY * PFNGLCOLORTABLEPARAMETERFV) (GLenum target, GLenum pname, const GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLCOPYCOLORSUBTABLE) (GLenum target, GLsizei start, GLint x, GLint y, GLsizei width);
+typedef void (GLAPIENTRY * PFNGLCOPYCOLORTABLE) (GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
+typedef void (GLAPIENTRY * PFNGLGETCOLORTABLE) (GLenum target, GLenum format, GLenum type, GLvoid *table);
+typedef void (GLAPIENTRY * PFNGLGETCOLORTABLEPARAMETERFV) (GLenum target, GLenum pname, GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLGETCOLORTABLEPARAMETERIV) (GLenum target, GLenum pname, GLint *params);
+typedef void (GLAPIENTRY * PFNGLBLENDEQUATION) (GLenum mode);
+typedef void (GLAPIENTRY * PFNGLBLENDCOLOR) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+typedef void (GLAPIENTRY * PFNGLHISTOGRAM) (GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
+typedef void (GLAPIENTRY * PFNGLRESETHISTOGRAM) (GLenum target);
+typedef void (GLAPIENTRY * PFNGLGETHISTOGRAM) (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
+typedef void (GLAPIENTRY * PFNGLGETHISTOGRAMPARAMETERFV) (GLenum target, GLenum pname, GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLGETHISTOGRAMPARAMETERIV) (GLenum target, GLenum pname, GLint *params);
+typedef void (GLAPIENTRY * PFNGLMINMAX) (GLenum target, GLenum internalformat, GLboolean sink);
+typedef void (GLAPIENTRY * PFNGLRESETMINMAX) (GLenum target);
+typedef void (GLAPIENTRY * PFNGLGETMINMAX) (GLenum target, GLboolean reset, GLenum format, GLenum types, GLvoid *values);
+typedef void (GLAPIENTRY * PFNGLGETMINMAXPARAMETERFV) (GLenum target, GLenum pname, GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLGETMINMAXPARAMETERIV) (GLenum target, GLenum pname, GLint *params);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONFILTER1D) (GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *image);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONFILTER2D) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *image);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONPARAMETERF) (GLenum target, GLenum pname, GLfloat params);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONPARAMETERFV) (GLenum target, GLenum pname, const GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONPARAMETERI) (GLenum target, GLenum pname, GLint params);
+typedef void (GLAPIENTRY * PFNGLCONVOLUTIONPARAMETERIV) (GLenum target, GLenum pname, const GLint *params);
+typedef void (GLAPIENTRY * PFNGLCOPYCONVOLUTIONFILTER1D) (GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
+typedef void (GLAPIENTRY * PFNGLCOPYCONVOLUTIONFILTER2D) (GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height);
+typedef void (GLAPIENTRY * PFNGLGETCONVOLUTIONFILTER) (GLenum target, GLenum format, GLenum type, GLvoid *image);
+typedef void (GLAPIENTRY * PFNGLGETCONVOLUTIONPARAMETERFV) (GLenum target, GLenum pname, GLfloat *params);
+typedef void (GLAPIENTRY * PFNGLGETCONVOLUTIONPARAMETERIV) (GLenum target, GLenum pname, GLint *params);
+typedef void (GLAPIENTRY * PFNGLSEPARABLEFILTER2D) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *row, const GLvoid *column);
+typedef void (GLAPIENTRY * PFNGLGETSEPARABLEFILTER) (GLenum target, GLenum format, GLenum type, GLvoid *row, GLvoid *column, GLvoid *span);
+typedef void (GLAPIENTRY * PFNGLACTIVETEXTUREARB) (GLenum texture);
+typedef void (GLAPIENTRY * PFNGLCLIENTACTIVETEXTUREARB) (GLenum texture);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1DARB) (GLenum target, GLdouble s);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1DVARB) (GLenum target, const GLdouble *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1FARB) (GLenum target, GLfloat s);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1FVARB) (GLenum target, const GLfloat *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1IARB) (GLenum target, GLint s);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1IVARB) (GLenum target, const GLint *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1SARB) (GLenum target, GLshort s);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD1SVARB) (GLenum target, const GLshort *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2DARB) (GLenum target, GLdouble s, GLdouble t);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2DVARB) (GLenum target, const GLdouble *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2FARB) (GLenum target, GLfloat s, GLfloat t);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2FVARB) (GLenum target, const GLfloat *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2IARB) (GLenum target, GLint s, GLint t);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2IVARB) (GLenum target, const GLint *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2SARB) (GLenum target, GLshort s, GLshort t);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD2SVARB) (GLenum target, const GLshort *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3DARB) (GLenum target, GLdouble s, GLdouble t, GLdouble r);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3DVARB) (GLenum target, const GLdouble *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3FARB) (GLenum target, GLfloat s, GLfloat t, GLfloat r);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3FVARB) (GLenum target, const GLfloat *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3IARB) (GLenum target, GLint s, GLint t, GLint r);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3IVARB) (GLenum target, const GLint *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3SARB) (GLenum target, GLshort s, GLshort t, GLshort r);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD3SVARB) (GLenum target, const GLshort *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4DARB) (GLenum target, GLdouble s, GLdouble t, GLdouble r, GLdouble q);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4DVARB) (GLenum target, const GLdouble *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4FARB) (GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4FVARB) (GLenum target, const GLfloat *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4IARB) (GLenum target, GLint s, GLint t, GLint r, GLint q);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4IVARB) (GLenum target, const GLint *v);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4SARB) (GLenum target, GLshort s, GLshort t, GLshort r, GLshort q);
+typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4SVARB) (GLenum target, const GLshort *v);
+#endif
 } // namespace GLEAN
 
 
