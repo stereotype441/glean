@@ -55,10 +55,10 @@ endif # BeOS
 ifeq ($(PLATFORM), Unix)
 	XINC:=/usr/include/X11
 	XLIB:=/usr/X11R6/lib
-	GLINC:=/usr/local/include
-	GLLIB:=/usr/local/lib
-	GLUTINC:=/usr/local/include
-	GLUTLIB:=/usr/local/lib
+	GLINC:=/usr/include
+	GLLIB:=/usr/lib
+	GLUTINC:=/usr/include
+	GLUTLIB:=/usr/lib
 	TIFFINC:=/usr/include
 	TIFFLIB:=/usr/lib
 endif # Unix
