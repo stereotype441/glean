@@ -29,11 +29,19 @@
 
 // ttexgen.cpp:  Basic test of GL texture coordinate generation.
 // This test does a basic test of the glTexGen functions, including
-// object_linear, eye_linear, and sphere_map.  We use glutSolidSphere to
-// draw a sphere, and map a check texture onto it.  We use an ortho projection
-// to keep it simple.  The result should be a 1:1 mapping of the check
-// texture for all three modes (sphere map maps 1:1 because mapping it
-// onto a sphere inverts the spheremap math).
+// object_linear, eye_linear, and sphere_map.  We use the Sphere3D with
+// a GeomRenderer to draw a sphere, and map a check texture onto it.  We 
+// use an ortho projection to keep it simple.  The result should be a 1:1
+// mapping of the check texture for all three modes (sphere map maps 1:1 
+// because mapping it onto a sphere inverts the spheremap math).
+//
+// Note that accuracy issues might cause this test to fail if the
+// texcoords near the center are a little warped; I've specifically tried
+// to keep the matrices as "pure" as possible (no rotations) to
+// keep the numerical precision high.  So far it seems to work fine.
+// Introducing a rotation by 90 degrees about the x axis resulted,
+// on one driver, in a warping at the center of the sphere which caused
+// the test to fail.
 //
 // For the second test of the three, we offset the texture by 0.5,
 // so that each test's rendering is visually distinct from the 
@@ -55,7 +63,6 @@
 #include <cmath>
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/glut.h>
 #include "dsconfig.h"
 #include "dsfilt.h"
 #include "dsurf.h"
@@ -66,6 +73,7 @@
 #include "ttexgen.h"
 #include "misc.h"
 #include "geomrend.h"
+#include "geomutil.h"
 
 const GLuint viewSize=50;
 
@@ -179,12 +187,25 @@ TexgenTest::runOne(Result& r) {
 	// Colors for matching against when we readback pixels.
 	GLfloat matchBlue[3] = {0,0,1};
 	GLfloat matchRed[3] = {1,0,0};
+
+    // A sphere to draw.
+    Sphere3D theSphere(9.9, 32, 16);
+
+    // A GeomRenderer to draw it with.
+    GeomRenderer sphereRenderer;
+    sphereRenderer.setDrawMethod(GeomRenderer::GLVERTEX_MODE);
+    sphereRenderer.setParameterBits(GeomRenderer::NORMAL_BIT);
+    sphereRenderer.setVArrayIndices(theSphere.getNumIndices(),GL_UNSIGNED_INT,theSphere.getIndices());
+    sphereRenderer.setVertexPointer(theSphere.getNumVertices(), 3, GL_FLOAT, 0, theSphere.getVertices());
+    sphereRenderer.setNormalPointer(GL_FLOAT, 0, theSphere.getNormals());
     
 	// draw the sphere in a 50x50 pixel window for some precision.
 	glViewport(0, 0, 50, 50);
     
 	// Basic GL setup.
 	glDisable(GL_DITHER);
+    glEnable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(1,1,1);
     
 	// Setup the projection.
@@ -228,7 +249,7 @@ TexgenTest::runOne(Result& r) {
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glutSolidSphere(9.9,32,16);
+	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES)); 
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
     
 	// Validate it.
@@ -250,7 +271,7 @@ TexgenTest::runOne(Result& r) {
 	glTexGenfv(GL_T, GL_OBJECT_PLANE, tObjPlane);
     
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glutSolidSphere(9.9,32,16);
+	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES));
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
     
 	// Validate it.
@@ -272,7 +293,7 @@ TexgenTest::runOne(Result& r) {
 	glTexGenfv(GL_T, GL_EYE_PLANE, tEyePlane);
     
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glutSolidSphere(9.9,32,16);
+	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES));
 	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
     
 	// Validate it.
@@ -285,37 +306,6 @@ TexgenTest::runOne(Result& r) {
 		return;
 	}
 
-    // REMOVE THIS: testing the GeomRenderer.
-/*    float verts[12] = {-5,-5,0, 5,-5,0, 5,5,0, -5,5,0};
-    unsigned char colors[19] = {255,255,255,255,0, 255,0,0,255,0, 0,255,0,255,0, 0,0,255,255};
-    unsigned int indices[4] = {0,1,2,3};
-    glDisable(GL_TEXTURE_2D);
-    glShadeModel(GL_SMOOTH);
-
-    GeomRenderer rend;
-    rend.setDrawMethod(GeomRenderer::GLARRAYELEMENT_MODE);
-    rend.setParameterBits(GeomRenderer::COLOR_BIT);
-    rend.setVArrayIndices(4,GL_UNSIGNED_INT,indices);
-    if (!rend.setArraysCompiled(true))
-    {
-        // Oh well... should we notify them somehow?
-    }
-    rend.setVertexPointer(4, 3, GL_FLOAT, 0, verts);
-    rend.setColorPointer(4, GL_UNSIGNED_BYTE, 5, colors);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    if (!rend.renderPrimitives(GL_TRIANGLE_FAN))
-    {
-        std::cout << "ERROR: rendering failed despite correct setup." << std::endl;
-    }
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    int listName;
-    rend.setDrawMethod(GeomRenderer::GLDRAWELEMENTS_MODE);
-    rend.generateDisplayList(GL_TRIANGLE_FAN, listName);
-    glCallList(listName);
-    glDeleteLists(listName, 1);
-    _sleep(1000);
-*/
-    
 	// success
 	r.pass = true;
 	env->log << name << ":  PASS "
