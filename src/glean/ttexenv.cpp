@@ -31,8 +31,13 @@
 // Author: Brian Paul (brianp@valinux.com)  April 2001
 //
 // Test procedure:
-//   For each of the textenv modes and each of the basic texture formats
-//   render a textured quad and test that its color is correct.
+//   Setup a texture with 81 columns of unique RGBA colors, 3 texels each.
+//   Draw a 81 uniquely-colored flat-shaded quads as wide horizontal bands,
+//   with the above texture.  This makes a matrix of 81*81 colored squares
+//   for which we test that the current texture environment mode and texture
+//   format produced the correct color.
+//   Finally, we blend over a gray background in order to verify that the
+//   post-texture alpha value is correct.
 //      
 
 #include "ttexenv.h"
