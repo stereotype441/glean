@@ -146,6 +146,12 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
 
 	PIXELFORMATDESCRIPTOR pfd;
 	SetPixelFormat(hDC,config->pfdID,&pfd);
+	
+#elif defined(__BEWIN__)
+
+	tWindow = new GLTestWindow (BRect(100,100, 100+w, 100+h), "GL Test Window");
+	tWindow->Show();
+
 #endif
 } // Window::Window
 
@@ -165,6 +171,11 @@ Window::~Window() {
 #elif defined(__WIN__)
 	ReleaseDC(hWindow,hDC);
 	DestroyWindow(hWindow);
+
+#elif defined(__BEWIN__)
+
+	tWindow->Lock();
+	tWindow->Quit();
 #endif
 
 } // Window::~Window
@@ -178,6 +189,8 @@ Window::swap() {
 	glXSwapBuffers(winSys->dpy, xWindow);
 #   elif defined(__WIN__)
 	SwapBuffers(hDC);
+#	elif defined(__BEWIN__)
+	tWindow->SwapBuffers();
 #   endif
 } // Window::swap
 
@@ -202,4 +215,22 @@ Window::WindowProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam)
 
 #endif
 
+
+#if defined(__BEWIN__)
+
+GLTestWindow::GLTestWindow(BRect frame, const char *title) :
+	BWindow(frame, title, B_TITLED_WINDOW, B_NOT_RESIZABLE)
+{
+	/* right now we just create all the buffers we can */
+	tView = new BGLView(Bounds(), "glean_view", B_FOLLOW_ALL, B_WILL_DRAW,
+		BGL_RGB | BGL_DOUBLE | BGL_DEPTH | BGL_ALPHA | BGL_STENCIL | BGL_ACCUM );
+	AddChild(tView);
+}
+
+void
+GLTestWindow::SwapBuffers()
+{
+	tView->SwapBuffers();
+}
+#endif
 } // namespace GLEAN

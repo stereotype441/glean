@@ -61,6 +61,8 @@ class DrawingSurfaceConfig {
 #     endif
 #   elif defined(__WIN__)
 	DrawingSurfaceConfig(int id, ::PIXELFORMATDESCRIPTOR *ppfd);
+#	elif defined(__BEWIN__)
+	DrawingSurfaceConfig();
 #   endif
 
 	DrawingSurfaceConfig(string& s);	// s is a canonical description

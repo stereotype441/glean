@@ -54,6 +54,20 @@ class DrawingSurface {
 
 }; // class DrawingSurface
 
+/* we have to create a utility test window for BeOS */
+#	if defined(__BEWIN__)
+class GLTestWindow : public BWindow {
+public:
+	GLTestWindow(BRect frame, const char *title);
+	void		SwapBuffers();
+//	void		SwapBuffers( bool vSync );
+
+private:
+	BGLView	*tView;
+};
+#	endif
+
+
 class Window: public DrawingSurface {
     public:
     	Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h);
@@ -75,6 +89,10 @@ class Window: public DrawingSurface {
 
 		::HDC get_dc() const {return hDC;}
 		static LRESULT CALLBACK WindowProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam);
+
+#	elif defined(__BEWIN__)
+		GLTestWindow	*tWindow;
+
 #	endif
 }; // class Window
 

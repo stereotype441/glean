@@ -125,6 +125,23 @@ WindowSystem::WindowSystem(Options& o) {
 	DrawingSurfaceFilter f(o.visFilter);	// may throw an exception!
 	surfConfigs = f.filter(glpf);
 }
+
+#elif defined(__BEWIN__)
+WindowSystem::WindowSystem(Options& o) {
+	//cout << "Implement Me!  WindowSystem::WindowSystem(Options& o)\n";
+
+	theApp = new BApplication("application/x-AJH-glean");
+
+	/* for BeOS, we just stack the current config onto the vector so */
+	/* there is at least one thing to iterate over  */
+	vector<DrawingSurfaceConfig*> glconfigs;
+	glconfigs.push_back(new DrawingSurfaceConfig());
+
+	DrawingSurfaceFilter f(o.visFilter);	// may throw an exception!
+	surfConfigs = f.filter(glconfigs);
+
+}
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,11 +150,15 @@ WindowSystem::WindowSystem(Options& o) {
 #if defined(__X11__)
 WindowSystem::~WindowSystem() {
 	XFree(vip);
-} // WindowSystem:: ~WindowSystem
+} 
 
 #elif defined(__WIN__)
 WindowSystem::~WindowSystem() {
 }
+#elif defined(__BEWIN__)
+WindowSystem::~WindowSystem() {
+	delete theApp;
+}// WindowSystem:: ~WindowSystem
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

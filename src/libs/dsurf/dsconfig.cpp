@@ -343,9 +343,41 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(int id, ::PIXELFORMATDESCRIPTOR *ppfd
 	transparent = false;
 	transR = transG = transB = transA = transI = 0;
 }
+#elif defined(__BEWIN__)
+
+DrawingSurfaceConfig::DrawingSurfaceConfig() {
+
+	if (!mapsInitialized)
+		initializeMaps();
+
+	/* these values are estimates for the moment */
+	level = 0;
+	db = 1;
+	stereo =0;
+	r = g = b = a = 32;
+
+	z = 30;
+	accR = 32;
+	accG = 32;
+	accB = 32;
+	accA = 32;
+
+
+	canWindow = 1;			
+	canWinSysRender = 1;		
+
+	// This is a software-mode assumption
+	fast = false;
+
+	// we'll assume that the OpenGL implementation thinks it is conformant
+	conformant = true;		
+
+	// chromakeying isn't supported
+	transparent = false;
+	transR = transG = transB = transA = transI = 0;
+}
 
 #endif
-
 
 DrawingSurfaceConfig::DrawingSurfaceConfig(string& str) {
 	if (!mapsInitialized)

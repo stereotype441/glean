@@ -9,29 +9,48 @@
 # The variable CONFIG controls major configuration options.  Currently
 # there are two options to be set:
 #    The OS (for file operations, etc.).  Define either __UNIX__ or __MS__.
-#    The window system.  Define either __X11__ or __WIN__.
+#    The window system.  Define either __X11__ or __WIN__ or __BEWIN__.
 
 # Major configuration options:
-CONFIG:=-D__UNIX__ -D__X11__
+
+#
+
+#PLATFORM=BeOS
+PLATFORM=Unix
+
+ifeq ($(PLATFORM), BeOS)
+	CONFIG:=-D__UNIX__ -D__BEWIN__
+	AR:=/boot/develop/tools/gnupro/bin/ar
+	INSTALL:=/bin/install
+	GLINC:=/boot/develop/headers/be/opengl/
+	GLLIB:=/boot/beos/system/lib
+	RANLIB:=/boot/develop/tools/gnupro/bin/ranlib
+	TIFFINC:=/boot/somewhere
+	TIFFLIB:=/boot/somewhere
+else
+	CONFIG:=-D__UNIX__ -D__X11__
+	AR:=/usr/bin/ar
+	INSTALL:=/usr/bin/install
+	XINC:=/usr/include/X11
+	XLIB:=/usr/X11R6/lib
+	GLINC:=/usr/local/include
+	GLLIB:=/usr/local/lib
+	GLUTINC:=/usr/local/include
+	GLUTLIB:=/usr/local/lib
+	TIFFINC:=/usr/include
+	TIFFLIB:=/usr/lib
+	RANLIB:=/usr/bin/ranlib
+endif
+
 
 # Locations of common commands:
 SHELL:=/bin/sh
 CC:=g++
-INSTALL:=/usr/bin/install
 RM:=/bin/rm
 SED:=/bin/sed
-AR:=/usr/bin/ar
-RANLIB:=/usr/bin/ranlib
 
 # Locations of useful include and library files:
-XINC:=/usr/include/X11
-XLIB:=/usr/X11R6/lib
-GLINC:=/usr/local/include
-GLLIB:=/usr/local/lib
-GLUTINC:=/usr/local/include
-GLUTLIB:=/usr/local/lib
-TIFFINC:=/usr/include
-TIFFLIB:=/usr/lib
+
 
 # Standard targets and subdirectory handling:
 all:     all_here     all_dirs
@@ -87,9 +106,10 @@ _OPT=\
 DBG:=-g		# Debugging options
 _DBG=\
 	$(DBG)
-WARN:=		# warning options
+WARN:=		# warning options /* BeOS requres -Wno-multichar -Wno-ctor-dtor-privacy \ */
 _WARN=\
 	-Wall \
+	-Wno-multichar -Wno-ctor-dtor-privacy \
 	-W \
 	$(WARN)
 LIBDIR:=	# -L options for specifying library directories

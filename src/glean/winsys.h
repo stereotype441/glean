@@ -102,6 +102,9 @@ class WindowSystem {
 	XVisualInfo* vip;	// Array of raw XVisualInfo structures.
 
 #   elif defined(__WIN__)
+
+#	elif defined(__BEWIN__)
+	BApplication *theApp;
 #   endif
 
 }; // class WindowSystem
