@@ -35,6 +35,7 @@
 #define __ttexgen_h__
 
 #include "tbasic.h"
+#include "geomrend.h"
 
 class DrawingSurfaceConfig;		// Forward reference.
 
@@ -49,9 +50,12 @@ class TexgenTest: public BasicTest {
 	virtual void runOne(Result& r);
 
     private:
-	void FailMessage(Result &r, const std::string& texgenMode, const std::string& colorMismatch) const;
+	void FailMessage(Result &r, const std::string& texgenMode, GeomRenderer::DrawMethod, 
+                     bool arraysCompiled, int retainedMode, const std::string& colorMismatch) const;
+    void renderSphere(int retainedMode, GeomRenderer& sphereRenderer);
 	bool compareColors(GLfloat* color0, GLfloat* color1, std::string& failureInfo) const;
-        bool verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, GLfloat* upperRightColor, std::string& failureInfo) const;
+    bool verifyCheckers(GLfloat* pixels, GLfloat* upperLeftColor, 
+                        GLfloat* upperRightColor, std::string& failureInfo) const;
 
 }; // class TexgenTest
 

@@ -72,7 +72,6 @@
 #include "glutils.h"
 #include "ttexgen.h"
 #include "misc.h"
-#include "geomrend.h"
 #include "geomutil.h"
 
 const GLuint viewSize=50;
@@ -92,10 +91,25 @@ TexgenTest::~TexgenTest() {
 } // TexgenTest::~TexgenTest
 
 void
-TexgenTest::FailMessage(Result &r, const std::string& texgenMode, const std::string& colorMismatch) const {
+TexgenTest::FailMessage(Result &r, const std::string& texgenMode, GeomRenderer::DrawMethod method,
+                        bool arraysCompiled, int retainedMode, const std::string& colorMismatch) const {
 	env->log << name << ":  FAIL "
              << r.config->conciseDescription() << '\n';
-	env->log << "\t" << "during mode " << texgenMode << ", " << colorMismatch << std::endl; 
+	env->log << "\t" << "during mode " << texgenMode << ", ";
+    switch(method)
+    {
+        case GeomRenderer::GLVERTEX_MODE: env->log << "glVertex-style rendering, "; break;
+        case GeomRenderer::GLARRAYELEMENT_MODE: env->log << "glArrayElement-style rendering, "; break;
+        case GeomRenderer::GLDRAWELEMENTS_MODE: env->log << "glDrawElements-style rendering, "; break;
+        case GeomRenderer::GLDRAWARRAYS_MODE: env->log << "glDrawArrays-style rendering, "; break;
+    }
+    if (arraysCompiled) env->log << "arrays locked, ";
+    else env->log << "arrays not locked, ";
+
+    if (retainedMode) env->log << "built into a display list, ";
+    else env->log << "called immediately (not display listed), ";
+    
+    env->log << colorMismatch << std::endl; 
 }
 
 bool 
@@ -245,72 +259,115 @@ TexgenTest::runOne(Result& r) {
 	}
 	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, 256, 256, GL_RGB, GL_UNSIGNED_BYTE, redBlueCheck);
     
-	// GL_SPHERE_MAP: with spheremap, the UL corner is blue
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES)); 
-	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
+    // Setup our arrays of configuration info; we loop over the rendering pass a number of times,
+    // using a different GL primitive path each time.
+    GeomRenderer::DrawMethod drawMethods[] = {GeomRenderer::GLVERTEX_MODE, GeomRenderer::GLARRAYELEMENT_MODE,
+                                              GeomRenderer::GLDRAWELEMENTS_MODE, GeomRenderer::GLARRAYELEMENT_MODE,
+                                              GeomRenderer::GLDRAWELEMENTS_MODE};
+
+    bool arraysCompiled[] = {false, false, false, true, true};
     
-	// Validate it.
-	std::string sphereMapResult;
-	if (!verifyCheckers(pixels, matchBlue, matchRed, sphereMapResult))
-	{
-        FailMessage(r, std::string("GL_SPHERE_MAP"), sphereMapResult);
-		r.pass = false;
-		glDeleteTextures(1, &checkerTextureHandle);
-		return;
-	}
-    
-	// GL_OBJECT_LINEAR: with object linear and the below planes, the UL corner is red.
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	float sObjPlane[4] = {0,0.05,0,1.5};  // We flip the checker by setting W to 1.5 (phases by half a period)
-	float tObjPlane[4] = {0.05,0,0,1};
-	glTexGenfv(GL_S, GL_OBJECT_PLANE, sObjPlane);
-	glTexGenfv(GL_T, GL_OBJECT_PLANE, tObjPlane);
-    
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES));
-	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
-    
-	// Validate it.
-	std::string objectLinearResult;
-	if (!verifyCheckers(pixels, matchRed, matchBlue, objectLinearResult))
-	{
-        FailMessage(r, std::string("GL_OBJECT_LINEAR"), objectLinearResult);
-		r.pass = false;
-		glDeleteTextures(1, &checkerTextureHandle);
-		return;
-	}
-    
-	// GL_EYE_LINEAR: with eye linear and the below planes, the UL corner is blue.
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	float sEyePlane[4] = {0,0.05,0,1};
-	float tEyePlane[4] = {0.05,0,0,1};
-	glTexGenfv(GL_S, GL_EYE_PLANE, sEyePlane);
-	glTexGenfv(GL_T, GL_EYE_PLANE, tEyePlane);
-    
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	assert(sphereRenderer.renderPrimitives(GL_TRIANGLES));
-	glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
-    
-	// Validate it.
-	std::string eyeLinearResult;
-	if (!verifyCheckers(pixels, matchBlue, matchRed, eyeLinearResult))
-	{
-        FailMessage(r, std::string("GL_EYE_LINEAR"), eyeLinearResult);
-		r.pass = false;
-		glDeleteTextures(1, &checkerTextureHandle);
-		return;
-	}
+    // Iterate once for all immediate mode styles, then once for retained mode styles.
+    for (int retainedMode=0; retainedMode<2; retainedMode++)
+    {
+        for (int testIteration=0; testIteration<5; testIteration++)
+        {
+            sphereRenderer.setDrawMethod(drawMethods[testIteration]);
+            if (!sphereRenderer.setArraysCompiled(arraysCompiled[testIteration]))
+            {
+                // We don't have the extension... not sure what we should do.
+                // May as well just keep going, it's no big deal (it should still
+                // yield correct results, of course, it's just redundant).
+            }
+
+            // GL_SPHERE_MAP: with spheremap, the UL corner is blue
+            glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+            glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            renderSphere(retainedMode, sphereRenderer);
+            glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
+            
+            // Validate it.
+            std::string sphereMapResult;
+            if (!verifyCheckers(pixels, matchBlue, matchRed, sphereMapResult))
+            {
+                FailMessage(r, std::string("GL_SPHERE_MAP"), drawMethods[testIteration], 
+                            arraysCompiled[testIteration], retainedMode, sphereMapResult);
+                r.pass = false;
+                glDeleteTextures(1, &checkerTextureHandle);
+                return;
+            }
+            
+            // GL_OBJECT_LINEAR: with object linear and the below planes, the UL corner is red.
+            glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+            glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+            float sObjPlane[4] = {0,0.05,0,1.5};  // We flip the checker by setting W to 1.5 (phases by half a period)
+            float tObjPlane[4] = {0.05,0,0,1};
+            glTexGenfv(GL_S, GL_OBJECT_PLANE, sObjPlane);
+            glTexGenfv(GL_T, GL_OBJECT_PLANE, tObjPlane);
+            
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            renderSphere(retainedMode, sphereRenderer);
+            glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
+            
+            // Validate it.
+            std::string objectLinearResult;
+            if (!verifyCheckers(pixels, matchRed, matchBlue, objectLinearResult))
+            {
+                FailMessage(r, std::string("GL_OBJECT_LINEAR"), drawMethods[testIteration], 
+                            arraysCompiled[testIteration], retainedMode, objectLinearResult);
+                r.pass = false;
+                glDeleteTextures(1, &checkerTextureHandle);
+                return;
+            }
+            
+            // GL_EYE_LINEAR: with eye linear and the below planes, the UL corner is blue.
+            glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+            glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+            float sEyePlane[4] = {0,0.05,0,1};
+            float tEyePlane[4] = {0.05,0,0,1};
+            glTexGenfv(GL_S, GL_EYE_PLANE, sEyePlane);
+            glTexGenfv(GL_T, GL_EYE_PLANE, tEyePlane);
+            
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            renderSphere(retainedMode, sphereRenderer);
+            glReadPixels(0,0,50,50, GL_RGB, GL_FLOAT, pixels);
+            
+            // Validate it.
+            std::string eyeLinearResult;
+            if (!verifyCheckers(pixels, matchBlue, matchRed, eyeLinearResult))
+            {
+                FailMessage(r, std::string("GL_EYE_LINEAR"), drawMethods[testIteration], 
+                            arraysCompiled[testIteration], retainedMode, eyeLinearResult);
+                r.pass = false;
+                glDeleteTextures(1, &checkerTextureHandle);
+                return;
+            }
+        }
+    }
 
 	// success
 	r.pass = true;
 	env->log << name << ":  PASS "
              << r.config->conciseDescription() << '\n';
 	glDeleteTextures(1, &checkerTextureHandle);
+}
+    
+void
+TexgenTest::renderSphere(int retainedMode, GeomRenderer& sphereRenderer)
+{
+    if (retainedMode)
+    {
+        int displayList;
+        assert(sphereRenderer.generateDisplayList(GL_TRIANGLES, displayList));
+        glCallList(displayList);
+        glDeleteLists(displayList, 1);
+    }
+    else
+    {
+        assert(sphereRenderer.renderPrimitives(GL_TRIANGLES)); 
+    }
 }
     
     
