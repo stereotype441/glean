@@ -70,6 +70,7 @@ struct C4UB_N3F_V3F {
 };
 
 int nVertices;
+int dList;
 C4UB_N3F_V3F* c4ub_n3f_v3f;
 
 
@@ -96,12 +97,48 @@ coloredLit_imIndTri() {
 } // coloredLit_imIndTri
 
 void
+callDList() {
+	glCallList(dList);
+} // callDList
+
+void
 logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 	env->log << "\tImmediate-mode independent triangle rate = "
 		<< r.imTriTps << " tri/sec.\n"
 		<< "\t\tRange of valid measurements = ["
 		<< r.imTriTpsLow << ", " << r.imTriTpsHigh << "]\n";
+	env->log << "\t\tImage sanity check "
+		<< (r.imTriImageOK? "passed\n": "failed\n");
+	env->log << "\tDisplay-list independent triangle rate = "
+		<< r.dlTriTps << " tri/sec.\n"
+		<< "\t\tRange of valid measurements = ["
+		<< r.dlTriTpsLow << ", " << r.dlTriTpsHigh << "]\n";
+	env->log << "\t\tImage sanity check "
+		<< (r.dlTriImageOK? "passed\n": "failed\n");
+	env->log << "\t\tImage comparison check "
+		<< (r.dlTriImageMatch? "passed\n": "failed\n");
 } // logStats
+
+void
+diffHeader(bool& same, string& name, GLEAN::DrawingSurfaceConfig* config,
+    GLEAN::Environment* env) {
+	if (same) {
+		same = false;
+		env->log << name << ":  DIFF "
+			<< config->conciseDescription() << '\n';
+	}
+} // diffHeader
+
+void
+failHeader(bool& pass, string& name, GLEAN::DrawingSurfaceConfig* config,
+    GLEAN::Environment* env) {
+	if (pass) {
+		pass = false;
+		env->log << name << ":  FAIL "
+			<< config->conciseDescription() << '\n';
+	}
+} // failHeader
+
 
 typedef void (*TIME_FUNC) ();
 
@@ -232,6 +269,11 @@ ColoredLitPerf::compare(Environment& environment) {
 
 void
 ColoredLitPerf::runOne(Result& r, Window& w) {
+	Image imTriImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
+	Image testImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
+	Image::Registration imageReg;
+	bool passed = true;
+
 	// Make colors deterministic, so we can check them easily if we
 	// choose:
 	RGBCodedID colorGen(r.config->r, r.config->g, r.config->b);
@@ -293,18 +335,75 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		k += 3;
 	}
 
-	glDisable(GL_DITHER);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	GLUtils::useScreenCoords(drawingSize, drawingSize);
-	glEnable(GL_DEPTH_TEST);
+
+	// Diffuse white light at infinity, behind the eye:
+	GLUtils::Light light(0);
+	light.ambient(0, 0, 0, 0);
+	light.diffuse(1, 1, 1, 0);
+	light.specular(0, 0, 0, 0);
+	light.position(0, 0, 1, 0);
+	light.spotCutoff(180);
+	light.constantAttenuation(1);
+	light.linearAttenuation(0);
+	light.quadraticAttenuation(0);
+	light.enable();
+
+	GLUtils::LightModel lm;
+	lm.ambient(0, 0, 0, 0);
+	lm.localViewer(false);
+	lm.twoSide(false);
+	lm.colorControl(GL_SINGLE_COLOR);
+
+	glFrontFace(GL_CW);
+	glEnable(GL_NORMALIZE);
+	GLUtils::Material mat;
+	mat.ambient(0, 0, 0, 1);
+	mat.ambientAndDiffuse(1, 1, 1, 1);
+	mat.specular(0, 0, 0, 1);
+	mat.emission(0, 0, 0, 1);
+	mat.shininess(0);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+
+	glEnable(GL_LIGHTING);
+
+	glDisable(GL_FOG);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glDisable(GL_DITHER);
+	glDisable(GL_COLOR_LOGIC_OP);
+
+	glDrawBuffer(GL_BACK);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glDisable(GL_POLYGON_STIPPLE);
+	glDisable(GL_POLYGON_OFFSET_FILL);
+
+	glShadeModel(GL_FLAT);
 
 	Timer time;
 	time.calibrate(static_cast<TIME_FUNC>(glFinish),
 		static_cast<TIME_FUNC>(glFinish));
 
 	vector<float> measurements;
-	for (int i = 0; i < 5; ++i) {
+
+	////////////////////////////////////////////////////////////
+	// Immediate-mode independent triangles
+	////////////////////////////////////////////////////////////
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	w.swap();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	measurements.resize(0);
+	for (int i1 = 0; i1 < 5; ++i1) {
 		env->quiesce();
 		double t = time.time(static_cast<TIME_FUNC>(glFinish),
 			static_cast<TIME_FUNC>(coloredLit_imIndTri),
@@ -312,16 +411,62 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		w.swap();	// So the user can see something happening.
 		measurements.push_back(nTris / t);
 	}
-
-	delete[] c4ub_n3f_v3f;
-
 	sort(measurements.begin(), measurements.end());
 	r.imTriTps = measurements[2];
 	r.imTriTpsLow = measurements[1];
 	r.imTriTpsHigh = measurements[3];
 
-	env->log << name << ":  PASS "
-		<< r.config->conciseDescription() << '\n';
+	// Read back the image, verify that every triangle was drawn:
+	imTriImage.read(0, 0);
+	r.imTriImageOK = true;
+
+	////////////////////////////////////////////////////////////
+	// Display-listed independent triangles
+	////////////////////////////////////////////////////////////
+	dList = glGenLists(1);
+	glNewList(dList, GL_COMPILE);
+		coloredLit_imIndTri();
+	glEndList();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	w.swap();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	measurements.resize(0);
+	for (int i2 = 0; i2 < 5; ++i2) {
+		env->quiesce();
+		double t = time.time(static_cast<TIME_FUNC>(glFinish),
+			static_cast<TIME_FUNC>(callDList),
+			static_cast<TIME_FUNC>(glFinish));
+		w.swap();
+		measurements.push_back(nTris / t);
+	}
+	glDeleteLists(dList, 1);
+
+	sort(measurements.begin(), measurements.end());
+	r.dlTriTps = measurements[2];
+	r.dlTriTpsLow = measurements[1];
+	r.dlTriTpsHigh = measurements[3];
+
+	// Verify that the image is the same as that produced by
+	// rendering independent triangles:
+	testImage.read(0, 0);
+	r.dlTriImageOK = true;
+	imageReg = testImage.reg(imTriImage);
+	if (imageReg.stats[0].max()
+	    + imageReg.stats[1].max()
+	    + imageReg.stats[2].max() != 0.0) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDisplay-listed independent triangle rendering\n"
+			<< "\t\tyielded different image than immediate-mode\n"
+			<< "\t\tindependent triangle rendering.\n";
+		r.dlTriImageMatch = false;
+	} else
+		r.dlTriImageMatch = true;
+
+	delete[] c4ub_n3f_v3f;
+
+	if (passed)
+		env->log << name << ":  PASS "
+			<< r.config->conciseDescription() << '\n';
 	logStats(r, env);
 env->log
 << "\tTHIS TEST IS UNDER DEVELOPMENT; THE RESULTS ARE NOT YET USABLE.\n";
@@ -332,22 +477,63 @@ env->log
 ///////////////////////////////////////////////////////////////////////////////
 void
 ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
-	if (oldR.imTriTpsLow < newR.imTriTps && newR.imTriTps < oldR.imTriTpsHigh
-	 && newR.imTriTpsLow < oldR.imTriTps && oldR.imTriTps < newR.imTriTpsHigh){
-		if (env->options.verbosity)
-			env->log << name << ":  SAME "
-				<< newR.config->conciseDescription()
-				<< "\n\tEach test time falls within the "
-				"valid measurement range of the\n"
-				"\tother test time.\n";
-	} else {
-		env->log << name << ":  DIFF "
-			<< newR.config->conciseDescription() << '\n';
-		env->log << '\t'
-			<< ((oldR.imTriTps < newR.imTriTps)?
-				env->options.db1Name: env->options.db2Name)
-			<< " appears to have higher performance.\n";
+	bool same = true;
+	if (newR.imTriTps < oldR.imTriTpsLow) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name
+			<< " may have higher immediate-mode "
+			"independent triangle performance.\n";
 	}
+	if (newR.imTriTps > oldR.imTriTpsHigh) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db2Name
+			<< " may have higher immediate-mode "
+			"independent triangle performance.\n";
+	}
+	if (newR.imTriImageOK != oldR.imTriImageOK) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name << " image check "
+			<< (oldR.imTriImageOK? "passed\n": "failed\n");
+		env->log << '\t' << env->options.db2Name << " image check "
+			<< (newR.imTriImageOK? "passed\n": "failed\n");
+	}
+
+	if (newR.dlTriTps < oldR.dlTriTpsLow) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name
+			<< " may have higher display-list "
+			"independent triangle performance.\n";
+	}
+	if (newR.dlTriTps > oldR.dlTriTpsHigh) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db2Name
+			<< " may have higher display-list "
+			"independent triangle performance.\n";
+	}
+	if (newR.dlTriImageOK != oldR.dlTriImageOK) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name << " image check "
+			<< (oldR.dlTriImageOK? "passed\n": "failed\n");
+		env->log << '\t' << env->options.db2Name << " image check "
+			<< (newR.dlTriImageOK? "passed\n": "failed\n");
+	}
+	if (newR.dlTriImageMatch != oldR.dlTriImageMatch) {
+		diffHeader(same, name, newR.config, env);
+		env->log << '\t' << env->options.db1Name << " image compare "
+			<< (oldR.dlTriImageMatch? "passed\n": "failed\n");
+		env->log << '\t' << env->options.db2Name << " image compare "
+			<< (newR.dlTriImageMatch? "passed\n": "failed\n");
+	}
+
+	if (same && env->options.verbosity) {
+		env->log << name << ":  SAME "
+			<< newR.config->conciseDescription()
+			<< "\n\tEach test time falls within the "
+			"valid measurement range of the\n"
+			"\tother test time; both have the same"
+			"image comparison results.\n";
+	}
+
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
 		logStats(oldR, env);
@@ -375,7 +561,10 @@ void
 ColoredLitPerf::Result::put(ostream& s) const {
 	s << config->canonicalDescription() << '\n';
 
-	s << imTriTps << ' ' << imTriTpsLow << ' ' << imTriTpsHigh << '\n';
+	s << imTriTps << ' ' << imTriTpsLow << ' ' << imTriTpsHigh
+		<< imTriImageOK << '\n';
+	s << dlTriTps << ' ' << dlTriTpsLow << ' ' << dlTriTpsHigh
+		<< dlTriImageOK << dlTriImageMatch << '\n';
 } // ColoredLitPerf::Result::put
 
 bool
@@ -386,7 +575,9 @@ ColoredLitPerf::Result::get(istream& s) {
 		return false;
 	config = new DrawingSurfaceConfig(configDesc);
 
-	s >> imTriTps >> imTriTpsLow >> imTriTpsHigh;
+	s >> imTriTps >> imTriTpsLow >> imTriTpsHigh >> imTriImageOK;
+	s >> dlTriTps >> dlTriTpsLow >> dlTriTpsHigh >> dlTriImageOK
+		>> dlTriImageMatch;
 	return s.good();
 } // ColoredLitPerf::Result::get
 

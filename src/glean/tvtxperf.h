@@ -65,10 +65,13 @@ class ColoredLitPerf: public Test {
 		float imTriTps;		// immediate-mode independent triangles
 		float imTriTpsLow;
 		float imTriTpsHigh;
+		bool imTriImageOK;
 
 		float dlTriTps;		// display-listed independent triangles
 		float dlTriTpsLow;
 		float dlTriTpsHigh;
+		bool dlTriImageOK;
+		bool dlTriImageMatch;
 
 		float imStripTps;	// immediate-mode triangle strip
 		float imStripTpsLow;
