@@ -323,6 +323,8 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	env->log << name << ":  PASS "
 		<< r.config->conciseDescription() << '\n';
 	logStats(r, env);
+env->log
+<< "\tTHIS TEST IS UNDER DEVELOPMENT; THE RESULTS ARE NOT YET USABLE.\n";
 } // ColoredLitPerf::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
