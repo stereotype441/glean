@@ -9,15 +9,16 @@
 # The variable CONFIG controls major configuration options.  Currently
 # there are two options to be set:
 #    The OS (for file operations, etc.).  Define either __UNIX__ or __MS__.
-#    The window system.  Define either __X11__ or __WIN__ or __BEWIN__.
+#    The window system.  Define either __X11__ or __WIN__ or __BEWIN__ or __AGL__.
 
 # The variable PLATFORM sets CONFIG and other variables to common
 # default values for various operating systems.  This allows the bulk
 # of the GNU-based Makefiles to be shared between operating systems.
-# The two values currently accepted are "BeOS" and "Unix".
+# The values currently accepted are "BeOS", "Unix", and "MacOSX".
 
 # Major configuration options:
 #PLATFORM:=BeOS
+#PLATFORM:=MacOSX
 PLATFORM:=Unix
 
 ifeq ($(PLATFORM), Unix)
@@ -26,7 +27,11 @@ else
 ifeq ($(PLATFORM), BeOS)
 	CONFIG:=-D__UNIX__ -D__BEWIN__
 else
+ifeq ($(PLATFORM), MacOSX)
+	CONFIG:=-D__UNIX__ -D__AGL__
+else
 	Configuration error.  Please set PLATFORM variable appropriately.
+endif # MacOSX
 endif # BeOS
 endif # Unix
 
@@ -52,6 +57,16 @@ ifeq ($(PLATFORM), BeOS)
 	SHELL:=/bin/sh
 	MKDIR:=/bin/mkdir
 endif # BeOS
+ifeq ($(PLATFORM), MacOSX)
+	AR:=/usr/bin/ar
+	CC:=/usr/bin/c++
+	INSTALL:=/usr/bin/install
+	RANLIB:=/usr/bin/ranlib
+	RM:=/bin/rm
+	SED:=/usr/bin/sed
+	SHELL:=/bin/sh
+	MKDIR:=/bin/mkdir
+endif # MacOSX
 
 # Locations of useful include and library files:
 ifeq ($(PLATFORM), Unix)
@@ -72,6 +87,13 @@ ifeq ($(PLATFORM), BeOS)
 	TIFFLIB:=/boot/somewhere
 	EXTRALIBS:=
 endif # BeOS
+ifeq ($(PLATFORM), MacOSX)
+	GLLIB:=/usr/lib
+	GLUTLIB:=/usr/lib
+	XLIB:=/usr/lib
+	TIFFINC:=/usr/include
+	TIFFLIB:=/usr/lib
+endif # MacOSX
 
 
 # Standard targets and subdirectory handling:
@@ -141,10 +163,18 @@ _INC=\
 	-I$(XINC) \
 	-I$(TIFFINC)
 OPT:=		# Optimization options
+ifeq ($(PLATFORM), Unix)
 _OPT=\
 	-march=pentiumpro \
 	-O -fno-unroll-all-loops \
 	$(OPT)
+endif # Unix
+ifeq ($(PLATFORM), BeOS)
+_OPT=\
+	-march=pentiumpro \
+	-O3 -fno-unroll-all-loops \
+	$(OPT)
+endif # BeOS
 DBG:=-g		# Debugging options
 _DBG=\
 	$(DBG)
@@ -160,6 +190,12 @@ _WARN=\
 	-Wall \
 	-Wno-multichar -Wno-ctor-dtor-privacy \
 	-W \
+	$(WARN)
+endif # BeOS
+ifeq ($(PLATFORM), MacOSX)
+_WARN=\
+	-Wall \
+	-Wmissing-prototypes -Wmissing-declarations \
 	$(WARN)
 endif # BeOS
 LIBDIR:=	# -L options for specifying library directories

@@ -153,6 +153,27 @@ legacyMethod:
 	tWindow = new GLTestWindow (BRect(x,y, x+w, y+h), "GL Test Window");
 	tWindow->Show();
 
+#elif defined(__AGL__)
+	Rect	 r ;
+	
+	//we need some extra room for the menu bar
+	r.left = x+16;
+	r.top = y+20;
+	if (h < 20)
+		r.bottom = r.top + 32;
+	else
+		r.bottom = r.top+w;
+		
+	if (w < 20)
+		r.right = r.left + 32;
+	else
+		r.right = r.left + w;
+
+	macWindow = NewCWindow(nil, &r, (unsigned char*)"glean", true, documentProc, 
+						(WindowPtr) -1, false, 0);
+
+	SetPortWindowPort(macWindow);
+
 #endif
 } // Window::Window
 
@@ -177,6 +198,9 @@ Window::~Window() {
 
 	tWindow->Lock();
 	tWindow->Quit();
+
+#elif defined(__AGL__)
+//	::CloseWindow(macWindow);
 #endif
 
 } // Window::~Window
@@ -192,6 +216,8 @@ Window::swap() {
 	SwapBuffers(hDC);
 #   elif defined(__BEWIN__)
 	tWindow->SwapBuffers();
+#   elif defined(__AGL__)
+	aglSwapBuffers(aglGetCurrentContext());
 #   endif
 } // Window::swap
 

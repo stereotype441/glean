@@ -175,6 +175,68 @@ legacyMethod:
 
 		return 0;
 		
+#	elif defined(__AGL__)
+		GDHandle	mainGD;
+		GLint		attrib2[] 	= { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_ACCELERATED, 16, AGL_NONE };
+		GLint		attrib[] 	= { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 32, AGL_NONE };
+		GLint		attrib3[] 	= { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_NONE };
+		GLint       swAttrib[] 	= { AGL_RGBA, AGL_RENDERER_ID, AGL_RENDERER_GENERIC_ID, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 16, AGL_NONE };
+		AGLPixelFormat	pf; 
+	
+		mainGD = GetMainDevice();
+	
+		// Construct a vector of DrawingSurfaceConfigs corresponding to the
+		// returned pixel formats
+		vector<GLEAN::DrawingSurfaceConfig*> glpf;
+	
+		pf = aglChoosePixelFormat(&mainGD, 1, attrib2);
+		if (pf != NULL) glpf.push_back(new GLEAN::DrawingSurfaceConfig (1, pf));
+
+/*
+		pf = aglChoosePixelFormat(&mainGD, 1, attrib2);
+		if (pf != NULL) glpf.push_back(new GLEAN::DrawingSurfaceConfig (2, pf));
+		pf = aglChoosePixelFormat(&mainGD, 1, attrib3);
+		if (pf != NULL) glpf.push_back(new GLEAN::DrawingSurfaceConfig (3, pf));
+		pf = aglChoosePixelFormat(&mainGD, 1, swAttrib);
+		if (pf != NULL) 
+			glpf.push_back(new GLEAN::DrawingSurfaceConfig (4, pf));
+		else
+		{
+			swAttrib[2] = 0x30300;
+			pf = aglChoosePixelFormat(&mainGD, 1, swAttrib);
+			if (pf != NULL) 
+				glpf.push_back(new GLEAN::DrawingSurfaceConfig (4, pf));
+			else
+			{
+				swAttrib[2] = 0x30200;
+				pf = aglChoosePixelFormat(&mainGD, 1, swAttrib);
+				if (pf != NULL) glpf.push_back(new GLEAN::DrawingSurfaceConfig (4, pf));
+			}
+		}
+*/
+		// Create a configuration filter and apply it:
+		try {
+			GLEAN::DrawingSurfaceFilter f(criteria);
+			vector<GLEAN::DrawingSurfaceConfig*> v(f.filter(glpf));
+
+			for(vector<GLEAN::DrawingSurfaceConfig*>::const_iterator
+			    p = v.begin(); p < v.end(); ++p)
+				cout << (canonical? (*p)->canonicalDescription()
+					: (*p)->conciseDescription())
+					<< "\n";
+
+			exit (v.size() == 0);
+		}
+		catch (GLEAN::DrawingSurfaceFilter::Syntax e) {
+			cerr << "Syntax error:\n'" << criteria << "'\n";
+			for (int i = 0; i < e.position; ++i)
+				cerr << ' ';
+			cerr << "^ " << e.err << "\n";
+			exit(2);
+		}
+
+		return 0;
+		
 #	endif
 }
 

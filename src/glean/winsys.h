@@ -109,6 +109,7 @@ class WindowSystem {
 
 #   elif defined(__BEWIN__)
 	BApplication *theApp;
+
 #   endif
 
 }; // class WindowSystem

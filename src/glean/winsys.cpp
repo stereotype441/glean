@@ -156,6 +156,56 @@ WindowSystem::WindowSystem(Options& o) {
 
 }
 
+#elif defined(__AGL__)
+WindowSystem::WindowSystem(Options& o) {
+	GDHandle	mainGD;
+									//HW/SW		Depth		Reserved
+	GLint		testTypes[][3] 	= 	{	
+									{AGL_ACCELERATED, 16, 0 },
+									{AGL_ACCELERATED, 16, 0 },
+									{AGL_ACCELERATED, 16, 0 },
+									{0, 16, 0 },
+									{0, 16, 0 },
+									{0, 0, 0 }
+									};
+	GLint		testAttrib[][10]= 	{
+									{ AGL_RGBA, 	AGL_DOUBLEBUFFER, 	AGL_ACCELERATED, 	16, 			AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE},
+									{ AGL_RGBA, 	AGL_ACCELERATED, 	AGL_DOUBLEBUFFER, 	AGL_DEPTH_SIZE, 16, 		AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE},
+									{ AGL_RGBA, 	AGL_DOUBLEBUFFER, 	AGL_NONE,			AGL_NONE, 		AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE},
+									{ AGL_RENDERER_ID, AGL_RENDERER_GENERIC_ID,	AGL_RGBA, 	AGL_DOUBLEBUFFER, AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE},
+									{ AGL_RENDERER_ID, AGL_RENDERER_GENERIC_ID,	AGL_RGBA, 	AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 16 ,	AGL_NONE,	AGL_NONE,	AGL_NONE,	AGL_NONE}
+									};
+	AGLPixelFormat	pf; 
+	GLint		index = 0;
+
+	mainGD = GetMainDevice();
+	if (!mainGD)
+		throw CantOpenDisplay();
+
+	// Construct a vector of DrawingSurfaceConfigs corresponding to the
+	// returned pixel formats
+	vector<DrawingSurfaceConfig*> glpf;
+
+	while (testTypes[index][1] != 0)
+	{
+		pf = aglChoosePixelFormat(&mainGD, 1, testAttrib[index]);
+		if ( (pf == NULL) && ( testTypes[index][0] == 0) )
+		{
+			testAttrib[index][1] = 0x30300;
+			pf = aglChoosePixelFormat(&mainGD, 1, testAttrib[index]);
+		}
+		if (pf != NULL) glpf.push_back(new DrawingSurfaceConfig (index+1, pf));
+		
+		index++;
+	}
+
+	// Filter the basic list of DrawingSurfaceConfigs according to
+	// constraints provided by the user.  (This makes it convenient
+	// to run tests on just a subset of all available configs.)
+	DrawingSurfaceFilter f(o.visFilter);	// may throw an exception!
+	surfConfigs = f.filter(glpf);
+}
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,6 +223,9 @@ WindowSystem::~WindowSystem() {
 WindowSystem::~WindowSystem() {
 	delete theApp;
 } // WindowSystem:: ~WindowSystem
+#elif defined(__AGL__)
+WindowSystem::~WindowSystem() {
+}
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,6 +241,8 @@ WindowSystem::makeCurrent() {
 	    return glXMakeCurrent(dpy, None, 0);
 #   elif defined(__WIN__)
 		return wglMakeCurrent(0,0);
+#   elif defined(__AGL__)
+		return aglSetCurrentContext(NULL);
 #   endif
 } // WindowSystem::makeCurrent
 
@@ -200,6 +255,12 @@ WindowSystem::makeCurrent(RenderingContext& r, Window& w) {
 	    return glXMakeCurrent(dpy, w.xWindow, r.rc);
 #   elif defined(__WIN__)
 		return wglMakeCurrent(w.get_dc(),r.rc);
+#   elif defined(__AGL__)
+		if (GL_FALSE == aglSetDrawable(r.rc, (AGLDrawable) GetWindowPort (w.macWindow)))
+			return GL_FALSE;
+		if (GL_FALSE == aglSetCurrentContext(r.rc))
+			return GL_FALSE;
+		return true;
 #   endif
 } // WindowSystem::makeCurrent
 

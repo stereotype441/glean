@@ -601,7 +601,7 @@ EnumString(GLenum pname)
 	case GL_ONE_MINUS_SRC_ALPHA:
 		return "GL_ONE_MINUS_SRC_ALPHA";
 	default:
-		sprintf(s, "0x%04x", pname);
+		sprintf(s, "0x%04x", (unsigned int) pname);
 		return s;
 	}
 }
@@ -1220,6 +1220,8 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 
 	// Test the availability of the DOT3 extenstion
 	haveDot3 = GLUtils::haveExtensions("GL_EXT_texture_env_dot3");
+	if (0 == haveDot3)
+		haveDot3 = GLUtils::haveExtensions("GL_ARB_texture_env_dot3");
 
 	// compute RGB error tolerance
 	{
@@ -1285,7 +1287,7 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 
 	// Now do some multi-texture tests
 	if (passed) {
-		glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &Machine.NumTexUnits);
+		glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, (GLint *)&Machine.NumTexUnits);
 		if (Machine.NumTexUnits > 1) {
 			// six texture units is enough to test
 			if (Machine.NumTexUnits > 6)

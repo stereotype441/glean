@@ -57,6 +57,8 @@ class RenderingContext {
 	GLXContext rc;
 #   elif defined(__WIN__)
 	::HGLRC rc;
+#   elif defined(__AGL__)
+	::AGLContext rc;
 #   endif
 
 }; // class RenderingContext

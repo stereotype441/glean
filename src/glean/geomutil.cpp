@@ -282,14 +282,14 @@ Sphere3D::Sphere3D(float radius, int slices, int stacks)
     for (curStack=1; curStack<stacks; curStack++)
     {
         float phi = M_PI - ((curStack / (float)stacks) * M_PI);
-        float zVal = radius * cosf(phi);
-        float sliceRadius = sqrtf(radius*radius - zVal*zVal);
+        float zVal = radius * cos(phi);
+        float sliceRadius = sqrt(radius*radius - zVal*zVal);
         for (curSlice = 0; curSlice < slices; curSlice++)
         {
             float theta = 2*M_PI*((float)curSlice / slices);
 
-            float xVal = sliceRadius*cosf(theta);
-            float yVal = sliceRadius*sinf(theta);
+            float xVal = sliceRadius*cos(theta);
+            float yVal = sliceRadius*sin(theta);
 
             vertices.push_back(xVal);
             vertices.push_back(yVal);

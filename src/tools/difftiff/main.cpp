@@ -31,7 +31,11 @@
 
 #include <stdlib.h>
 #include <iostream>
+#if(__AGL__)
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 #include <cmath>		// for fabs
 #include "image.h"
 

@@ -44,8 +44,13 @@ class TexCombineTest: public BasicTest {
     public:
 	TexCombineTest(const char* testName, const char* filter,
 		       const char* description):
+#if (__AGL__)
+	    BasicTest(testName, filter, "GL_ARB_texture_env_combine",
+		      description) {
+#else
 	    BasicTest(testName, filter, "GL_EXT_texture_env_combine",
 		      description) {
+#endif
 		fWidth = 2;
 		fHeight = 2;
 	}

@@ -127,6 +127,10 @@ legacyMethod:
 	rc = create_context(c);
 	if (!rc)
 		throw Error();
+#   elif defined(__AGL__)
+	rc = aglCreateContext(c.pf, NULL);
+	if(rc == NULL) 
+		throw Error();
 #   endif
 
 } // RenderingContext::RenderingContext

@@ -70,11 +70,53 @@
 #      define GLCALLBACK
 #  endif
 #  include <GL/glext.h>
+#elif defined(__AGL__)
+#  include <Carbon/Carbon.h>
+#  include <OpenGL/glu.h>
+#  include <OpenGL/glext.h>
+#  include <AGL/agl.h>
+#  include <AGL/aglRenderers.h>
+#  if !defined(GLAPIENTRY)
+#      define GLAPIENTRY
+#  endif
+#  if !defined(GLCALLBACK)
+#      define GLCALLBACK
+#  endif
+#  if !defined(sinf)
+#      define sinf sin
+#      define cosf cos
+#      define sqrtf sqrt
+#  endif
 #else
 #  error "Improper window system configuration; must be __WIN__ or __X11__."
 #endif
 
-
+#ifndef GL_COMBINE_EXT
+	#ifdef GL_COMBINE_ARB
+		#define GL_COMBINE_EXT 			GL_COMBINE_ARB                    
+		#define GL_COMBINE_RGB_EXT 		GL_COMBINE_RGB_ARB
+		#define GL_COMBINE_ALPHA_EXT 	GL_COMBINE_ALPHA_ARB
+		#define GL_RGB_SCALE_EXT 		GL_RGB_SCALE_ARB
+		#define GL_ADD_SIGNED_EXT 		GL_ADD_SIGNED_ARB
+		#define GL_INTERPOLATE_EXT		GL_INTERPOLATE_ARB
+		#define GL_CONSTANT_EXT			GL_CONSTANT_ARB
+		#define GL_PRIMARY_COLOR_EXT	GL_PRIMARY_COLOR_ARB
+		#define GL_PREVIOUS_EXT			GL_PREVIOUS_ARB
+		#define GL_SUBTRACT_EXT			GL_SUBTRACT_ARB
+		#define GL_SOURCE0_RGB_EXT		GL_SOURCE0_RGB_ARB
+		#define GL_SOURCE1_RGB_EXT		GL_SOURCE1_RGB_ARB
+		#define GL_SOURCE2_RGB_EXT		GL_SOURCE2_RGB_ARB
+		#define GL_SOURCE0_ALPHA_EXT	GL_SOURCE0_ALPHA_ARB
+		#define GL_SOURCE1_ALPHA_EXT	GL_SOURCE1_ALPHA_ARB
+		#define GL_SOURCE2_ALPHA_EXT	GL_SOURCE2_ALPHA_ARB
+		#define GL_OPERAND0_RGB_EXT     GL_OPERAND0_RGB_ARB
+		#define GL_OPERAND1_RGB_EXT		GL_OPERAND1_RGB_ARB
+		#define GL_OPERAND2_RGB_EXT		GL_OPERAND2_RGB_ARB
+		#define GL_OPERAND0_ALPHA_EXT	GL_OPERAND0_ALPHA_ARB
+		#define GL_OPERAND1_ALPHA_EXT   GL_OPERAND1_ALPHA_ARB
+		#define GL_OPERAND2_ALPHA_EXT	GL_OPERAND2_ALPHA_ARB
+	#endif
+#endif
 // Windows has a convention for typedef'ing pointers to OpenGL functions
 // which encapsulates some of the oddities of Win32 calling conventions.
 // Identical conventions are being established for Linux, but they are

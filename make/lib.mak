@@ -18,14 +18,14 @@ install_here: $(TARGET)
 	for t in $(TARGET); do \
 		if [ ! $(LIBDST)/$$t -nt $$t ]; then \
 			$(RM) -f $(LIBDST)/$$t; \
-			$(INSTALL) -m 0444 $$t $(LIBDST); \
+			$(INSTALL) -c -m 0444 $$t $(LIBDST); \
 			$(RANLIB) $(LIBDST)/$$t; \
 			fi; \
 		done
 	for t in $(HTARGET); do \
 		if [ ! $(HDST)/$$t -nt $$t ]; then \
 			$(RM) -f $(HDST)/$$t; \
-			$(INSTALL) -m 0444 $$t $(HDST); \
+			$(INSTALL) -c -m 0444 $$t $(HDST); \
 			fi; \
 		done
 

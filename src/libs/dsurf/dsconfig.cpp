@@ -389,6 +389,72 @@ DrawingSurfaceConfig::DrawingSurfaceConfig() {
 	transR = transG = transB = transA = transI = 0;
 }
 
+#elif defined(__AGL__)
+
+DrawingSurfaceConfig::DrawingSurfaceConfig(int id, ::AGLPixelFormat pfd)
+{
+	long			i;
+	
+	if (!mapsInitialized)
+		initializeMaps();
+
+	pf = pfd;
+	
+	if (aglDescribePixelFormat( pf, AGL_RGBA, &i))
+		canRGBA = (i == GL_TRUE);
+	canCI = (i == GL_FALSE);			
+
+	if (aglDescribePixelFormat( pf, AGL_BUFFER_SIZE, &i))
+		bufSize = i;			
+
+	level = 0;
+
+	if (aglDescribePixelFormat( pf, AGL_DOUBLEBUFFER, &i))
+		db = (i == GL_TRUE);
+	if (aglDescribePixelFormat( pf, AGL_STEREO, &i))
+		stereo = (i == GL_TRUE);
+	if (aglDescribePixelFormat( pf, AGL_AUX_BUFFERS, &i))
+		aux = i;
+
+	if (canRGBA)	{
+		aglDescribePixelFormat( pf, AGL_RED_SIZE, 	(long *)&r);
+		aglDescribePixelFormat( pf, AGL_GREEN_SIZE, (long *)&g);
+		aglDescribePixelFormat( pf, AGL_BLUE_SIZE, 	(long *)&b);
+		aglDescribePixelFormat( pf, AGL_ALPHA_SIZE, (long *)&a);
+
+		//this is a workaround for some versions of AGL
+		if (r == 10)
+		{
+			r=g=b=8;
+			bufSize = r + g + b + a;
+		}
+	}
+	else
+		r = g = b = a = 0;
+
+	aglDescribePixelFormat( pf, AGL_DEPTH_SIZE, (long *)& z);
+	aglDescribePixelFormat( pf, AGL_STENCIL_SIZE, (long *)& s);
+
+	aglDescribePixelFormat( pf, AGL_ACCUM_RED_SIZE, (long *)& accR);
+	aglDescribePixelFormat( pf, AGL_ACCUM_GREEN_SIZE, (long *)& accG);
+	aglDescribePixelFormat( pf, AGL_ACCUM_BLUE_SIZE, (long *)& accB);
+	aglDescribePixelFormat( pf, AGL_ACCUM_ALPHA_SIZE, (long *)& accA);
+
+	aglDescribePixelFormat( pf, AGL_WINDOW, &i);
+	canWindow = i;
+	aglDescribePixelFormat( pf, AGL_OFFSCREEN, &i);
+	canWinSysRender = i;
+	aglDescribePixelFormat( pf, AGL_ACCELERATED, & i);
+	fast = i;
+
+	// we'll assume that the OpenGL implementation thinks it is conformant
+	conformant = true;		
+
+	// chromakeying isn't supported
+	transparent = false;
+	transR = transG = transB = transA = transI = 0;
+}
+
 #endif
 
 DrawingSurfaceConfig::DrawingSurfaceConfig(string& str) {

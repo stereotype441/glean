@@ -63,6 +63,8 @@ class DrawingSurfaceConfig {
 	DrawingSurfaceConfig(int id, ::PIXELFORMATDESCRIPTOR *ppfd);
 #   elif defined(__BEWIN__)
 	DrawingSurfaceConfig();
+#	elif defined(__AGL__)
+	DrawingSurfaceConfig(int id, ::AGLPixelFormat pfd);
 #   endif
 
 	DrawingSurfaceConfig(string& s);	// s is a canonical description
@@ -91,6 +93,9 @@ class DrawingSurfaceConfig {
 #   elif defined(__WIN__)
 	::PIXELFORMATDESCRIPTOR *pfd;
 	int pfdID;
+#   elif defined(__AGL__)
+	AGLPixelFormat    pf;
+	int 			pfID;
 #	endif
 
 	bool canRGBA;			// Can be used with RGBA contexts.

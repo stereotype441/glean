@@ -341,7 +341,7 @@ TexgenTest::renderSphere(int retainedMode, GeomRenderer& sphereRenderer)
 {
     if (retainedMode)
     {
-        int displayList;
+        GLint displayList;
         assert(sphereRenderer.generateDisplayList(GL_TRIANGLES, displayList));
         glCallList(displayList);
         glDeleteLists(displayList, 1);

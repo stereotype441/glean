@@ -37,11 +37,11 @@
 #include <vector>
 #include <algorithm>
 #include "options.h"
-#include "dsfilt.h"
 #include "environ.h"
 #include "test.h"
 #include "version.h"
 #include "lex.h"
+#include "dsfilt.h"
 
 using namespace std;
 using namespace GLEAN;

@@ -93,7 +93,8 @@ class Window: public DrawingSurface {
 
 #	elif defined(__BEWIN__)
 		GLTestWindow	*tWindow;
-
+#	elif defined(__AGL__)
+		::WindowRef	macWindow;
 #	endif
 }; // class Window
 

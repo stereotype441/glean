@@ -375,7 +375,7 @@ theyDiffer(GLEAN::Environment* env, const char* title) {
 } // theyDiffer
 
 void
-verify(GLEAN::Image& testImage, GLEAN::RGBCodedID& colorGen,
+verifyVtxPerf(GLEAN::Image& testImage, GLEAN::RGBCodedID& colorGen,
     int firstID, int lastID, GLEAN::Image& refImage,
     bool& passed, string& name, GLEAN::DrawingSurfaceConfig* config,
     GLEAN::VPSubResult& res, GLEAN::Environment* env, const char* title) {
@@ -550,7 +550,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	coloredLit_imIndTri.measure(5, &r.imTri.tpsLow, &r.imTri.tps,
 				    &r.imTri.tpsHigh);
 	imTriImage.read(0, 0);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.imTri, env,
 	       "Immediate-mode independent triangle");
 
@@ -564,7 +564,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	callDListTimer callDList(dList, nTris, &w, env);
 	callDList.measure(5, &r.dlTri.tpsLow, &r.dlTri.tps, &r.dlTri.tpsHigh);
 	glDeleteLists(dList, 1);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.dlTri, env,
 	       "Display-listed independent triangle");
 
@@ -583,7 +583,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 
 	daIndTriTimer daIndTri(nVertices, indices, nTris, &w, env);
 	daIndTri.measure(5, &r.daTri.tpsLow, &r.daTri.tps, &r.daTri.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.daTri, env,
 		"DrawArrays independent triangle");
 
@@ -600,7 +600,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTri.tps = r.ldaTri.tpsLow = r.ldaTri.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.ldaTri, env,
 		"Locked DrawArrays independent triangle");
 
@@ -609,7 +609,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	deIndTriTimer deIndTri(nVertices, indices, nTris, &w, env);
 	deIndTri.measure(5, &r.deTri.tpsLow, &r.deTri.tps, &r.deTri.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.deTri, env,
 	       "DrawElements independent triangle");
 
@@ -624,7 +624,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.ldeTri, env,
 	       "Locked DrawElements independent triangle");
 
@@ -671,7 +671,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 						    nTris, &w, env);
 	coloredLit_imTriStrip.measure(5, &r.imTS.tpsLow, &r.imTS.tps,
 				      &r.imTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.imTS, env,
 	       "Immediate-mode triangle strip");
 
@@ -685,7 +685,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	callDList.dList = dList;
 	callDList.measure(5, &r.dlTS.tpsLow, &r.dlTS.tps, &r.dlTS.tpsHigh);
 	glDeleteLists(dList, 1);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.dlTS, env,
 	       "Display-listed triangle strip");
 
@@ -704,7 +704,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 
 	daTriStripTimer daTriStrip(nVertices, nTris, &w, env);
 	daTriStrip.measure(5, &r.daTS.tpsLow, &r.daTS.tps, &r.daTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.daTS, env,
 	       "DrawArrays triangle strip");
 
@@ -718,7 +718,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTS.tps = r.ldaTS.tpsLow = r.ldaTS.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.ldaTS, env,
 	       "Locked DrawArrays triangle strip");
 
@@ -727,7 +727,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	deTriStripTimer deTriStrip(nVertices, indices, nTris, &w, env);
 	deTriStrip.measure(5, &r.deTS.tpsLow, &r.deTS.tps, &r.deTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.deTS, env,
 	       "DrawElements triangle strip");
 
@@ -742,7 +742,7 @@ ColoredLitPerf::runOne(VPResult& r, Window& w) {
 	if (!glLockArraysEXT)
 		r.ldeTS.tps = r.ldeTS.tpsLow = r.ldeTS.tpsHigh = 0.0;
 	
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.ldeTS, env,
 		"Locked DrawElements triangle strip");
 
@@ -1024,7 +1024,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	coloredTex_imIndTri.measure(5, &r.imTri.tpsLow, &r.imTri.tps,
 				    &r.imTri.tpsHigh);
 	imTriImage.read(0, 0);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.imTri, env,
 	       "Immediate-mode independent triangle");
 
@@ -1038,7 +1038,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	callDListTimer callDList(dList, nTris, &w, env);
 	callDList.measure(5, &r.dlTri.tpsLow, &r.dlTri.tps, &r.dlTri.tpsHigh);
 	glDeleteLists(dList, 1);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.dlTri, env,
 	       "Display-listed independent triangle");
 
@@ -1057,7 +1057,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 
 	daIndTriTimer daIndTri(nVertices, indices, nTris, &w, env);
 	daIndTri.measure(5, &r.daTri.tpsLow, &r.daTri.tps, &r.daTri.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.daTri, env,
 	       "DrawArrays independent triangle");
 
@@ -1074,7 +1074,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTri.tps = r.ldaTri.tpsLow = r.ldaTri.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.ldaTri, env,
 	       "Locked DrawArrays independent triangle");
 
@@ -1083,7 +1083,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	deIndTriTimer deIndTri(nVertices, indices, nTris, &w, env);
 	deIndTri.measure(5, &r.deTri.tpsLow, &r.deTri.tps, &r.deTri.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.deTri, env,
 	       "DrawElements independent triangle");
 
@@ -1098,7 +1098,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.ldeTri, env,
 	       "Locked DrawElements independent triangle");
 
@@ -1144,7 +1144,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 						    nTris, &w, env);
 	coloredTex_imTriStrip.measure(5, &r.imTS.tpsLow, &r.imTS.tps,
 				      &r.imTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.imTS, env,
 	       "Immediate-mode triangle strip");
 
@@ -1158,7 +1158,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	callDList.dList = dList;
 	callDList.measure(5, &r.dlTS.tpsLow, &r.dlTS.tps, &r.dlTS.tpsHigh);
 	glDeleteLists(dList, 1);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.dlTS, env,
 	       "Display-listed triangle strip");
 
@@ -1177,7 +1177,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 
 	daTriStripTimer daTriStrip(nVertices, nTris, &w, env);
 	daTriStrip.measure(5, &r.daTS.tpsLow, &r.daTS.tps, &r.daTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.daTS, env,
 	       "DrawArrays triangle strip");
 
@@ -1191,7 +1191,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldaTS.tps = r.ldaTS.tpsLow = r.ldaTS.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 		passed, name, r.config, r.ldaTS, env,
 		"Locked DrawArrays triangle strip");
 
@@ -1200,7 +1200,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	deTriStripTimer deTriStrip(nVertices, indices, nTris, &w, env);
 	deTriStrip.measure(5, &r.deTS.tpsLow, &r.deTS.tps, &r.deTS.tpsHigh);
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.deTS, env,
 	       "DrawElements triangle strip");
 
@@ -1214,7 +1214,7 @@ ColoredTexPerf::runOne(VPResult& r, Window& w) {
 		glUnlockArraysEXT();
 	if (!glLockArraysEXT)
 		r.ldeTS.tps = r.ldeTS.tpsLow = r.ldeTS.tpsHigh = 0.0;
-	verify(testImage, colorGen, 0, lastID, imTriImage,
+	verifyVtxPerf(testImage, colorGen, 0, lastID, imTriImage,
 	       passed, name, r.config, r.ldeTS, env,
 	       "Locked DrawElements triangle strip");
 

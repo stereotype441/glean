@@ -152,7 +152,7 @@ logicalSum(GLubyte* start, int stride, int count) {
 }
 
 void
-verify(GLEAN::Window& w, bool& passed, string& name,
+verifyOrthPos(GLEAN::Window& w, bool& passed, string& name,
     GLEAN::DrawingSurfaceConfig* config, GLEAN::OPResult& res,
     GLEAN::Environment* env, const char* title) {
 
@@ -279,7 +279,7 @@ verify(GLEAN::Window& w, bool& passed, string& name,
 		row += img.rowSizeInBytes();
 	}
 
-} // verify
+} // verifyOrthPos
 
 void
 subdivideRects(int minX, int maxX, int minY, int maxY,
@@ -381,7 +381,7 @@ OrthoPosPoints::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r, env, "Immediate-mode points");
+	verifyOrthPos(w, passed, name, r.config, r, env, "Immediate-mode points");
 	r.pass = passed;
 } // OrthoPosPoints::runOne
 
@@ -522,7 +522,7 @@ OrthoPosVLines::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r, env,
+	verifyOrthPos(w, passed, name, r.config, r, env,
 		"Immediate-mode vertical lines");
 	r.pass = passed;
 } // OrthoPosVLines::runOne
@@ -667,7 +667,7 @@ OrthoPosHLines::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r, env,
+	verifyOrthPos(w, passed, name, r.config, r, env,
 	       "Immediate-mode horizontal lines");
 	r.pass = passed;
 } // OrthoPosHLines::runOne
@@ -814,7 +814,7 @@ OrthoPosTinyQuads::runOne(OPResult& r, Window& w) {
 			}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r, env,
+	verifyOrthPos(w, passed, name, r.config, r, env,
 	       "Immediate-mode 1x1 quads");
 	r.pass = passed;
 } // OrthoPosTinyQuads::runOne
@@ -941,7 +941,7 @@ OrthoPosRandRects::runOne(OPResult& r, Window& w) {
 	RandomDouble rand(1618);
 	subdivideRects(1, drawingSize + 1, 1, drawingSize + 1,
 		rand, true, true);
-	verify(w, passed, name, r.config, r, env,
+	verifyOrthPos(w, passed, name, r.config, r, env,
 	       "Immediate-mode axis-aligned rectangles");
 	r.pass = passed;
 } // OrthoPosRandRects::runOne
@@ -1080,7 +1080,7 @@ OrthoPosRandTris::runOne(OPResult& r, Window& w) {
 		}
 		glEnd();
 	}
-	verify(w, passed, name, r.config, r, env,
+	verifyOrthPos(w, passed, name, r.config, r, env,
 	       "Immediate-mode triangles");
 	r.pass = passed;
 } // OrthoPosRandTris::runOne
