@@ -73,6 +73,7 @@
 //
 
 #include "ttexcombine.h"
+#include <cassert>
 #include <stdio.h>
 #include <cmath>
 
