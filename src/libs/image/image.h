@@ -66,8 +66,8 @@ class Image {
 		vbAll = ~0
 	};
 	int _invalid;
-	inline bool invalid(int bit) { return _invalid & bit; }
-	inline bool valid(int bit) { return !invalid(bit); }
+	inline bool invalid(int bit) const { return _invalid & bit; }
+	inline bool valid(int bit) const { return !invalid(bit); }
 	inline void invalidate(int bits) { _invalid |= bits; }
 	inline void validate(int bits) { _invalid &= ~bits; }
 
@@ -138,17 +138,17 @@ class Image {
 	// value; passing it to glPixelStore is essential before using
 	// one of the other OpenGL commands.
 
-	inline GLsizei width()		// Image width, in pixels
+	inline GLsizei width() const	// Image width, in pixels
 		{ return _width; }
 	inline void width(GLsizei w)
 		{ _width = w; invalidate(vbRowSizeInBytes); }
 
-	inline GLsizei height()		// Image height, in pixels.
+	inline GLsizei height() const	// Image height, in pixels.
 		{ return _height; }
 	inline void height(GLsizei h)
 		{ _height = h; }
 
-	inline GLenum format()		// Image format.  Currently
+	inline GLenum format() const	// Image format.  Currently
 		{ return _format; }	// these formats are supported:
 					// GL_LUMINANCE,
 					// GL_LUMINANCE_ALPHA,
@@ -165,7 +165,7 @@ class Image {
 			| vbUnpacker);
 	}
 
-	inline GLenum type()		// Pixel data type.  Currently
+	inline GLenum type() const	// Pixel data type.  Currently
 		{ return _type; }	// these types are supported:
 					// GL_BYTE, GL_UNSIGNED_BYTE,
 					// GL_SHORT, GL_UNSIGNED_SHORT,
@@ -179,11 +179,13 @@ class Image {
 			| vbUnpacker);
 	}
 
-	inline char* pixels()		// The pixels.
+	inline char* pixels() 		// The pixels.
 		{ return _pixels; }
+	inline const char* pixels() const
+		{ return const_cast<const char*>(_pixels); }
 	void pixels(char* p);
 
-	inline GLsizei alignment()	// Alignment.  See glPixelStore.
+	inline GLsizei alignment() const	// Alignment.  See glPixelStore.
 		{ return _alignment; }
 	inline void alignment(GLsizei a)
 		{ _alignment = a; invalidate(vbRowSizeInBytes); }
@@ -205,6 +207,8 @@ class Image {
 
 	void unpack(GLsizei n, double* rgba, char* nextPixel);
 	void pack(GLsizei n, char* nextPixel, double* rgba);
+	// XXX get(x, y, double* rgba);
+	// XXX put(x, y, double* rgba);
 
 	// Image registration.  The utility compares a reference image
 	// to the current image (which must be at least as large as the
