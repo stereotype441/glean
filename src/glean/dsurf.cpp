@@ -69,7 +69,8 @@ DrawingSurface::DrawingSurface(WindowSystem& ws, DrawingSurfaceConfig& c) {
 	config = &c;
 } // DrawingSurface::DrawingSurface
 
-Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
+Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h,
+    int x = 10, int y = 10):
     DrawingSurface(ws, c) {
 
 #if defined(__X11__)
@@ -90,7 +91,7 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
 	xswa.event_mask = StructureNotifyMask;
 	xWindow = XCreateWindow(winSys->dpy,
 		RootWindow(winSys->dpy, config->vi->screen),
-		0, 0, w, h,
+		x, y, w, h,
 		0,
 		config->vi->depth,
 		InputOutput,
@@ -102,8 +103,8 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
 	XSizeHints sizeHints;
 	sizeHints.width = w;
 	sizeHints.height = h;
-	sizeHints.x = 10;
-	sizeHints.y = 10;
+	sizeHints.x = x;
+	sizeHints.y = y;
 	sizeHints.flags = USSize | USPosition;
 	XSetStandardProperties(winSys->dpy, xWindow, "glean", "glean",
 		None, 0, 0, &sizeHints);
@@ -124,8 +125,8 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
 	RECT r;
 	int style = WS_POPUP | WS_CAPTION | WS_BORDER;
 
-	r.left = 50;
-	r.top = 50;
+	r.left = x;
+	r.top = y;
 	r.right = r.left + w;
 	r.bottom = r.top + h;
 	AdjustWindowRect(&r,style,FALSE);
@@ -147,7 +148,7 @@ Window::Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h):
 	
 #elif defined(__BEWIN__)
 
-	tWindow = new GLTestWindow (BRect(100,100, 100+w, 100+h), "GL Test Window");
+	tWindow = new GLTestWindow (BRect(x,y, x+w, y+h), "GL Test Window");
 	tWindow->Show();
 
 #endif

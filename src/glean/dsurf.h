@@ -70,7 +70,8 @@ private:
 
 class Window: public DrawingSurface {
     public:
-    	Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h);
+    	Window(WindowSystem& ws, DrawingSurfaceConfig& c, int w, int h,
+	    int x = 10, int y = 10);
 	~Window();
 
 	// Utilities:
