@@ -841,10 +841,13 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 	if (same && env->options.verbosity) {
 		env->log << name << ":  SAME "
 			<< newR.config->conciseDescription()
-			<< "\n\tEach test time falls within the "
-			"valid measurement range of the\n"
-			"\tother test time; both have the same"
-			"image comparison results.\n";
+			<< "\n\t"
+			<< env->options.db2Name
+			<< " test time falls within the "
+			<< "valid measurement range of\n\t"
+			<< env->options.db1Name
+			<< " test time; both have the same"
+			<< " image comparison results.\n";
 	}
 
 	if (env->options.verbosity) {
