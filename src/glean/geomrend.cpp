@@ -328,7 +328,7 @@ bool GeomRenderer::isReadyToRender()
 // This unpacks the indices depending on their format and returns the specified one.
 GLuint GeomRenderer::getIndex(int indicesIndex)
 {
-    assert(indicesIndex >= 0 && indicesIndex < indicesCount);
+    assert(indicesIndex >= 0 && indicesIndex < static_cast<int>(indicesCount));
 
     switch (indicesType)
     {
