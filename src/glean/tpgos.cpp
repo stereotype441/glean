@@ -40,6 +40,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include "dsconfig.h"
 #include "dsfilt.h"
 #include "dsurf.h"
@@ -104,9 +105,9 @@ create_lists(void)
 					x2 = a+microres1; y2 =  -1.0f; z2 = b;
 					break;
 				}
-				scale = sqrtf(x1 * x1 + y1 * y1 + z1 * z1);
+				scale = sqrt(x1 * x1 + y1 * y1 + z1 * z1);
 				x1 /= scale; y1 /=  scale; z1 /=  scale;
-				scale = sqrtf(x2 * x2 + y2 * y2 + z2 * z2);
+				scale = sqrt(x2 * x2 + y2 * y2 + z2 * z2);
 				x2 /=  scale; y2 /=  scale; z2 /=  scale;
 				
 				glVertex3f(x1, y1, z1);
