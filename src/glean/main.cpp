@@ -124,9 +124,25 @@ main(int argc, char* argv[]) {
 		case Options::compare:
 		{
 			for (Test* t = Test::testList; t; t = t->nextTest)
-                                if (binary_search(o.selectedTests.begin(),
-                                    o.selectedTests.end(), t->name))
-                                        t->compare(e);
+				if (binary_search(o.selectedTests.begin(),
+				    o.selectedTests.end(), t->name))
+					try {
+						t->compare(e);
+					}
+					catch (Test::CantOpenResultsFile e) {
+						// For comparisons, we want to
+						// continue running even if a
+						// test result file can't be
+						// opened.  We report the
+						// problem here, but don't exit
+						// as we would in the catch{}
+						// below.
+						cerr << "Can't open results file for test "
+							<< e.testName
+							<< " in database "
+							<< e.dbName
+							<< '\n';
+					}
 			break;
 		}
 		default:
