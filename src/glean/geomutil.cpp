@@ -192,7 +192,10 @@ SpiralStrip2D::~SpiralStrip2D() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // SpiralTri2D:  Generate (x,y) vertices for a set of independent triangles,
-//	arranged in spiral fashion as in SpiralStrip2D
+//	arranged in spiral fashion exactly as in SpiralStrip2D.
+//	One may rely on the fact that SpiralTri2D generates exactly the
+//	same triangles as SpiralStrip2D, so that comparison of images
+//	using the two primitives is meaningful.
 ///////////////////////////////////////////////////////////////////////////////
 SpiralTri2D::SpiralTri2D(int nTris, float minX, float maxX,
     float minY, float maxY) {
