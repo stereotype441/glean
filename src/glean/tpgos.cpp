@@ -719,10 +719,10 @@ PgosTest::logStats(PgosTest::Result& r, GLEAN::Environment* env) {
 // The test object itself:
 ///////////////////////////////////////////////////////////////////////////////
 PgosTest
-pgosTest("pgos", "window",
+pgosTest("pgos", "window, rgb, z",
 	 "This test verifies glPolygonOffset.  It is run on every\n"
 	 "OpenGL-capable drawing surface configuration that supports\n"
-	 "creation of a window.\n\n"
+	 "creation of a window, has a depth buffer, and is RGB.\n\n"
 	 "When factor=0 or -1 and units=-1, all the zfighting tests should\n"
 	 "pass.  Some red fragments may be correctly visible on the very\n"
 	 "edge of the sphere -- these fragments are not reported as an\n"
