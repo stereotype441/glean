@@ -644,6 +644,22 @@ typedef void (GLAPIENTRY * PFNGLSAMPLECOVERAGEARBPROC) (GLclampf value, GLboolea
 #define	GL_BLEND_COLOR				0x8005
 #endif
 
+// Extension enumerants, in case they're not defined in glext.h.
+
+#ifndef GL_DOT3_RGB_EXT
+#define GL_DOT3_RGB_EXT				0x8740
+#endif
+#ifndef GL_DOT3_RGBA_EXT
+#define GL_DOT3_RGBA_EXT			0x8741
+#endif
+#ifndef GL_DOT3_RGB_ARB
+#define GL_DOT3_RGB_ARB				0x86AE
+#endif
+#ifndef GL_DOT3_RGBA_ARB
+#define GL_DOT3_RGBA_ARB			0x86AF
+#endif
+
+
 #ifndef GL_VERSION_1_2
 // OpenGL 1.2 function pointer types, to allow glean to
 // be compiled on OpenGL 1.1 systems.
