@@ -6,6 +6,18 @@ Not in any particular order.
 
 Description:
 
+	For common extensions, verify that GetProcAddress returns
+	non-NULL pointers for all the functions that are supposed to
+	belong to each extension.
+
+Submitted by:
+
+	Allen Akin <akin@pobox.com>
+
+------------------------------------------------------------------------
+
+Description:
+
 	Change the common.mak defaults for Linux to match the OpenGL
 	ABI standard.
 
