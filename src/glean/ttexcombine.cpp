@@ -364,7 +364,6 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 		term0[0] = colorSrc0[0];
 		term0[1] = colorSrc0[1];
 		term0[2] = colorSrc0[2];
-		// no change
 		break;
 	case GL_ONE_MINUS_SRC_COLOR:
 		term0[0] = 1.0 - colorSrc0[0];
@@ -389,7 +388,6 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 	switch (machine.OPERAND0_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
 		term0[3] = alphaSrc0[3];
-		// no change
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
 		term0[3] = 1.0 - alphaSrc0[3];
@@ -428,7 +426,6 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 	switch (machine.OPERAND1_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
 		term1[3] = alphaSrc1[3];
-		// no change
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
 		term1[3] = 1.0 - alphaSrc1[3];
@@ -451,10 +448,7 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 
 	switch (machine.OPERAND2_ALPHA[texUnit]) {
 	case GL_SRC_ALPHA:
-		term2[0] = colorSrc2[3];
-		term2[1] = colorSrc2[3];
-		term2[2] = colorSrc2[3];
-		// no change
+		term2[3] = alphaSrc2[3];
 		break;
 	default:
 		problem("bad alphaOperand2");
