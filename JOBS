@@ -166,15 +166,7 @@ Submitted by:
 
 Description:
 
-	Write a GLX-specific test that checks basic rendering-context
-	operations.
-
-		Bind to direct context.
-		Unbind from direct context.
-		Bind to indirect context.
-		Unbind from indirect context.
-		Permutations of the above.
-		Check shared dlists and textures.
+	Write a test to check operations on shared dlists and textures.
 
 Submitted by:
 
