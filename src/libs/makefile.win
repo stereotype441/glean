@@ -1,5 +1,3 @@
-.SILENT :
-
 !IF "$(CFG)" == ""
 CFG=release
 !ENDIF 

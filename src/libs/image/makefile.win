@@ -1,5 +1,3 @@
-.SILENT :
-
 !IF "$(CFG)" == ""
 CFG=release
 !ENDIF 
@@ -58,15 +56,15 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /ML /W3 /GX /O2 $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /ML $(WARNING_LEVEL) /GX /O2 $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
+   $(CPP) @<< 
    $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
+   $(CPP) @<< 
    $(CPP_PROJ) $< 
 <<
 
@@ -99,7 +97,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MLd /W3 /Gm /GX /ZI /Od $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MLd $(WARNING_LEVEL) /Gm /GX /ZI /Od $(DEFINES) $(INCLUDE_DIRS) /Fp"$(INTDIR)\$(FTARGET).pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -128,6 +126,19 @@ ALL : $(DS_POSTBUILD_DEP)
 $(DS_POSTBUILD_DEP) : "$(GLEAN_LIB_DIR)\$(TARGET)"
 	echo Copying Header Files
 	copy .\image.h $(GLEAN_INC_DIR)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
