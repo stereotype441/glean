@@ -489,6 +489,8 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 		result[0] = dot;
 		result[1] = dot;
 		result[2] = dot;
+		if (machine.COMBINE_RGB[texUnit] == GL_DOT3_RGBA_EXT)
+			result[4] = dot;
 		break;
 	default:
 		problem("bad rgbCombine");
@@ -823,6 +825,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 	for (int u = 0; u < machine.NumTexUnits; u++) {
 		if (machine.NumTexUnits > 1)
 			p_glActiveTextureARB(GL_TEXTURE0_ARB + u);
+		glBindTexture(GL_TEXTURE_2D, 1 + u);
 		glEnable(GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_NEAREST);
@@ -964,7 +967,7 @@ TexCombineTest::CountMultiTextureTestCombinations(const glmachine &machine) cons
 
 	int numTests = 1;
 	for (int i = 0; i < machine.NumTexUnits; i++)
-		numTests *= 5;
+		numTests *= (haveDot3 ? 7 : 5);
 
 	return numTests;
 }
@@ -983,9 +986,10 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		GL_ADD_SIGNED_EXT,
 		GL_MODULATE,
 		GL_INTERPOLATE_EXT,
-		GL_DOT3_RGB_EXT,
-		GL_DOT3_RGBA_EXT
+                GL_DOT3_RGB_EXT,
+                GL_DOT3_RGBA_EXT
 	};
+	static const int numModes = haveDot3 ? 7 : 5;
 
 	const int numTests = CountMultiTextureTestCombinations(machine);
 	//printf("Testing %d multitexture combinations\n", numTests);
@@ -996,12 +1000,14 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 		ResetMachine(machine);
 		int divisor = 1;
 		for (int u = 0; u < machine.NumTexUnits; u++) {
-			const int m = (testNum / divisor) % 5;
+			const int m = (testNum / divisor) % numModes;
 			const GLenum mode = combineModes[m];
 
 			// Set GL_COMBINE_RGB_EXT and GL_COMBINE_ALPHA_EXT
 			TexEnv(machine, u, GL_COMBINE_RGB_EXT, mode);
-			TexEnv(machine, u, GL_COMBINE_ALPHA_EXT, mode);
+			TexEnv(machine, u, GL_COMBINE_ALPHA_EXT,
+				(mode == GL_DOT3_RGB_EXT ||
+				mode == GL_DOT3_RGBA_EXT) ? GL_REPLACE : mode);
 			TexEnv(machine, u, GL_SOURCE0_RGB_EXT, GL_PREVIOUS_EXT);
 			TexEnv(machine, u, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
 			TexEnv(machine, u, GL_SOURCE2_RGB_EXT, GL_TEXTURE);
@@ -1018,7 +1024,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 			TexEnv(machine, u, GL_ALPHA_SCALE, 1);
 
 			//printf("texenv%d = %s  ", u, EnumString(mode));
-			divisor *= 5;
+			divisor *= numModes;
 		}
 		//printf("\n");
 
@@ -1063,9 +1069,9 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r,
 			ReportFailure(machine, expected, renderedResult, r);
 			printf("multitex test %d failed\n", testNum);
 #if 0 // Debug
-			if (test > 0) {
+			if (testNum > 0) {
 				printf("prev test:\n");
-				SetupTestEnv(machine, 0, test - 1, testParams);
+				SetupTestEnv(machine, 0, testNum - 1, testParams);
 				PrintMachineState(machine);
 			}
 #endif
