@@ -1,0 +1,418 @@
+<!doctype linuxdoc system>
+<!-- Created: Fri Aug  4 09:33:14 2000 by faith@valinux.com -->
+<!-- $Id -->
+
+  <article>
+    <title><it/glean/: An OpenGL Test and Benchmarking Suite
+      <author>Allen Akin, Rickard E. Faith, and Gareth Hughes,
+          VA Linux Systems, Inc.
+      <date>$Date: 2000/08/07 18:10:09 $
+      <abstract>
+        <it/glean/ is a suite of tools for evaluating the quality of an
+        OpenGL implementation and for comparing the quality of two OpenGL
+        implementations.  <it/glean/ is platform independent and currently
+        runs under Linux, BeOS, and Windows.  Because the <it/glean/ suite
+        is incomplete at this time, this paper discusses potential groups
+        of <it/glean/ users, benefits for those users, and the classes of
+        tests those users may be interested in having implemented.
+      </abstract>
+
+    <toc>
+
+    <sect>Preamble
+
+      <sect1>Copyright
+        <p>
+          <bf/Copyright &copy; 2000 by VA Linux Systems, Inc./
+        <p>
+          <bf>Permission is granted to make and distribute verbatim
+          copies of this document provided the copyright notice and this
+          permission notice are preserved on all copies.</bf>
+          
+      <sect1>Trademarks
+        <p>
+          Linux is a registered trademark of Linus Torvalds.  BeOS is a
+          registered trademark of Be, Inc.  Unix is a registered trademark
+          of The Open Group.  The `X' device and X Window System are
+          trademarks of The Open Group.  XFree86 is a trademark of The
+          XFree86 Project.  OpenGL is a registered trademark of Silicon
+          Graphics, Inc.  Intel is a registered trademark of Intel
+          Corporation.  All other trademarks mentioned are the property of
+          their respective owners.
+
+    <sect>Introduction
+      <p>
+        The <it/glean/ suite contains:
+        <itemize>
+          <item>
+            a main program, called <bf/glean/, that runs tests and compares
+            the output between two tests,
+          <item>
+            several support programs to help with test interpretation, and
+          <item>
+            several class libraries that provide scaffolding and support
+            services for writing additional tests.
+        </itemize>
+      <p>
+        Currently (August 2000), the scaffolding and support libraries for
+        <it/glean/ are complete, and 15 tests have been written.  These
+        tests check the correctness of the OpenGL implementation being used
+        and perform timing tests for some basic OpenGL functions.  Hundreds
+        of additional tests need to be written to target the needs of
+        different <it/glean/ users.  The following sections discuss the
+        main classes of <it/glean/ users and the specific kinds of tests
+        that would be most useful to them.
+      <p>
+        Since testing all of OpenGL is a large and daunting task, one of
+        the goals for <it/glean/ is to avoid duplication of the
+        functionality of SGI's OpenGL Conformance Test.  Instead,
+        <it/glean/ tests will concentrate on areas that the Conformance
+        Test does not cover:
+        <itemize>
+          <item>
+            correctness tests for features missed by the Conformance Test
+            (e.g., tests for recently approved ARB extensions),
+          <item>
+            very simple correctness tests for driver writers (i.e., to make
+            running these tests during the driver implementation phase a
+            trivially simple task),
+          <item>
+            capacity evaluation tests (e.g., to roughly determine how much
+            texture memory is effectively available), and
+          <item>
+            performance tests.
+        </itemize>
+
+    <sect>Graphics Card Reviewers
+      <p>
+        Reviewers of graphics cards (or OpenGL drivers for graphics cards)
+        can use <it/glean/ to compare performance, features, and image
+        quality between different graphics cards (or the same graphics card
+        when using a different driver or operating system).
+      <p>
+        We have not identified any specific tests that reviewers would
+        require that are not already required by other categories of
+        users.
+
+    <sect>Software Developers
+      <p>
+        OpenGL application developers are interested in cross-platform
+        testing the robustness and feature sets of the OpenGL
+        implementation that they are using.  They are also interested in
+        performance measurements of specific drawing operations, mode
+        changes, texture downloads, and other parameters that will help
+        them to maximize the performance of the application on each
+        platform.
+      <p>
+        For example, a discussion of Quake3 &lsqb;QUAKE3&rsqb; points out
+        that the game makes extensive use of <tt/glDrawElements()/,
+        multitextures, and compiled vertex arrays.  Further, experience has
+        show that hardware optimization of triangle back face culling and
+        guard band clipping may make an implementation slower or
+        incorrect.  Having correctness and performance tests for these
+        areas would help the game developers to determine which OpenGL
+        features are widely and correctly implemented, and would help
+        OpenGL driver developers to optimize pathways used by specific
+        games.
+
+    <sect>OpenGL/Mesa Driver Developers
+      <p>
+        Driver developers are interested in very simple tests that measure
+        the performance and correctness of specific OpenGL pathways.  They
+        are also interested in comparing results between driver versions to
+        make sure that there are no regressions in quality or performance.
+      <p>
+        During the initial stages of driver development, the most useful
+        tests are simple, coarse tests of basic functionality.  Driver
+        developers would be interested in tests that quickly verify:
+        <itemize>
+          <item>
+            alpha blend modes
+          <item>
+            alpha test modes
+          <item>
+            depth test modes
+          <item>
+            texture environment modes
+          <item>
+            texture combine modes
+          <item>
+            back face culling
+          <item>
+            scissors
+        </itemize>
+        Quick verification tests could just draw two overlapping polygons
+        and verify that all three regions are drawn correctly.  A more
+        thorough test would verify sub-pixel precision of the rasterized
+        triangles and the accuracy of the color blends, but this
+        thoroughness is not needed during the initial stages of driver
+        implementation.
+      <p>
+        The driver writer would also benefit from a simple test that would
+        do a full enumeration of all the texture environment modes, and
+        from performance tests that measure the performance of individual
+        primitives (e.g., multitextured, smooth-shaded triangle fans).
+        Some performance information is generated by other commonly
+        available tools (e.g., <tt/viewperf/ and <tt/glperf/
+        &lsqb;reference?&rsqb;), but having these extremely tests available
+        in <it/glean/ may make them more accessible, especially if they
+        were combined with other tests that are helpful for driver writers.
+        
+    <sect>Jobs List
+      <p>
+        This section contains a partially categorized list of test that
+        could be implemented for <it/glean/.  A majority of the list was
+        obtained by reviewing postings to the <tt/opengl-gamedev/ mailing
+        list.  We assume that all of the OpenGL drivers discussed on that
+        list have passed the Conformance Test and that any remaining
+        problems should be tested for by <tt/glean/.
+
+      <sect1>Performance and Capacity Testing
+        <sect2>Performance Measurement
+          <p>
+            <itemize>
+              <item>
+                Performance of various ways to specify vertex data.
+              <item>
+                Performance of various vertex data formats.
+              <item>
+                Performance of various vertex data orderings
+                (e.g., tris in tstrip order).
+              <item>
+                Performance of screen clear.
+              <item>
+                Performance of dlists vs. immediate-mode.
+              <item>
+                Performance pitfalls (e.g. GL_*_SMOOTH on GeForce).
+            </itemize>
+            
+        <sect2>Capacity and Stress Testing
+          <p>
+            <itemize>
+              <item>
+                Estimate vertex cache size.
+              <item>
+                Maximum texture sizes (proxy and normal queries).
+              <item>
+                Stress-test large numbers of tris (and many strips).
+              <item>
+                Correct rendering with hundreds or thousands of texture
+                objects
+              <item>
+                Correct rendering with hundreds of triangles
+              <item>
+                Correct rendering with hundreds of contexts
+              <item>
+                Correct rendering with hundreds of windows
+              <item>
+                <tt/glTexSubImage2D/
+              <item>
+                Multi-thread tests
+              <item>
+                Multi-thread tests with multiple contexts
+            </itemize>
+
+          <sect3>Quake3 Tests
+            <p>
+              These and other tests are described in &lsqb;QUAKE3&rsqb;.
+              <itemize>
+                <item>
+                  <tt/glDrawElements()/ with <tt/GL_VERTEX_ARRAY/ and
+                  <tt/GL_TEXTURE_COORD_ARRAY/ enabled
+                <item>
+                  Multitextures (ARB_multitexture) with
+                  <tt/GL_TEXTURE_COORD_ARRAY/
+                <item>
+                  <tt/EXT_compiled_vertex_arrays/
+                <item>
+                  Hardware vs. software triangle back face culling speed
+                  and correctness
+                <item>
+                  Guard band clipping performance and correctness
+              </itemize>
+
+      <sect1>Graphics Functionality and Correctness Testing
+        <sect2>General Single-Context Tests
+          <p>
+            <itemize>
+              <item>
+                <tt/GLXPixmap/ rendering
+              <item>
+                Anti-alias primitives (already in conformance tests)
+              <item>
+                Swap-buffer for non-current window
+            </itemize>
+                
+        <sect2>General Multiple-Context Tests
+          <p>
+            <itemize>
+              <item>
+                Multiple contexts and shared texture objects
+              <item>
+                Multiple contexts and shared display lists
+            </itemize>
+
+        <sect2>Mipmap Testing
+          <p>
+            These tests are described in &lsqb;MIPMAP&rsqb; and are
+            probably already covered by the Conformance Test.
+            <itemize>
+              <item>
+                Mipmap level changes
+              <item>
+                Mipmap filtering kernel
+              <item>
+                Mipmap filtering with multitextures (i.e., same as with
+                single texture)
+              <item>
+                Mipmap pixel blending
+              <item>
+                Mipmap per-pixel (vs. per-triangle) calculations
+            </itemize>
+
+        <sect2>Small Tests for the Driver Writer
+          <p>
+            These tests are ones that are thought to be especially
+            beneficial to the driver writer.  Although some of these are
+            covered by the Conformance Test or in <tt/viewperf/, they would
+            also be beneficial if they were all implemented in <it/glean/
+            as a special suite of tests for driver implementers.
+            <itemize>
+              <item>
+                Immediate mode triangles, points, quads, lines
+              <item>
+                Blend mode setup
+              <item>
+                Texture combine mode setup
+              <item>
+                Smaller, easier to use Mesa demo programs
+              <item>
+                Single-primitive performance tests (not a batch like
+                <tt/viewperf/)
+                <itemize>
+                  <item>
+                    Single texture performance
+                  <item>
+                    Multitexture performance
+                    <item>
+                    Shading performance
+                  <item>
+                    <tt/glTexSubImage2D()/ compared with <tt/glTexImage2D()/
+                  <item>
+                    <tt/glCopyTex[Sub]Image2D()/
+                </itemize>
+            </itemize>
+            
+        <sect2>Miscellaneous
+          <p>
+            <itemize>
+              <item>
+                Screenshots using <tt/glReadPixels/.
+              <item>
+                Paletted textures (and shared texture palettes).
+              <item>
+                Alpha function (alpha test).
+              <item>
+                Bilinear texture filtering.
+              <item>
+                Texture and dlist name generation/deletion.
+              <item>
+                Texture LOD clamping.
+              <item>
+                Texture LOD computation (when is transition between levels?).
+              <item>
+                Depthrange (does it work?).
+              <item>
+                Confirm that max depth range returned by <tt/glGet/ is not
+                between 0 and 1.
+              <item>
+                Check depth buffering precision (and near/far plane settings).
+              <item>
+                Rendering to texture (or rendering to pbuffers, copying to
+                texture).
+              <item>
+                Texture environment functions.
+              <item>
+                Picking/selection (check buffer overflow as well as base
+                functionality).
+              <item>
+                Selection using colors to encode object IDs.
+              <item>
+                Polygon offset.
+              <item>
+                <tt/TexEnvCombine/ extension.
+              <item>
+                Bitmap rendering (as used for text).
+              <item>
+                Normalization of user-specified vertex normals.
+              <item>
+                Stenciling.
+              <item>
+                Multitexturing (ARB and SGIS extensions).
+              <item>
+                Sphere environment mapping.
+              <item>
+                Cube environment mapping (where the extension is available).
+              <item>
+                <tt/gluBuild2DMipmaps/.
+              <item>
+                <tt/glGetString/ (especially to fetch vendor and extension
+                info).
+              <item>
+                Check that illegal ops between begin/end generate errors.
+              <item>
+                Scissoring.
+              <item>
+                Texgen.
+              <item>
+                <tt/TexSubImage/, <tt/CopyTexSubImage/ (animation playback,
+                etc.).
+              <item>
+                Texture matrix.
+              <item>
+                Luminance textures for lightmaps.
+              <item>
+                Fog.
+            </itemize>
+
+      <sect1>Systems Functionality and Correctness Testing
+        <p>
+          <itemize>
+            <item>
+              Multithreading and thread-safety.
+            <item>
+              Display-list memory management (when is mem freed?).
+            <item>
+              Dynamic loading of OpenGL library (hard in <it/glean/'s
+              environment!)
+            <item>
+              Swap-interval control.
+            <item>
+              Entering/exiting full-screen mode.
+            <item>
+              Pbuffers.
+            <item>
+              GLS stream record/playback (when available from SGI).
+          </itemize>
+
+      <sect1>Other
+        <p>
+          <itemize>
+            <item>
+              NeHe's tutorials (<url
+              url="http://www.gamedev.net/hosted/nehe/opengl.asp">)
+          </itemize>
+
+    <sect>References
+      <p>
+        <bf/&lsqb;GLEAN&rsqb;/ <url url="http://glean.sourceforge.net/">
+      <p>
+        <bf/&lsqb;MIPMAP&rsqb;/ <url
+          url="www.zdnet.com/benchmarkinsider/stories/main/0,8829,2408223,00.html">
+      <p>
+        <bf/&lsqb;OPENGL&rsqb;/ <url url="http://www.opengl.org/">
+      <p>
+        <bf/&lsqb;QUAKE3&rsqb;/ <url
+        url="http://www.quake3arena.com/news/glopt.html">
+        
+  </article>
