@@ -954,7 +954,7 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, Result &r) {
 ///////////////////////////////////////////////////////////////////////////////
 TexCombineTest::TexCombineTest(const char* aName, const char* aFilter,
     const char* aDescription):
-    	BasicTest(aName, aFilter, aDescription) {
+    	BasicTest(aName, aFilter, "GL_EXT_texture_env_combine", aDescription) {
 } // TexCombineTest::TexCombineTest()
 
 
@@ -965,16 +965,6 @@ TexCombineTest::TexCombineTest(const char* aName, const char* aFilter,
 // XXX should we run a number of individual tests instead?
 void
 TexCombineTest::runOne(Result& r) {
-
-	// Check if we've got the extension
-	if (!GLUtils::haveExtension("GL_EXT_texture_env_combine")) {
-		// XXX is this right?  PASS if extension not present?
-		r.pass = true;
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
-		env->log << "\tGL_EXT_texture_env_combine not available.\n";
-		return;
-	}
 
         // We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
