@@ -104,7 +104,8 @@ public:
 			  >> p.far
 			  >> p.punchthrough
 			  >> p.punchthrough_translation
-			  >> p.badEdge;
+			  >> p.badEdge
+			  >> p.badMiddle;
 			data.push_back(p);
 		}
 		return s.good();
