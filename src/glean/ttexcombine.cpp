@@ -233,6 +233,7 @@ TexCombineTest::ResetMachine(glmachine &machine) {
 		machine.OPERAND2_ALPHA[u] = GL_SRC_ALPHA;
 		machine.RGB_SCALE[u] = 1.0;
 		machine.ALPHA_SCALE[u] = 1.0;
+		machine.TexFormat[u] = GL_LUMINANCE;
 	}
 }
 
@@ -648,21 +649,49 @@ TexCombineTest::PrintMachineState(const glmachine &machine) const {
 			 << machine.RGB_SCALE[u] << "\n";
 		env->log << "\tGL_ALPHA_SCALE = "
 			 << machine.ALPHA_SCALE[u] << "\n";
-                env->log << "\tFragment Color = "
+                env->log << "\tFragment RGBA = "
                          << machine.FragColor[0] << ", "
                          << machine.FragColor[1] << ", "
                          << machine.FragColor[2] << ", "
                          << machine.FragColor[3] << "\n";
-                env->log << "\tTex Env Color = "
+                env->log << "\tTex Env RGBA = "
                          << machine.EnvColor[u][0] << ", "
                          << machine.EnvColor[u][1] << ", "
                          << machine.EnvColor[u][2] << ", "
                          << machine.EnvColor[u][3] << "\n";
-                env->log << "\tTexture Color = "
-                         << machine.TexColor[u][0] << ", "
-                         << machine.TexColor[u][1] << ", "
-                         << machine.TexColor[u][2] << ", "
-                         << machine.TexColor[u][3] << "\n";
+		switch (machine.TexFormat[u]) {
+		case GL_ALPHA:
+	                env->log << "\tTexture ALPHA = "
+	                         << machine.TexColor[u][3] << "\n";
+			break;
+		case GL_LUMINANCE:
+	                env->log << "\tTexture LUMINANCE = "
+	                         << machine.TexColor[u][0] << "\n";
+			break;
+		case GL_LUMINANCE_ALPHA:
+	                env->log << "\tTexture RGBA = "
+        	                 << machine.TexColor[u][0] << ", "
+	                         << machine.TexColor[u][3] << "\n";
+			break;
+		case GL_INTENSITY:
+	                env->log << "\tTexture INTENSITY = "
+	                         << machine.TexColor[u][0] << "\n";
+			break;
+		case GL_RGB:
+	                env->log << "\tTexture RGB = "
+        	                 << machine.TexColor[u][0] << ", "
+                	         << machine.TexColor[u][1] << ", "
+	                         << machine.TexColor[u][2] << "\n";
+			break;
+		case GL_RGBA:
+	                env->log << "\tTexture RGBA = "
+        	                 << machine.TexColor[u][0] << ", "
+                	         << machine.TexColor[u][1] << ", "
+                        	 << machine.TexColor[u][2] << ", "
+	                         << machine.TexColor[u][3] << "\n";
+			break;
+		}
+
 	}
 }
 
@@ -840,47 +869,85 @@ TexCombineTest::SetupColors(glmachine &machine) {
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR,
 			envColors[u % 4]);
 
-		machine.TexColor[u][0] = texColors[u % 4][0];
-		machine.TexColor[u][1] = texColors[u % 4][1];
-		machine.TexColor[u][2] = texColors[u % 4][2];
-		machine.TexColor[u][3] = texColors[u % 4][3];
+		const GLfloat *texCol = texColors[u % 4];
 
-                /* Make a 4x4 solid color texture */
-		{
-			GLfloat image[16][4];
-			int i;
-			for (i = 0; i < 16; i++) {
-				image[i][0] = texColors[u % 4][0];
-				image[i][1] = texColors[u % 4][1];
-				image[i][2] = texColors[u % 4][2];
-				image[i][3] = texColors[u % 4][3];
-			}
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-				     4, 4, 0, GL_RGBA, GL_FLOAT, image);
+		// Setup texture color, according to texture format
+		switch (machine.TexFormat[u]) {
+		case GL_RGBA:
+			machine.TexColor[u][0] = texCol[0];
+			machine.TexColor[u][1] = texCol[1];
+			machine.TexColor[u][2] = texCol[2];
+			machine.TexColor[u][3] = texCol[3];
+			break;
+		case GL_RGB:
+			machine.TexColor[u][0] = texCol[0];
+			machine.TexColor[u][1] = texCol[1];
+			machine.TexColor[u][2] = texCol[2];
+			machine.TexColor[u][3] = 1.0;
+			break;
+		case GL_ALPHA:
+			machine.TexColor[u][0] = 0.0;
+			machine.TexColor[u][1] = 0.0;
+			machine.TexColor[u][2] = 0.0;
+			machine.TexColor[u][3] = texCol[3];
+			break;
+		case GL_LUMINANCE:
+			machine.TexColor[u][0] = texCol[0];
+			machine.TexColor[u][1] = texCol[0];
+			machine.TexColor[u][2] = texCol[0];
+			machine.TexColor[u][3] = 1.0;
+			break;
+		case GL_LUMINANCE_ALPHA:
+			machine.TexColor[u][0] = texCol[0];
+			machine.TexColor[u][1] = texCol[0];
+			machine.TexColor[u][2] = texCol[0];
+			machine.TexColor[u][3] = texCol[3];
+			break;
+		case GL_INTENSITY:
+			machine.TexColor[u][0] = texCol[0];
+			machine.TexColor[u][1] = texCol[0];
+			machine.TexColor[u][2] = texCol[0];
+			machine.TexColor[u][3] = texCol[0];
+			break;
+		default:
+			problem("bad texture format");
+			return;
+		}
+
+                // Make a 4x4 solid color texture
+		GLfloat image[16][4];
+		int i;
+		for (i = 0; i < 16; i++) {
+			image[i][0] = texColors[u % 4][0];
+			image[i][1] = texColors[u % 4][1];
+			image[i][2] = texColors[u % 4][2];
+			image[i][3] = texColors[u % 4][3];
+		}
+		glTexImage2D(GL_TEXTURE_2D, 0, machine.TexFormat[u],
+			     4, 4, 0, GL_RGBA, GL_FLOAT, image);
 
 #if 0 // Debug
-			GLfloat check[16][4];
-			GLint r, g, b, a;
-			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
-						 GL_TEXTURE_RED_SIZE, &r);
-			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
-						 GL_TEXTURE_GREEN_SIZE, &g);
-			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
-						 GL_TEXTURE_BLUE_SIZE, &b);
-			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
-						 GL_TEXTURE_ALPHA_SIZE, &a);
-			printf("Texture bits: %d %d %d %d\n", r, g, b, a);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT,
-				      check);
-			for (i = 0;i < 16; i++) {
-				printf("%2d: %4f %4f %4f %4f  %4f %4f %4f %4f\n", i,
-				       image[i][0], image[i][1],
-				       image[i][2], image[i][3],
-				       check[i][0], check[i][1],
-				       check[i][2], check[i][3]);
-			}
+		GLfloat check[16][4];
+		GLint r, g, b, a;
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					 GL_TEXTURE_RED_SIZE, &r);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					 GL_TEXTURE_GREEN_SIZE, &g);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					 GL_TEXTURE_BLUE_SIZE, &b);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+					 GL_TEXTURE_ALPHA_SIZE, &a);
+		printf("Texture bits: %d %d %d %d\n", r, g, b, a);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT,
+			      check);
+		for (i = 0;i < 16; i++) {
+			printf("%2d: %4f %4f %4f %4f  %4f %4f %4f %4f\n", i,
+			       image[i][0], image[i][1],
+			       image[i][2], image[i][3],
+			       check[i][0], check[i][1],
+			       check[i][2], check[i][3]);
+		}
 #endif
-                }
 	}
 }
 
@@ -900,7 +967,7 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 
 	for (int test = 0; test < numTests; test++) {
 		// 0. Setup state
-		ResetMachine(machine);      
+		ResetMachine(machine);
 		SetupTestEnv(machine, 0, test, testParams);
 
 		// 1. Render with OpenGL
@@ -1106,12 +1173,12 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 	// Test the availability of the DOT3 extenstion
 	haveDot3 = GLUtils::haveExtensions("GL_EXT_texture_env_dot3");
 
-	/* compute RGB error tolerance */
+	// compute RGB error tolerance
 	{
 		GLint rBits, gBits, bBits, aBits;
 		GLint rTexBits, gTexBits, bTexBits, aTexBits;
 		GLfloat texImage[4][4][4];
-		/* Make dummy texture image */
+		// Make dummy texture image
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0,
 			GL_RGBA, GL_FLOAT, texImage);
 		glGetIntegerv(GL_RED_BITS, &rBits);
@@ -1126,12 +1193,12 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 			GL_TEXTURE_BLUE_SIZE, &bTexBits);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
 			GL_TEXTURE_ALPHA_SIZE, &aTexBits);
-		/* find smaller of frame buffer and texture bits */
+		// find smaller of frame buffer and texture bits
 		rBits = (rBits < rTexBits) ? rBits : rTexBits;
 		gBits = (gBits < gTexBits) ? gBits : gTexBits;
 		bBits = (bBits < bTexBits) ? bBits : bTexBits;
 		aBits = (aBits < aTexBits) ? aBits : aTexBits;
-		/* tolerance is 3 bits of error */
+		// tolerance is 3 bits of error
 		mTolerance[0] = 8.0 / (1 << rBits);
 		mTolerance[1] = 8.0 / (1 << gBits);
 		mTolerance[2] = 8.0 / (1 << bBits);
@@ -1150,6 +1217,7 @@ TexCombineTest::runOne(BasicResult& r, Window& w) {
 	// We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
 
+	ResetMachine(Machine);
 	Machine.NumTexUnits = 1;
 
 	// Do single texture unit tests first.

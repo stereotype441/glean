@@ -75,6 +75,7 @@ class TexCombineTest: public BasicTest {
 		GLfloat FragColor[4];                  // fragment color
 		GLfloat EnvColor[MAX_TEX_UNITS][4];    // texture env color
 		GLfloat TexColor[MAX_TEX_UNITS][4];    // texture image color
+		GLenum TexFormat[MAX_TEX_UNITS];       // texture base format
 		int NumTexUnits;
 	};
 
