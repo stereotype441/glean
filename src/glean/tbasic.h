@@ -1,6 +1,6 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- linux-c -*-
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -31,7 +31,7 @@
 
 // tbasic.h:  Example class for basic tests
 
-// This class (derived from Test) provides a framework for a large set
+// This class (derived from BaseTest) provides a framework for a large set
 // of correctness tests that should be portable (in the sense that
 // they don't contain OS- or window-system-specific code).
 
@@ -52,53 +52,41 @@
 #ifndef __tbasic_h__
 #define __tbasic_h__
 
-#include "test.h"
-
-class DrawingSurfaceConfig;		// Forward reference.
+#include "tbase.h"
 
 namespace GLEAN {
 
-class BasicTest: public Test {
-    public:
-	BasicTest(const char* testName, const char* filter,
-		const char* description);
-	BasicTest(const char* testName, const char* filter,
-		const char* extensions, const char* description);
-	virtual ~BasicTest();
+class BasicResult: public BaseResult {
+public:
+	bool pass;
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* extensions;		// Required extensions.
-	const char* description;	// Verbose description of test.
+	void putresults(ostream& s) const { s << pass << '\n'; }
+	bool getresults(istream& s) { s >> pass; return s.good(); }
+};
 
-	virtual void run(Environment& env);	// Run test, save results.
+#if 1
+class BasicTest: public BaseTest<BasicResult> {
+public:
+	BasicTest(const char* aName, const char* aFilter,
+		  const char* aDescription):
+		BaseTest(aName, aFilter, aDescription) {
+	}
+	BasicTest(const char* aName, const char* aFilter,
+		  const char* anExtensionList,
+		  const char* aDescription):
+		BaseTest(aName, aFilter, anExtensionList, aDescription) {
+	}
+	virtual ~BasicTest() {}
 
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-		bool pass;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-
-}; // class BasicTest
+#if 0
+	virtual void runOne(BasicResult& r);
+	virtual void compareOne(BasicResult& oldR, BasicResult& newR);
+	virtual void logOne(BasicResult& r);
+#endif
+};
+#else
+BaseTest<BasicResult> BasicTest;
+#endif
 
 } // namespace GLEAN
 
