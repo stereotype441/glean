@@ -227,6 +227,14 @@ void
 Keypress(unsigned char key, int x, int y) {
 	static_cast<void>(x); static_cast<void>(y);
 	switch (key) {
+	case '1':
+		Mode = SHOW_IMAGE1;
+		glutPostRedisplay();
+		break;
+	case '2':
+		Mode = SHOW_IMAGE2;
+		glutPostRedisplay();
+		break;
 	case 0x1b /*ESC*/:
 	case 'q':
 	case 'Q':
