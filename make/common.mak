@@ -143,7 +143,7 @@ _INC=\
 OPT:=		# Optimization options
 _OPT=\
 	-march=pentiumpro \
-	-O3 -fno-unroll-all-loops -fnonnull-objects \
+	-O3 -fno-unroll-all-loops \
 	$(OPT)
 DBG:=-g		# Debugging options
 _DBG=\
