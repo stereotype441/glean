@@ -115,7 +115,7 @@ logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 		<< r.dlTriTpsLow << ", " << r.dlTriTpsHigh << "]\n";
 	env->log << "\t\tImage sanity check "
 		<< (r.dlTriImageOK? "passed\n": "failed\n");
-	env->log << "\t\tImage comparison check "
+	env->log << "\t\tImage consistency check "
 		<< (r.dlTriImageMatch? "passed\n": "failed\n");
 } // logStats
 
@@ -290,6 +290,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	const int nTris = static_cast<int>
 		(((3.14159 / 4.0) * drawingSize * drawingSize) / 5.0 + 0.5);
 	nVertices = nTris * 3;
+	const int lastID = min(IDModulus - 1, nTris - 1);
 
 	c4ub_n3f_v3f = new C4UB_N3F_V3F[nVertices];
 	SpiralTri2D it(nTris, 0, drawingSize, 0, drawingSize);
@@ -418,7 +419,14 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	// Read back the image, verify that every triangle was drawn:
 	imTriImage.read(0, 0);
-	r.imTriImageOK = true;
+	if (colorGen.allPresent(imTriImage, 0, lastID))
+		r.imTriImageOK = true;
+	else {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tImmediate-mode independent triangle rendering is missing\n"
+			<< "\t\tsome triangles.\n";
+		r.imTriImageOK = false;
+	}
 
 	////////////////////////////////////////////////////////////
 	// Display-listed independent triangles
@@ -449,7 +457,14 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// Verify that the image is the same as that produced by
 	// rendering independent triangles:
 	testImage.read(0, 0);
-	r.dlTriImageOK = true;
+	if (colorGen.allPresent(testImage, 0, lastID))
+		r.dlTriImageOK = true;
+	else {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDisplay-listed independent triangle rendering is missing\n"
+			<< "\t\tsome triangles.\n";
+		r.dlTriImageOK = false;
+	}
 	imageReg = testImage.reg(imTriImage);
 	if (imageReg.stats[0].max()
 	    + imageReg.stats[1].max()
