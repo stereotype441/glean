@@ -48,33 +48,22 @@ RandomMesh2D::RandomMesh2D(float minX, float maxX, int xPoints,
     	m = new float[xPoints * yPoints * 2];
 	rowLength = xPoints;
 
-	for (int iy = 0; iy < yPoints; ++iy) {
-		double sum = 0.0;
-		int ix;
-		for (ix = 0; ix < xPoints; ++ix) {
-			(*this)(iy, ix)[0] = sum;
-			sum += rand.next();
+	// Drop each point squarely into the center of its grid cell:
+	for (int iy = 0; iy < yPoints; ++iy)
+		for (int ix = 0; ix < xPoints; ++ix) {
+			float* v = (*this)(iy, ix);
+			v[0] = minX + (ix * (maxX - minX)) / (xPoints - 1);
+			v[1] = minY + (iy * (maxY - minY)) / (yPoints - 1);
 		}
-		double scale = (maxX - minX) / (*this)(iy, xPoints - 1)[0];
-		for (ix = 0; ix < xPoints; ++ix) {
-			float* x = (*this)(iy, ix) + 0;
-			*x = scale * *x + minX;
+	// Now perturb each interior point, but only within its cell:
+	double deltaX = 0.9 * (maxX - minX) / (xPoints - 1);
+	double deltaY = 0.9 * (maxY - minY) / (yPoints - 1);
+	for (int iy = 1; iy < yPoints - 1; ++iy)
+		for (int ix = 1; ix < xPoints - 1; ++ix) {
+			float* v = (*this)(iy, ix);
+			v[0] += deltaX * (rand.next() - 0.5);
+			v[1] += deltaY * (rand.next() - 0.5);
 		}
-	}
-
-	for (int ix = 0; ix < xPoints; ++ix) {
-		double sum = 0.0;
-		int iy;
-		for (iy = 0; iy < yPoints; ++iy) {
-			(*this)(iy, ix)[1] = sum;
-			sum += rand.next();
-		}
-		double scale = (maxY - minY) / (*this)(yPoints - 1, ix)[1];
-		for (iy = 0; iy < yPoints; ++iy) {
-			float* y = (*this)(iy, ix) + 1;
-			*y = scale * *y + minY;
-		}
-	}
 } // RandomMesh2D::RandomMesh2D
 
 RandomMesh2D::~RandomMesh2D() {
