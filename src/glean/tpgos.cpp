@@ -36,6 +36,7 @@
 
 #include "tpgos.h"
 #include "image.h"
+#include <cmath>
 
 #if 0
 

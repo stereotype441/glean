@@ -31,6 +31,7 @@
 #include "tbinding.h"
 #include "image.h"
 #include "rand.h"
+#include <cmath>
 
 #if 0
 #ifdef __UNIX__

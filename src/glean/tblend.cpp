@@ -31,6 +31,7 @@
 #include "tblend.h"
 #include "rand.h"
 #include "image.h"
+#include <cmath>
 
 namespace {
 

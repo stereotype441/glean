@@ -68,6 +68,7 @@
 
 #include "ttexcombine.h"
 #include <stdio.h>
+#include <cmath>
 
 #define CLAMP(VAL, MIN, MAX)	\
 	((VAL) < (MIN) ? (MIN) : ((VAL) > (MAX) ? (MAX) : (VAL)))
