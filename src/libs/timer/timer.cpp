@@ -34,6 +34,12 @@
 // This particular implementation is derived from the one in libpdb, part
 // of the isfast library for OpenGL.
 
+// XXX It's annoying that the function to be timed must receive all its
+// parameters through global variables.  Probably a better way to do this
+// is to make Timer a base class, and derive new classes for each function
+// to be timed.  That way it's easy to pass function-specific parameters
+// as arguments to the derived class's constructor.
+
 // XXXWIN as of 5/8/99:  The code for Windows timing is taken from
 // Michael Gold's implementation of libpdb.  I've probably introduced
 // some bugs in the translation, unfortunately.
