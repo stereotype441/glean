@@ -94,6 +94,13 @@ class ColoredLitPerf: public Test {
 		VPResult deTri;		// DrawElements independent triangles
 		VPResult ldeTri;	// Locked DrawElements ind. tris
 
+		VPResult imTS;		// immediate-mode triangle strip
+		VPResult dlTS;		// display-listed triangle strip
+		VPResult daTS;		// DrawArrays triangle strip
+		VPResult ldaTS;		// Locked DrawArrays triangle strip
+		VPResult deTS;		// DrawElements triangle strip
+		VPResult ldeTS;		// Locked DrawElements triangle strip
+
 		virtual void put(ostream& s) const;
 		virtual bool get(istream& s);
 

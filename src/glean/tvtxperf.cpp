@@ -100,14 +100,59 @@ coloredLit_imIndTri() {
 } // coloredLit_imIndTri
 
 void
+coloredLit_imTriStrip() {
+	glBegin(GL_TRIANGLE_STRIP);
+
+	// Duff's device.  Yes, this is legal C (and C++).
+	// See Stroustrup, 3rd ed., p. 141
+	const C4UB_N3F_V3F* p = c4ub_n3f_v3f;
+	int n = (nVertices + 3) >> 2;
+	switch (nVertices & 0x3) {
+		case 0:	do {
+				glColor4ubv(p->c);
+				glNormal3fv(p->n);
+				glVertex3fv(p->v);
+				++p;
+		case 3:
+				glColor4ubv(p->c);
+				glNormal3fv(p->n);
+				glVertex3fv(p->v);
+				++p;
+		case 2:
+				glColor4ubv(p->c);
+				glNormal3fv(p->n);
+				glVertex3fv(p->v);
+				++p;
+		case 1:
+				glColor4ubv(p->c);
+				glNormal3fv(p->n);
+				glVertex3fv(p->v);
+				++p;
+			} while (--n > 0);
+	}
+
+	glEnd();
+} // coloredLit_imTriStrip
+
+void
 coloredLit_daIndTri() {
 	glDrawArrays(GL_TRIANGLES, 0, nVertices);
 } // coloredLit_daIndTri
 
 void
+coloredLit_daTriStrip() {
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, nVertices);
+} // coloredLit_daTriStrip
+
+void
 coloredLit_deIndTri() {
 	glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT, indices);
 } // coloredLit_deIndTri
+
+void
+coloredLit_deTriStrip() {
+	glDrawElements(GL_TRIANGLE_STRIP, nVertices, GL_UNSIGNED_INT, indices);
+} // coloredLit_deTriStrip
 
 void
 callDList() {
@@ -168,6 +213,12 @@ logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 	logStats1("Locked DrawArrays independent triangle", r.ldaTri, env);
 	logStats1("DrawElements independent triangle", r.deTri, env);
 	logStats1("Locked DrawElements independent triangle", r.ldeTri, env);
+	logStats1("Immediate-mode triangle strip", r.imTS, env);
+	logStats1("Display-listed triangle strip", r.dlTS, env);
+	logStats1("DrawArrays triangle strip", r.daTS, env);
+	logStats1("Locked DrawArrays triangle strip", r.ldaTS, env);
+	logStats1("DrawElements triangle strip", r.deTS, env);
+	logStats1("Locked DrawElements triangle strip", r.ldeTS, env);
 } // logStats
 
 void
@@ -229,6 +280,42 @@ imagesDiffer(GLEAN::Image& testImage, GLEAN::Image& goldenImage) {
 	    + imageReg.stats[1].max()
 	    + imageReg.stats[2].max()) != 0.0;
 } // imagesDiffer
+
+void
+missingSome(GLEAN::Environment* env, const char* title) {
+	env->log << '\t' << title << " rendering is missing\n"
+			<< "\t\tsome triangles.\n";
+} // missingSome
+
+void
+theyDiffer(GLEAN::Environment* env, const char* title) {
+	env->log << '\t' << title << " image differs from\n"
+		<< "\t\tthe reference image.\n";
+} // theyDiffer
+
+void
+verify(GLEAN::Image& testImage, GLEAN::RGBCodedID& colorGen,
+    int firstID, int lastID, GLEAN::Image& refImage,
+    bool& passed, string& name, GLEAN::DrawingSurfaceConfig* config,
+    GLEAN::VPResult& res, GLEAN::Environment* env, const char* title) {
+
+	// Verify that the entire range of RGB coded identifiers is
+	// present in the image.  (This is an indicator that all triangles
+	// were actually drawn.)
+	testImage.read(0, 0);
+	if (!colorGen.allPresent(testImage, firstID, lastID)) {
+		failHeader(passed, name, config, env);
+		missingSome(env, title);
+		res.imageOK = false;
+	}
+
+	// Verify that the test image is the same as the reference image.
+	if (imagesDiffer(testImage, refImage)) {
+		failHeader(passed, name, config, env);
+		theyDiffer(env, title);
+		res.imageMatch = false;
+	}
+} // verify
 
 } // anonymous namespace
 
@@ -498,15 +585,10 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	measure(time, static_cast<TIME_FUNC>(coloredLit_imIndTri), env, w,
 		nTris, r.imTri);
-
-	// Read back the image, verify that every triangle was drawn:
 	imTriImage.read(0, 0);
-	if (!colorGen.allPresent(imTriImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tImmediate-mode independent triangle rendering is missing\n"
-			<< "\t\tsome triangles.\n";
-		r.imTri.imageOK = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.imTri, env,
+		"Immediate-mode independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Display-listed independent triangles
@@ -517,26 +599,10 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glEndList();
 	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
 		r.dlTri);
-
 	glDeleteLists(dList, 1);
-
-	testImage.read(0, 0);
-	if (!colorGen.allPresent(testImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDisplay-listed independent triangle rendering is missing\n"
-			<< "\t\tsome triangles.\n";
-		r.dlTri.imageOK = false;
-	}
-
-	// Verify that the image is the same as that produced by
-	// rendering independent triangles:
-	if (imagesDiffer(testImage, imTriImage)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDisplay-listed independent triangle rendering\n"
-			<< "\t\tyielded different image than immediate-mode\n"
-			<< "\t\tindependent triangle rendering.\n";
-		r.dlTri.imageMatch = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.dlTri, env,
+		"Display-listed independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// DrawArrays on independent triangles
@@ -553,21 +619,9 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	measure(time, static_cast<TIME_FUNC>(coloredLit_daIndTri), env, w,
 		nTris, r.daTri);
-
-	testImage.read(0, 0);
-	if (!colorGen.allPresent(testImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDrawArrays independent triangle rendering is missing\n"
-			<< "\t\tsome triangles.\n";
-		r.daTri.imageOK = false;
-	}
-	if (imagesDiffer(testImage, imTriImage)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDrawArrays independent triangle rendering\n"
-			<< "\t\tyielded different image than immediate-mode\n"
-			<< "\t\tindependent triangle rendering.\n";
-		r.daTri.imageMatch = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.daTri, env,
+		"DrawArrays independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawArrays on independent triangles
@@ -576,83 +630,44 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-
 	measure(time, static_cast<TIME_FUNC>(coloredLit_daIndTri), env, w,
 		nTris, r.ldaTri);
-
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
-
 	if (!glLockArraysEXT)
 		r.ldaTri.tps = r.ldaTri.tpsLow = r.ldaTri.tpsHigh = 0.0;
-
-	testImage.read(0, 0);
-	if (!colorGen.allPresent(testImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tLocked DrawArrays independent triangle rendering is\n"
-			<< "\t\tmissing some triangles.\n";
-		r.ldaTri.imageOK = false;
-	}
-	if (imagesDiffer(testImage, imTriImage)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tLocked DrawArrays independent triangle rendering\n"
-			<< "\t\tyielded different image than immediate-mode\n"
-			<< "\t\tindependent triangle rendering.\n";
-		r.ldaTri.imageMatch = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.ldaTri, env,
+		"Locked DrawArrays independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
 	measure(time, static_cast<TIME_FUNC>(coloredLit_deIndTri), env, w,
 		nTris, r.deTri);
-
-	testImage.read(0, 0);
-	if (!colorGen.allPresent(testImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDrawElements independent triangle rendering is missing\n"
-			<< "\t\tsome triangles.\n";
-		r.deTri.imageOK = false;
-	}
-	if (imagesDiffer(testImage, imTriImage)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tDrawElements independent triangle rendering\n"
-			<< "\t\tyielded different image than immediate-mode\n"
-			<< "\t\tindependent triangle rendering.\n";
-		r.deTri.imageMatch = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.deTri, env,
+		"DrawElements independent triangle");
 
 	////////////////////////////////////////////////////////////
 	// Locked DrawElements on independent triangles
 	////////////////////////////////////////////////////////////
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
-
 	measure(time, static_cast<TIME_FUNC>(coloredLit_deIndTri), env, w,
 		nTris, r.ldeTri);
-
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
-
 	if (!glLockArraysEXT)
 		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
-
-	testImage.read(0, 0);
-	if (!colorGen.allPresent(testImage, 0, lastID)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tLocked DrawElements independent triangle rendering is\n"
-			<< "\t\tmissing some triangles.\n";
-		r.ldeTri.imageOK = false;
-	}
-	if (imagesDiffer(testImage, imTriImage)) {
-		failHeader(passed, name, r.config, env);
-		env->log << "\tLocked DrawElements independent triangle rendering\n"
-			<< "\t\tyielded different image than immediate-mode\n"
-			<< "\t\tindependent triangle rendering.\n";
-		r.ldeTri.imageMatch = false;
-	}
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.ldeTri, env,
+		"Locked DrawElements independent triangle");
 
 
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	delete[] c4ub_n3f_v3f;
 	delete[] indices;
@@ -667,6 +682,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	for (int j2 = 0; j2 < nVertices; ++j2) {
 		float* t = is(j2);
 		GLubyte r, g, b;
+		// Take care to get the correct color on the provoking vertex:
 		colorGen.toRGB((j2 - 2) % IDModulus, r, g, b);
 
 		c4ub_n3f_v3f[j2].c[0] = r;
@@ -680,6 +696,99 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[j2].v[1] = t[1];
 		c4ub_n3f_v3f[j2].v[2] = 0.0;
 	}
+
+	indices = new GLuint[nVertices];
+	for (int j3 = 0; j3 < nVertices; ++j3)
+		indices[j3] = j3;
+
+	////////////////////////////////////////////////////////////
+	// Immediate-mode triangle strips
+	////////////////////////////////////////////////////////////
+	measure(time, static_cast<TIME_FUNC>(coloredLit_imTriStrip), env, w,
+		nTris, r.imTS);
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.imTS, env,
+		"Immediate-mode triangle strip");
+
+	////////////////////////////////////////////////////////////
+	// Display-listed triangle strips
+	////////////////////////////////////////////////////////////
+	dList = glGenLists(1);
+	glNewList(dList, GL_COMPILE);
+		coloredLit_imTriStrip();
+	glEndList();
+	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+		r.dlTS);
+	glDeleteLists(dList, 1);
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.dlTS, env,
+		"Display-listed triangle strip");
+
+	////////////////////////////////////////////////////////////
+	// DrawArrays on triangle strips
+	////////////////////////////////////////////////////////////
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].c);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glNormalPointer(GL_FLOAT, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].n);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glVertexPointer(3, GL_FLOAT, sizeof(c4ub_n3f_v3f[0]),
+		c4ub_n3f_v3f[0].v);
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	measure(time, static_cast<TIME_FUNC>(coloredLit_daTriStrip), env, w,
+		nTris, r.daTS);
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.daTS, env,
+		"DrawArrays triangle strip");
+
+	////////////////////////////////////////////////////////////
+	// Locked DrawArrays on triangle strips
+	////////////////////////////////////////////////////////////
+	if (glLockArraysEXT)
+		glLockArraysEXT(0, nVertices);
+	measure(time, static_cast<TIME_FUNC>(coloredLit_daTriStrip), env, w,
+		nTris, r.ldaTS);
+	if (glUnlockArraysEXT)
+		glUnlockArraysEXT();
+	if (!glLockArraysEXT)
+		r.ldaTS.tps = r.ldaTS.tpsLow = r.ldaTS.tpsHigh = 0.0;
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.ldaTS, env,
+		"Locked DrawArrays triangle strip");
+
+	////////////////////////////////////////////////////////////
+	// DrawElements on triangle strips
+	////////////////////////////////////////////////////////////
+	measure(time, static_cast<TIME_FUNC>(coloredLit_deTriStrip), env, w,
+		nTris, r.deTS);
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.deTS, env,
+		"DrawElements triangle strip");
+
+	////////////////////////////////////////////////////////////
+	// Locked DrawElements on triangle strips
+	////////////////////////////////////////////////////////////
+	if (glLockArraysEXT)
+		glLockArraysEXT(0, nVertices);
+	measure(time, static_cast<TIME_FUNC>(coloredLit_deTriStrip), env, w,
+		nTris, r.ldeTS);
+	if (glUnlockArraysEXT)
+		glUnlockArraysEXT();
+	if (!glLockArraysEXT)
+		r.ldeTS.tps = r.ldeTS.tpsLow = r.ldeTS.tpsHigh = 0.0;
+	verify(testImage, colorGen, 0, lastID, imTriImage,
+		passed, name, r.config, r.ldeTS, env,
+		"Locked DrawElements triangle strip");
+
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	delete[] c4ub_n3f_v3f;
+	delete[] indices;
 
 	if (passed)
 		env->log << name << ":  PASS "
@@ -710,6 +819,18 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 		env, "DrawElements independent triangle");
 	doComparison(oldR.ldeTri, newR.ldeTri, newR.config, same, name,
 		env, "Locked DrawElements independent triangle");
+	doComparison(oldR.imTS, newR.imTS, newR.config, same, name,
+		env, "immediate-mode triangle strip");
+	doComparison(oldR.dlTS, newR.dlTS, newR.config, same, name,
+		env, "display-listed triangle strip");
+	doComparison(oldR.daTS, newR.daTS, newR.config, same, name,
+		env, "DrawArrays triangle strip");
+	doComparison(oldR.ldaTS, newR.ldaTS, newR.config, same, name,
+		env, "Locked DrawArrays triangle strip");
+	doComparison(oldR.deTS, newR.deTS, newR.config, same, name,
+		env, "DrawElements triangle strip");
+	doComparison(oldR.ldeTS, newR.ldeTS, newR.config, same, name,
+		env, "Locked DrawElements triangle strip");
 
 	if (same && env->options.verbosity) {
 		env->log << name << ":  SAME "
@@ -752,6 +873,12 @@ ColoredLitPerf::Result::put(ostream& s) const {
 	ldaTri.put(s);
 	deTri.put(s);
 	ldeTri.put(s);
+	imTS.put(s);
+	dlTS.put(s);
+	daTS.put(s);
+	ldaTS.put(s);
+	deTS.put(s);
+	ldeTS.put(s);
 } // ColoredLitPerf::Result::put
 
 bool
@@ -767,6 +894,13 @@ ColoredLitPerf::Result::get(istream& s) {
 	ldaTri.get(s);
 	deTri.get(s);
 	ldeTri.get(s);
+	imTS.get(s);
+	dlTS.get(s);
+	daTS.get(s);
+	ldaTS.get(s);
+	deTS.get(s);
+	ldeTS.get(s);
+
 	return s.good();
 } // ColoredLitPerf::Result::get
 
