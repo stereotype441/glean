@@ -219,16 +219,6 @@ applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src) {
 
 struct runFactorsResult {float readbackErrorBits; float blendErrorBits;};
 
-template <class T> inline T log2(T x) { return 1.4426950408889634 * log(x); }
-
-double
-errorBits(double absError, int repBits) {
-        if (absError <= 0.0)
-                return 0.0;
-        double log2Error = log2(absError) + repBits;
-        return (log2Error < 0.0)? 0.0: log2Error;
-}
-
 runFactorsResult
 runFactors(GLenum srcFactor, GLenum dstFactor,
     GLEAN::DrawingSurfaceConfig& config, GLEAN::Environment& env) {
@@ -275,10 +265,10 @@ runFactors(GLenum srcFactor, GLenum dstFactor,
 	fbDst.read(1, 1);
 	Image::Registration reg1(fbDst.reg(dst));
 	result.readbackErrorBits =
-		max(errorBits(reg1.stats[0].max(), config.r),
-		max(errorBits(reg1.stats[1].max(), config.g),
-		max(errorBits(reg1.stats[2].max(), config.b),
-		    errorBits(reg1.stats[3].max(), config.a))));
+		max(ErrorBits(reg1.stats[0].max(), config.r),
+		max(ErrorBits(reg1.stats[1].max(), config.g),
+		max(ErrorBits(reg1.stats[2].max(), config.b),
+		    ErrorBits(reg1.stats[3].max(), config.a))));
 
 	// Now generate random source pixels and apply the blending
 	// operation to both the framebuffer and a copy in the image
@@ -337,10 +327,10 @@ runFactors(GLenum srcFactor, GLenum dstFactor,
 			float aError = fabs(aPix[3] - ePix[3]);
 			result.blendErrorBits =
 				max(static_cast<double>(result.blendErrorBits),
-				max(errorBits(rError, config.r),
-				max(errorBits(gError, config.g),
-				max(errorBits(bError, config.b),
-				    errorBits(aError, config.a)))));
+				max(ErrorBits(rError, config.r),
+				max(ErrorBits(gError, config.g),
+				max(ErrorBits(bError, config.b),
+				    ErrorBits(aError, config.a)))));
 			if (result.blendErrorBits > 1.0) {
 				if (env.options.verbosity) {
 float* sPix = reinterpret_cast<float*>(src.pixels()
