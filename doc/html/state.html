@@ -1,0 +1,697 @@
+<html>
+<head>
+  <title>OpenGL Rendering and State Cheat-Sheet</title>
+  <meta http-equiv="Content-Type" content="text/html">
+</head>
+
+<body>
+<h1><a href="http://www.opengl.org/">OpenGL</a> Rendering and State
+Cheat-Sheet</h1>
+
+<p>Here's a terse cheat-sheet that you might find useful when
+writing small, self-contained sequences of OpenGL rendering commands
+(such as those in many of the <em>glean</em> tests).  Be sure to
+keep a copy of the OpenGL spec handy for detailed questions.
+
+<p>Quick-access index:
+<ul>
+  <li><a href="#AccBuf">Accumulation Buffer</a></li>
+  <li><a href="#ClearBuffers">Clear Buffers</a></li>
+  <li><a href="#CopyPixels">Copy Pixels</a></li>
+  <li><a href="#DrawGeometry">Draw Geometry</a></li>
+  <li><a href="#DrawPixels">Draw Pixels</a></li>
+  <li><a href="#ReadPixels">Read Pixels</a></li>
+</ul>
+
+<table border=1 width="100%">
+  <tr>
+    <td><strong>Operation</strong></td>
+    <td><strong>Outline</strong></td>
+    <td><strong>Details</strong></td>
+  </tr>
+  <tr>
+    <td><a name="AccBuf">Accumulation Buffer</a></td>
+    <td>
+      <code>Accum({ACCUM,LOAD,RETURN,MULT}, scale)</code>
+      <br><code>Accum(ADD, offset)</code>
+    </td>
+    <td>
+      The <a href="#SetFragOps">per-fragment operations</a> scissor test and
+      dithering, as well as <a href="#SetBuffer">buffer masking</a>
+      are applied in the case of <code>RETURN</code>.  The scissor test
+      applies to all accumulation operations.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="ClearBuffers">Clear Buffers</a></td>
+    <td>
+      <code>ClearColor(r, g, b, a)</code>
+      <br><code>ClearIndex(index)</code>
+      <br><code>ClearDepth(depth)</code>
+      <br><code>ClearStencil(stencil)</code>
+      <br><code>ClearAccum(r, g, b, a)</code>
+      <br><code>Clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT | STENCIL_BUFFER_BIT
+       | ACCUM_BUFFER_BIT)</code>
+    </td>
+    <td>
+      The <a href="#SetFragOps">per-fragment operations</a> scissor test and
+      dithering, as well as <a href="#SetBuffer">buffer masking</a>
+      are applied.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="CopyPixels">Copy Pixels</a></td>
+    <td>
+      <code>ReadBuffer({FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT,
+        FRONT, BACK, LEFT, RIGHT, AUX{0-n})</code>
+      <br><a href="#CommonDrawing">Set Common Drawing State</a>
+      <br><code>RasterPos{234}{sifd}[v](coords)</code>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>PixelZoom(zoomX, zoomY)</code>
+      <br><code>CopyPixels(srcX, srcY, width, height,
+        {COLOR, STENCIL, DEPTH})</code>
+    </td>
+    <td>
+      Essentially <code>ReadPixels</code> followed by <code>DrawPixels</code>,
+      but pixel packing/unpacking is skipped and pixel transfer functions
+      are performed only once.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="DrawGometry">Draw Geometry</a></td>
+    <td><a href="#CommonDrawing">Set Common Drawing State</a>
+      <br><a href="#SetRasterization">Set Rasterization Options</a>
+      <br><code>ShadeModel({SMOOTH,FLAT})</code>
+      <br><a href="#SpecifyGeometry">Specify Geometry</a>
+    </td>
+    <td>
+      <br>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="DrawPixels">Draw Pixels</a></td>
+    <td><a href="#CommonDrawing">Set Common Drawing State</a>
+      <br><code>RasterPos{234}{sifd}[v](coords)</code>
+      <br><a href="#SetPixelUnpack">Set Pixel Unpack Modes</a>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>PixelZoom(zoomX, zoomY)</code>
+      <br><code>DrawPixels(width, height, format, type, data)</code>
+    </td>
+    <td>
+      Raster position is much like a vertex;
+      is transformed, lit, used to look up a texture color, etc.
+      <p><code>format:  COLOR_INDEX, STENCIL_INDEX, DEPTH_COMPONENT,
+        RED, GREEN, BLUE, ALPHA, RGB, RGBA, BGR, BGRA, LUMINANCE,
+	LUMINANCE_ALPHA</code>
+      <p><code>type:  UNSIGNED_BYTE, BITMAP, BYTE, UNSIGNED_SHORT,
+        SHORT, UNSIGNED_INT, INT, FLOAT, UNSIGNED_BYTE_3_3_2,
+	UNSIGNED_BYTE_2_3_3_REV, UNSIGNED_SHORT_5_6_5,
+	UNSIGNED_SHORT_5_6_5_REV, UNSIGNED_SHORT_4_4_4_4,
+	UNSIGNED_SHORT_4_4_4_4_REV, UNSIGNED_SHORT_5_5_5_1,
+	UNSIGNED_SHORT_1_5_5_5_REV, UNSIGNED_INT_8_8_8_8,
+	UNSIGNED_INT_8_8_8_8_REV, UNSIGNED_INT_10_10_10_2,
+	UNSIGNED_INT_2_10_10_10_REV</code>
+      <p>Packed types place first component in most-significant bits
+        of storage unit; <code>REV</code> packed types reverse the order.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="LoadTexImage">Load Texture Image</a></td>
+    <td>
+      <a href="#SetPixelUnpack">Set Pixel Unpack Modes</a>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>TexImage2D(TEXTURE_2D, mipmapLevel, internalFormat, width,
+        height, border, format, type, data)</code>
+      <hr>
+      <br><a href="#SetPixelUnpack">Set Pixel Unpack Modes</a>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>TexSubImage2D(TEXTURE_2D, mipmapLevel, texXOffset, texYOffset,
+        width, height, format, type, data)</code>
+      <hr>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>CopyTexImage2D(TEXTURE_2D, mipmapLevel, internalFormat,
+        fbX, fbY, width, height, border)</code>
+      <hr>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <br><code>CopyTexSubImage2D(TEXTURE_2D, mipmapLevel, texXOffset,
+        texYOffset, fbX, fbY, width, height)</code>
+    </td>
+    <td>
+      <code>internalFormat:
+        ALPHA{,4,8,12,16},
+	LUMINANCE{,4,8,12,16},
+        LUMINANCE4_ALPHA4,
+        LUMINANCE6_ALPHA2,
+        LUMINANCE8_ALPHA8,
+        LUMINANCE12_ALPHA4,
+        LUMINANCE12_ALPHA12,
+        LUMINANCE16_ALPHA16,
+	INTENSITY{,4,8,12,16},
+	RGB{,4,5,8,10,12,16},
+	R3_G3_B2,
+	RGBA{,2,4,8,12,16},
+	RGB5_A1,
+	RGB10_A2
+	</code>
+      <p><code>format, type:</code>  See <a href="#DrawPixels">Draw
+        Pixels</a>.
+      <p><code>level</code> is 0 for the highest-resolution mipmap level.
+      <p><code>border</code> might as well always be 0.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="MatrixOperations">Matrix Operations</a></td>
+    <td>
+      <code>LoadIdentity()</code>
+      <br><code>LoadMatrix(m)</code>
+      <br><code>MultMatrix(m)</code>
+      <br><code>Rotate{fd}(degrees, x, y, z)</code>
+      <br><code>Translate{fd}(x, y, z)</code>
+      <br><code>Scale{fd}(x, y, z)</code>
+      <br><code>Frustum(l, r, b, t, n, f)</code> (n, f &gt; 0)
+      <br><code>Ortho(l, r, b, t, n, f)</code>
+    </td>
+    <td>
+      Matrix element order is (Sxx, Sxy, Sxz, Sxw, Syx, Syy, Syz, Syw,
+      Szx, Szy, Szz, Szw, Tx, Ty, Tz, 1). <em>Spq</em> means the scale
+      factor applied to input coordinate <em>p</em> that contributes to
+      output coordinate <em>q</em>.  <em>Tp</em> means translation
+      along coordinate <em>p</em>.
+      <p>Use right-hand rule to find sense of rotation.
+      <p>Near/far values are <em>distances</em> from the eye.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="ReadPixels">Read Pixels</a></td>
+    <td>
+      <a href="#SetPixelPack">Set Pixel Pack Modes</a>
+      <br><a href="#SetPixelTransfer">Set Pixel Transfer Modes</a>
+      <code>ReadBuffer({FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT,
+        FRONT, BACK, LEFT, RIGHT, AUX{0-n})</code>
+      <code>ReadPixels(x, y, width, height, format, type, data)</code>
+    </td>
+    <td>
+      For <code>format</code> and <code>type</code>, see
+	<a href="#DrawPixels">Draw Pixels</a>.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetBuffer">Select/Mask Buffers</a></td>
+    <td>
+      <code>DrawBuffer({NONE, FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT,
+        FRONT, BACK, LEFT, RIGHT, FRONT_AND_BACK, AUX{0-?})</code>
+      <hr><code>IndexMask(uint mask)</code>
+      <br><code>ColorMask(boolean r, g, b, a)</code>
+      <br><code>DepthMask(boolean)</code>
+      <br><code>StencilMask(uint mask)</code>
+    </td>
+    <td>
+      <br>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="CommonDrawing">Set Common Drawing State</a>
+    <td>
+      <a href="#SetViewport">Set Viewport and Projection</a>
+      <br><a href="#SetLightingParameters">Set Lighting Parameters</a>
+      <br><a href="#SetMaterialParameters">Set Material Parameters</a>
+      <br><a href="#SetModelView">Set ModelView</a>
+      <br><a href="#SetTexturing">Set Texturing</a>
+      <br><a href="#SetClientClip">Set Extra Clip Planes</a>
+      <br><a href="#SetFog">Set Fog Parameters</a>
+      <br><a href="#SetFragOps">Set Per-Fragment Operations</a>
+      <br><a href="#SetBuffer">Select/Mask Buffers</a>
+    </td>
+    <td>
+      <br>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetClientClip">Set Extra Clip Planes</a></td>
+    <td>
+      <code>ClipPlane(CLIP_PLANE{0-5}, eqn)</code>
+      <br><code>Enable/Disable(CLIP_PLANE{0-5})</code>
+    </td>
+    <td>
+      <em>eqn</em> has plane eqn coefs, in object coords.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetFog">Set Fog Parameters</a></td>
+    <td>
+      <code>Fog{if}[v](name, param)</code>
+      <br><code>Enable/Disable(FOG)</code>
+    </td>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Param</strong></td></tr>
+	<tr>
+	  <td><code>FOG_MODE</code></td>
+	  <td><code>EXP, EXP2, LINEAR</code></td>
+	</tr>
+	<tr>
+	  <td><code>FOG_DENSITY</code></td>
+	  <td>float (density for <code>EXP, EXP2</code>)</td>
+	</tr>
+	<tr>
+	  <td><code>FOG_START</code></td>
+	  <td>float (eye coord distance to fog start,
+	    for <code>LINEAR</code>)</td>
+	</tr>
+	<tr>
+	  <td><code>FOG_END</code></td>
+	  <td>float (eye coord distance to fog end,
+	    for <code>LINEAR</code>)</td>
+	</tr>
+	<tr>
+	  <td><code>FOG_COLOR</code></td>
+	  <td>4 floats (fog fade color, for <code>LINEAR</code>)</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetLightModelParams">Set Light Model Parameters</a></td>
+    <td>
+      <br><code>LightModel{if}[v](name, param)</code>
+    </td>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Values</strong></td></tr>
+        <tr><td><code>LIGHT_MODEL_AMBIENT</code></td><td>4</td></tr>
+        <tr><td><code>LIGHT_MODEL_LOCAL_VIEWER</code></td><td>1 (bool)</td></tr>
+        <tr><td><code>LIGHT_MODEL_TWO_SIDE</code></td><td>1 (bool)</td></tr>
+        <tr><td><code>LIGHT_MODEL_COLOR_CONTROL</code></td><td>1</td></tr>
+      </table>
+      <br><code>LIGHT_MODEL_COLOR_CONTROL: SINGLE_COLOR,
+        SEPARATE_SPECULAR_COLOR</code>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetLightSourceParams">Set Light Source Parameters</a></td>
+    <td>
+      <a href="#SetModelView">Set Modelview</a>
+      <br><code>Light{if}[v](LIGHT{0-7}, name, param)</code>
+    </td>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Values</strong></td></tr>
+        <tr><td><code>AMBIENT</code></td><td>4</td></tr>
+        <tr><td><code>DIFFUSE</code></td><td>4</td></tr>
+        <tr><td><code>SPECULAR</code></td><td>4</td></tr>
+        <tr><td><code>POSITION</code></td><td>4 (homogeneous)</td></tr>
+        <tr><td><code>SPOT_DIRECTION</code></td><td>3</td></tr>
+        <tr><td><code>SPOT_EXPONENT</code></td><td>1</td></tr>
+        <tr><td><code>SPOT_CUTOFF</code></td><td>1</td></tr>
+        <tr><td><code>CONSTANT_ATTENUATION</code></td><td>1</td></tr>
+        <tr><td><code>LINEAR_ATTENUATION</code></td><td>1</td></tr>
+        <tr><td><code>QUADRATIC_ATTENUATION</code></td><td>1</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetLightingParameters">Set Lighting Parameters</a></td>
+    <td>
+      <a href="#SetLightSourceParams">Set Light Source Parameters</a>
+      <br><a href="#SetLightModelParams">Set Light Model Parameters</a>
+      <br><code>Enable/Disable(LIGHTING)</code>
+    </td>
+    <td>
+      <br>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetMaterialParameters">Set Material Parameters</a></td>
+    <td>
+      <code>FrontFace({CCW, CW})</code>
+      <br><code>Enable/Disable(NORMALIZE)</code>
+      <br><code>Material{if}[v](face, name, param)</code>
+      <br><code>ColorMaterial(face, mode)</code>
+      <br><code>Enable/Disable(COLOR_MATERIAL)</code>
+    </td>
+    <td>
+      <strong>face</strong>: <code>FRONT, BACK, FRONT_AND_BACK</code>
+      <p><table>
+        <tr><td><strong>Name</strong></td><td><strong>Values</strong></td></tr>
+        <tr><td><code>AMBIENT</code></td><td>4</td></tr>
+        <tr><td><code>DIFFUSE</code></td><td>4</td></tr>
+        <tr><td><code>AMBIENT_AND_DIFFUSE</code></td><td>4</td></tr>
+        <tr><td><code>SPECULAR</code></td><td>4</td></tr>
+        <tr><td><code>EMISSION</code></td><td>4</td></tr>
+        <tr><td><code>SHININESS</code></td><td>1</td></tr>
+        <tr><td><code>COLOR_INDEXES</code></td><td>3 (a, d, s)</td></tr>
+      </table>
+      <br><strong>mode</strong>: <code>EMISSION, AMBIENT, DIFFUSE,
+        SPECULAR, AMBIENT_AND_DIFFUSE</code>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetModelView">Set ModelView</a></td>
+    <td>
+      <code>MatrixMode(MODELVIEW)</code>
+      <br><a href="#MatrixOperations">Matrix Operations</a>
+    </td>
+    <td>
+      <br>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetFragOps">Set Per-Fragment Operations</a></td>
+    <td>
+      <code>Scissor(left, bottom, width, height)</code>
+      <br><code>Enable/Disable(SCISSOR_TEST)</code>
+      <hr><code>AlphaFunc(aFunc, float refValue)</code>
+      <br><code>Enable/Disable(ALPHA_TEST)</code>
+      <hr><code>StencilFunc(sFunc, int refValue, uint mask)</code>
+      <br><code>StencilOp(sFail, dFail, dPass)</code>
+      <br><code>Enable/Disable(STENCIL_TEST)</code>
+      <hr><code>DepthFunc(dFunc)</code>
+      <br><code>Enable/Disable(DEPTH_TEST)</code>
+      <hr><code>BlendColor(r, g, b, a)</code> (imaging subset)
+      <br><code>BlendEquation(bEqn)</code> (imaging subset)
+      <br><code>BlendFunc(src, dst)</code>
+      <br><code>Enable/Disable(BLEND)</code>
+      <hr><code>Enable/Disable(DITHER)</code>
+      <hr><code>LogicOp(op)</code>
+      <br><code>Enable/Disable(INDEX_LOGIC_OP)</code>
+      <br><code>Enable/Disable(COLOR_LOGIC_OP)</code>
+    </td>
+    <td>
+      <code>aFunc, sFunc, dFunc:  NEVER, ALWAYS, LESS, LEQUAL, EQUAL, GEQUAL,
+        GREATER, NOTEQUAL</code>
+      <p><code>sFail, dFail, dPass:  KEEP, ZERO, REPLACE, INCR, DECR,
+        INVERT</code>
+      <p><code>bEqn:  FUNC_ADD, FUNC_SUBTRACT, FUNC_REVERSE_SUBTRACT,
+        MIN, MAX</code>
+      <p><code>src:  ZERO, ONE, DST_COLOR, ONE_MINUS_DST_COLOR,
+        SRC_ALPHA, ONE_MINUS_SRC_ALPHA, DST_ALPHA, ONE_MINUS_DST_ALPHA,
+	CONSTANT_COLOR, ONE_MINUS_CONSTANT_COLOR, CONSTANT_ALPHA,
+	ONE_MINUS_CONSTANT_ALPHA, SRC_ALPHA_SATURATE</code>
+      <p><code>dst:  ZERO, ONE, SRC_COLOR, ONE_MINUS_SRC_COLOR,
+        SRC_ALPHA, ONE_MINUS_SRC_ALPHA, DST_ALPHA, ONE_MINUS_DST_ALPHA,
+	CONSTANT_COLOR, ONE_MINUS_CONSTANT_COLOR, CONSTANT_ALPHA,
+	ONE_MINUS_CONSTANT_ALPHA</code>
+      <p><code>op:  CLEAR, AND, AND_REVERSE, COPY, AND_INVERTED,
+        NOOP, XOR, OR, NOR, EQUIV, INVERT, OR_REVERSE, COPY_INVERTED,
+	OR_INVERTED, NAND, SET</code>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetPixelPack">Set Pixel Pack Modes</a></td>
+    <td>
+      <code>PixelStore{if}(name, param)</code>
+    </td>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Valid Range</strong></td></tr>
+	<tr>
+	  <td><code>PACK_SWAP_BYTES</code></td><td><code>TRUE/FALSE</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_LSB_FIRST</code></td><td><code>TRUE/FALSE</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_ROW_LENGTH</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_SKIP_ROWS</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_SKIP_PIXELS</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_ALIGNMENT</code></td><td><code>1,2,4,8</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_IMAGE_HEIGHT</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>PACK_SKIP_IMAGES</code></td><td><code>&gt;=0</code></td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetPixelTransfer">Set Pixel Transfer Modes</a></td>
+    <td>
+      <code>PixelTransfer{if}(name, param)</code>
+      <br><code>PixelMap{ui,us,f}v(mapName, mapSize, mapValues)</code>
+      <p><em>Imaging subset commands omitted for brevity</em>
+    </td>
+    <td>
+      <em>rgba</em> indicates a choice of <code>RED, GREEN, BLUE,</code>
+      or <code>ALPHA</code>.
+      <br>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Type</strong></td></tr>
+	<tr> <td><code>MAP_COLOR</code></td> <td>Boolean</td> </tr>
+	<tr> <td><code>MAP_STENCIL</code></td> <td>Boolean</td> </tr>
+	<tr> <td><code>INDEX_SHIFT</code></td> <td>int</td> </tr>
+	<tr> <td><code>INDEX_OFFSET</code></td> <td>int</td> </tr>
+	<tr> <td><em>rgba</em><code>_SCALE</code></td> <td>float</td> </tr>
+	<tr> <td><code>DEPTH_SCALE</code></td> <td>float</td> </tr>
+	<tr> <td><em>rgba</em><code>_BIAS</code></td> <td>float</td> </tr>
+	<tr> <td><code>DEPTH_BIAS</code></td> <td>float</td> </tr>
+      </table>
+      <p><code>mapName:  PIXEL_MAP_{I_TO_I, S_TO_S, I_TO_R, I_TO_G, I_TO_B,
+        I_TO_A, R_TO_R, G_TO_G, B_TO_B, A_TO_A</code>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetPixelUnpack">Set Pixel Unpack Modes</a></td>
+    <td>
+      <code>PixelStore{if}(name, param)</code>
+    </td>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Valid Range</strong></td></tr>
+	<tr>
+	  <td><code>UNPACK_SWAP_BYTES</code></td><td><code>TRUE/FALSE</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_LSB_FIRST</code></td><td><code>TRUE/FALSE</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_ROW_LENGTH</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_SKIP_ROWS</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_SKIP_PIXELS</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_ALIGNMENT</code></td><td><code>1,2,4,8</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_IMAGE_HEIGHT</code></td><td><code>&gt;=0</code></td>
+	</tr>
+	<tr>
+	  <td><code>UNPACK_SKIP_IMAGES</code></td><td><code>&gt;=0</code></td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetRasterization">Set Rasterization Options</a></td>
+    <td>
+      <code>PointSize(size)</code>
+      <br><code>Enable/Disable(POINT_SMOOTH)</code>
+      <hr><code>LineWidth(width)</code>
+      <br><code>Enable/Disable(LINE_SMOOTH)</code>
+      <br><code>LineStipple(int repeatCount, ushort bitPattern)</code>
+      <br><code>Enable/Disable(LINE_STIPPLE)</code>
+      <hr><code>PolygonMode({FRONT,BACK,FRONT_AND_BACK},
+      <br>&nbsp;&nbsp;{POINT,LINE,FILL})</code>
+      <br><code>CullFace({FRONT,BACK,FRONT_AND_BACK})</code>
+      <br><code>Enable/Disable(CULL_FACE)</code>
+      <br><code>PolygonStipple(ubyte* pattern)</code>
+      <br><code>Enable/Disable(POLYGON_STIPPLE)</code>
+      <br><code>PolygonOffset(factor, offset)</code>
+      <br><code>Enable/Disable(POLYGON_OFFSET_{POINT,LINE,FILL})</code>
+    </td>
+    <td>
+      See DrawPixels for stipple pattern (32x32 bitmap) unpacking rules.
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetTexGen">Set TexGen</a></td>
+    <td>
+      <br><code>TexGen{ifd}[v]( {S,T,R,Q}, name, param)</code>
+      <br><code>Enable/Disable(TEXTURE_GEN_{S,T,R,Q})</code>
+    </td>
+    <td>
+      <table>
+        <tr>
+          <td><strong>Name</strong></td>
+          <td><strong>Param</strong></td>
+        </tr>
+        <tr>
+          <td><code>TEXTURE_GEN_MODE</code></td>
+          <td><code>OBJECT_LINEAR, EYE_LINEAR, SPHERE_MAP</code>
+        </tr>
+        <tr>
+          <td><code>OBJECT_PLANE</code></td>
+          <td>Plane eqn coefs for <code>OBJECT_LINEAR</code>, obj coords</td>
+        </tr>
+        <tr>
+          <td><code>EYE_PLANE</code></td>
+          <td>Plane eqn coefs for <code>EYE_LINEAR</code>, eye coords</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetTexEnv">Set Texture Environment</a></td>
+    <td><code>TexEnv{if}[v](TEXTURE_ENV, name, param)</code>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Param</strong></td></tr>
+	<tr>
+	  <td><code>TEXTURE_ENV_MODE</code></td>
+	  <td><code>REPLACE, MODULATE, DECAL, BLEND</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_ENV_COLOR</code></td>
+	  <td>r, g, b, a</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetTexParams">Set Texture Parameters</a></td>
+    <td><code>TexParameter{if}[v](TEXTURE_{123}D, name, param)</code>
+    <td>
+      <table>
+        <tr><td><strong>Name</strong></td><td><strong>Param</strong></td></tr>
+	<tr>
+	  <td><code>TEXTURE_WRAP_S</code></td>
+	  <td><code>CLAMP, CLAMP_TO_EDGE, REPEAT</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_WRAP_T</code></td>
+	  <td><code>CLAMP, CLAMP_TO_EDGE, REPEAT</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_WRAP_R</code></td>
+	  <td><code>CLAMP, CLAMP_TO_EDGE, REPEAT</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_MIN_FILTER</code></td>
+	  <td><code>NEAREST, LINEAR, NEAREST_MIPMAP_NEAREST,
+	    NEAREST_MIPMAP_LINEAR, LINEAR_MIPMAP_NEAREST,
+	    LINEAR_MIPMAP_LINEAR</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_MAG_FILTER</code></td>
+	  <td><code>NEAREST, LINEAR</code></td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_BORDER_COLOR</code></td>
+	  <td>4 floats in [0,1]</td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_PRIORITY</code></td>
+	  <td>float in [0,1]</td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_MIN_LOD</code></td>
+	  <td>float (LOD range clamp)</td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_MAX_LOD</code></td>
+	  <td>float (LOD range clamp)</td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_BASE_LEVEL</code></td>
+	  <td>int (level residence clamp)</td>
+	</tr>
+	<tr>
+	  <td><code>TEXTURE_MAX_LEVEL</code></td>
+	  <td>int (level residence clamp)</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetTexturing">Set Texturing</a></td>
+    <td>
+      <code>BindTexture(TEXTURE_2D, textureID)</code>
+      <br><a href="#LoadTexImage">Load Texture Image</a> if needed
+      <br><a href="#SetTexParams">Set Texture Parameters</a>
+      <br><a href="#SetTexEnv">Set Texture Environment</a>
+      <br><code>MatrixMode(TEXTURE)</code>
+      <br><a href="#MatrixOperations">Matrix Operations</a>
+      <br><a href="#SetTexGen">Set TexGen</a>
+      <br><code>Enable/Disable(TEXTURE_2D)</code>
+    </td>
+    <td>
+      1D and 3D textures omitted for brevity
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SetViewport">Set Viewport and Projection</a></td>
+    <td>
+      <code>Viewport(x, y, w, h)</code>
+      <br><code>DepthRange(n, f)</code> (n, f in [0,1])
+      <br><code>MatrixMode(PROJECTION)</code>
+      <br><a href="#MatrixOperations">Matrix Operations</a>
+    </td>
+    <td>
+      Lower-left corner of projected view volume maps to window
+      coords (x,y).
+    </td>
+  </tr>
+  <tr>
+    <td><a name="SpecifyGeometry">Specify Geometry</a></td>
+    <td><code>Begin/End</code>
+      <br><a href="#VertexArrays">Vertex Arrays</a>
+      <br>Display Lists
+    </td>
+    <td>Vertices in clockwise order</td>
+  </tr>
+  <tr>
+    <td><a name="VertexArrays">Vertex Arrays</a></td>
+    <td>
+      <code>TexCoordPointer(e, t, s, p)</code>
+      <br><code>Enable/DisableClientState(TEXTURE_COORD_ARRAY)</code>
+      <br><code>ColorPointer(e, t, s, p)</code>
+      <br><code>Enable/DisableClientState(COLOR_ARRAY)</code>
+      <br><code>NormalPointer(t, s, p)</code>
+      <br><code>Enable/DisableClientState(NORMAL_ARRAY)</code>
+      <br><code>VertexPointer(e, t, s, p)</code>
+      <br><code>Enable/DisableClientState(VERTEX_ARRAY)</code>
+
+      <hr>
+      <code>Begin/ArrayElement(i)/End</code>
+      <br><em>or</em> <code>DrawArrays(prim, first, count)</code>
+      <br><em>or</em> <code>DrawElements(prim, count, uit, indices)</code>
+    </td>
+    <td>e = number of elements (1-4)
+      <br>t = type (<code>SHORT, INT,</code> etc.)
+      <br>s = stride in bytes
+      <br>p = pointer to data
+      <br>uit = any unsigned int type
+      <br>indices = pointer to array of indices
+
+      <p><code>InterleavedArrays</code> can be used for easy setup
+        of a few selected vertex formats.
+
+      <p>See also compiled vertex arrays.
+    </td>
+  </tr>
+</table>
+<p>Things not yet covered:
+<ul>
+  <li>Imaging subset.</li>
+  <li>Evaluators.</li>
+  <li>Selection.</li>
+  <li>Feedback.</li>
+  <li>Display lists.</li>
+  <li>Hints.</li>
+  <li>Queries.</li>
+  <li>State push/pop.</li>
+  <li>Multitexture.</li>
+</ul>
+</body>
+</html>
