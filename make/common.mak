@@ -40,7 +40,7 @@ endif # Unix
 ifeq ($(PLATFORM), Unix)
 	AR:=/usr/bin/ar
 	CC:=/usr/bin/g++
-	INSTALL:=/usr/bin/install -c
+	INSTALL:=/usr/bin/install
 	RANLIB:=/usr/bin/ranlib
 	RM:=/bin/rm
 	SED:=/bin/sed

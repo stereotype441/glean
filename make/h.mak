@@ -17,6 +17,6 @@ install_here:
 	for t in $(HTARGET); do \
 		if [ ! $(HDST)/$$t -nt $$t ]; then \
 			$(RM) -f $(HDST)/$$t; \
-			$(INSTALL) -c -m 0444 $$t $(HDST); \
+			$(INSTALL) -m 0644 $$t $(HDST); \
 			fi; \
 		done
