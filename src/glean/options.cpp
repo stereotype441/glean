@@ -32,6 +32,9 @@
 // options.cpp:  implementation of global options class
 
 #include "options.h"
+#if defined(__X11__)
+#   include <stdlib.h>
+#endif
 
 namespace GLEAN {
 
@@ -45,7 +48,7 @@ Options::Options() {
 	visFilter = "1";
 	selectedTests.resize(0);
 #   if defined(__X11__)
-	dpyName = ":0";
+	dpyName = getenv("DISPLAY");
 #   elif defined(__WIN__)
 #   endif
 } // Options::Options()
