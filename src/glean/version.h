@@ -36,11 +36,11 @@
 #define __version_h__
 
 #define GLEAN_MAJOR_VERSION 1
-#define GLEAN_MINOR_VERSION 0
+#define GLEAN_MINOR_VERSION 1
 
 namespace GLEAN {
 
-const char* versionString = "glean v1.0 8 November 1999";
+const char* versionString = "glean v1.1 20 January 2000";
 
 } // namespace GLEAN
 
