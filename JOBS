@@ -182,3 +182,18 @@ Description:
 Submitted by:
 
 	Kevin Martin <kevinm@valinux.com>
+
+------------------------------------------------------------------------
+
+Description:
+
+	The ttexcombine test sometimes fails because a texture format
+	has less precision than the framebuffer format, and the
+	test's error tolerances are based solely on the framebuffer
+	format.  Should modify tolerances to take texture format into
+	account.
+
+Submitted by:
+
+	Allen Akin <akin@pobox.com>
+
