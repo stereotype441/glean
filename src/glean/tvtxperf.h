@@ -41,6 +41,31 @@ class GLEAN::Window;
 
 namespace GLEAN {
 
+// Auxiliary struct for holding a vertex-performance result:
+struct VPResult {
+	float tps;		// Triangles Per Second
+	float tpsLow;		// Low end of tps range
+	float tpsHigh;		// High end of tps range
+	bool imageOK;		// Image sanity-check status
+	bool imageMatch;	// Image comparison status
+
+	VPResult() {
+		tps = tpsLow = tpsHigh = 0.0;
+		imageOK = imageMatch = true;
+	}
+	void put(ostream& s) const {
+		s << tps
+		   << ' ' << tpsLow
+		   << ' ' << tpsHigh
+		   << ' ' << imageOK
+		   << ' ' << imageMatch
+		   << '\n';
+	}
+	void get(istream& s) {
+		s >> tps >> tpsLow >> tpsHigh >> imageOK >> imageMatch;
+	}
+};
+
 class ColoredLitPerf: public Test {
     public:
 	ColoredLitPerf(const char* testName, const char* filter,
@@ -58,37 +83,16 @@ class ColoredLitPerf: public Test {
 	// Class for a single test result.  All basic tests have a
 	// drawing surface configuration, plus other information
 	// that's specific to the test.
-	struct OneResult {
-		float tps;		// Triangles Per Second
-		float tpsLow;		// Low end of tps range
-		float tpsHigh;		// High end of tps range
-		bool imageOK;		// Image sanity-check status
-		bool imageMatch;	// Image comparison status
-
-		OneResult() {
-			tps = tpsLow = tpsHigh = 0.0;
-			imageOK = imageMatch = true;
-		}
-		void put(ostream& s) const {
-			s << tps
-			   << ' ' << tpsLow
-			   << ' ' << tpsHigh
-			   << ' ' << imageOK
-			   << ' ' << imageMatch
-			   << '\n';
-		}
-		void get(istream& s) {
-			s >> tps >> tpsLow >> tpsHigh >> imageOK >> imageMatch;
-		}
-	};
 	class Result: public Test::Result {
 	    public:
 		DrawingSurfaceConfig* config;
 
-		OneResult imTri;	// immediate-mode independent triangles
-		OneResult dlTri;	// display-listed independent triangles
-		OneResult daTri;	// DrawArrays independent triangles
-		OneResult ldaTri;	// Locked DrawArrays independent tris
+		VPResult imTri;		// immediate-mode independent triangles
+		VPResult dlTri;		// display-listed independent triangles
+		VPResult daTri;		// DrawArrays independent triangles
+		VPResult ldaTri;	// Locked DrawArrays independent tris
+		VPResult deTri;		// DrawElements independent triangles
+		VPResult ldeTri;	// Locked DrawElements ind. tris
 
 		virtual void put(ostream& s) const;
 		virtual bool get(istream& s);

@@ -71,8 +71,11 @@ struct C4UB_N3F_V3F {
 
 int nVertices;
 int dList;
+GLuint* indices;
 C4UB_N3F_V3F* c4ub_n3f_v3f;
 
+
+typedef void (*TIME_FUNC)();
 
 void
 coloredLit_imIndTri() {
@@ -102,12 +105,49 @@ coloredLit_daIndTri() {
 } // coloredLit_daIndTri
 
 void
+coloredLit_deIndTri() {
+	glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT, indices);
+} // coloredLit_deIndTri
+
+void
 callDList() {
 	glCallList(dList);
 } // callDList
 
 void
-logStats1(const char* title, GLEAN::ColoredLitPerf::OneResult& r,
+measure(GLEAN::Timer& time, TIME_FUNC function, GLEAN::Environment* env,
+    GLEAN::Window& w, int nTris, GLEAN::VPResult& r) {
+	// Clear both front and back buffers and swap, to avoid confusing
+	// this test with results of the previous test:
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	w.swap();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Make several measurements, to reduce influence of random factors:
+	const int nMeasurements = 5;	// Must be >= 3
+	vector<double> measurements;
+	for (int i = 0; i < nMeasurements; ++i) {
+		env->quiesce();
+		double t = time.time(static_cast<TIME_FUNC>(glFinish),
+			function,
+			static_cast<TIME_FUNC>(glFinish));
+		w.swap();	// give the user something to watch
+		measurements.push_back(nTris / t);
+	}
+
+	// Throw out the fastest and slowest measurement, and return
+	// the arithmetic mean, fastest, and slowest of those that remain:
+	sort(measurements.begin(), measurements.end());
+	double sum = 0.0;
+	for (int j = 1; j < nMeasurements - 1; ++j)
+		sum += measurements[j];
+	r.tps = sum / (nMeasurements - 2.0);
+	r.tpsLow = measurements[1];
+	r.tpsHigh = measurements[nMeasurements - 2];
+} // measure
+
+void
+logStats1(const char* title, GLEAN::VPResult& r,
     GLEAN::Environment* env) {
 	env->log << '\t' << title << " rate = "
 		<< r.tps << " tri/sec.\n"
@@ -126,6 +166,8 @@ logStats(GLEAN::ColoredLitPerf::Result& r, GLEAN::Environment* env) {
 	logStats1("Display-listed independent triangle", r.dlTri, env);
 	logStats1("DrawArrays independent triangle", r.daTri, env);
 	logStats1("Locked DrawArrays independent triangle", r.ldaTri, env);
+	logStats1("DrawElements independent triangle", r.deTri, env);
+	logStats1("Locked DrawElements independent triangle", r.ldeTri, env);
 } // logStats
 
 void
@@ -149,8 +191,8 @@ failHeader(bool& pass, const string& name,
 } // failHeader
 
 void
-doComparison(const GLEAN::ColoredLitPerf::OneResult& oldR,
-    const GLEAN::ColoredLitPerf::OneResult& newR,
+doComparison(const GLEAN::VPResult& oldR,
+    const GLEAN::VPResult& newR,
     GLEAN::DrawingSurfaceConfig* config,
     bool& same, const string& name, GLEAN::Environment* env,
     const char* title) {
@@ -180,8 +222,13 @@ doComparison(const GLEAN::ColoredLitPerf::OneResult& oldR,
 	}
 } // doComparison
 
-
-typedef void (*TIME_FUNC) ();
+bool
+imagesDiffer(GLEAN::Image& testImage, GLEAN::Image& goldenImage) {
+	GLEAN::Image::Registration imageReg(testImage.reg(goldenImage));
+	return (imageReg.stats[0].max()
+	    + imageReg.stats[1].max()
+	    + imageReg.stats[2].max()) != 0.0;
+} // imagesDiffer
 
 } // anonymous namespace
 
@@ -321,11 +368,9 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 	Image imTriImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
 	Image testImage(drawingSize, drawingSize, GL_RGB, GL_UNSIGNED_BYTE);
-	Image::Registration imageReg;
 	bool passed = true;
 
-	// Make colors deterministic, so we can check them easily if we
-	// choose:
+	// Make colors deterministic, so we can check them:
 	RGBCodedID colorGen(r.config->r, r.config->g, r.config->b);
 	int IDModulus = colorGen.maxID() + 1;
 
@@ -340,7 +385,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	const int nTris = static_cast<int>
 		(((3.14159 / 4.0) * drawingSize * drawingSize) / 5.0 + 0.5);
 	nVertices = nTris * 3;
-	const int lastID = min(IDModulus - 1, nTris - 1);
+	int lastID = min(IDModulus - 1, nTris - 1);
 
 	c4ub_n3f_v3f = new C4UB_N3F_V3F[nVertices];
 	SpiralTri2D it(nTris, 0, drawingSize, 0, drawingSize);
@@ -385,6 +430,10 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 
 		k += 3;
 	}
+
+	indices = new GLuint[nVertices];
+	for (k = 0; k < nVertices; ++k)
+		indices[k] = k;
 
 	GLUtils::useScreenCoords(drawingSize, drawingSize);
 
@@ -444,27 +493,11 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	time.calibrate(static_cast<TIME_FUNC>(glFinish),
 		static_cast<TIME_FUNC>(glFinish));
 
-	vector<float> measurements;
-
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
 	////////////////////////////////////////////////////////////
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	w.swap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	measurements.resize(0);
-	for (int i1 = 0; i1 < 5; ++i1) {
-		env->quiesce();
-		double t = time.time(static_cast<TIME_FUNC>(glFinish),
-			static_cast<TIME_FUNC>(coloredLit_imIndTri),
-			static_cast<TIME_FUNC>(glFinish));
-		w.swap();	// So the user can see something happening.
-		measurements.push_back(nTris / t);
-	}
-	sort(measurements.begin(), measurements.end());
-	r.imTri.tps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
-	r.imTri.tpsLow = measurements[1];
-	r.imTri.tpsHigh = measurements[3];
+	measure(time, static_cast<TIME_FUNC>(coloredLit_imIndTri), env, w,
+		nTris, r.imTri);
 
 	// Read back the image, verify that every triangle was drawn:
 	imTriImage.read(0, 0);
@@ -482,27 +515,11 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	glNewList(dList, GL_COMPILE);
 		coloredLit_imIndTri();
 	glEndList();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	w.swap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	measurements.resize(0);
-	for (int i2 = 0; i2 < 5; ++i2) {
-		env->quiesce();
-		double t = time.time(static_cast<TIME_FUNC>(glFinish),
-			static_cast<TIME_FUNC>(callDList),
-			static_cast<TIME_FUNC>(glFinish));
-		w.swap();
-		measurements.push_back(nTris / t);
-	}
+	measure(time, static_cast<TIME_FUNC>(callDList), env, w, nTris,
+		r.dlTri);
+
 	glDeleteLists(dList, 1);
 
-	sort(measurements.begin(), measurements.end());
-	r.dlTri.tps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
-	r.dlTri.tpsLow = measurements[1];
-	r.dlTri.tpsHigh = measurements[3];
-
-	// Verify that the image is the same as that produced by
-	// rendering independent triangles:
 	testImage.read(0, 0);
 	if (!colorGen.allPresent(testImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
@@ -510,10 +527,10 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 			<< "\t\tsome triangles.\n";
 		r.dlTri.imageOK = false;
 	}
-	imageReg = testImage.reg(imTriImage);
-	if (imageReg.stats[0].max()
-	    + imageReg.stats[1].max()
-	    + imageReg.stats[2].max() != 0.0) {
+
+	// Verify that the image is the same as that produced by
+	// rendering independent triangles:
+	if (imagesDiffer(testImage, imTriImage)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tDisplay-listed independent triangle rendering\n"
 			<< "\t\tyielded different image than immediate-mode\n"
@@ -524,9 +541,6 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	////////////////////////////////////////////////////////////
 	// DrawArrays on independent triangles
 	////////////////////////////////////////////////////////////
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	w.swap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(c4ub_n3f_v3f[0]),
 		c4ub_n3f_v3f[0].c);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -537,23 +551,9 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		c4ub_n3f_v3f[0].v);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	measurements.resize(0);
-	for (int i3 = 0; i3 < 5; ++i3) {
-		env->quiesce();
-		double t = time.time(static_cast<TIME_FUNC>(glFinish),
-			static_cast<TIME_FUNC>(coloredLit_daIndTri),
-			static_cast<TIME_FUNC>(glFinish));
-		w.swap();
-		measurements.push_back(nTris / t);
-	}
+	measure(time, static_cast<TIME_FUNC>(coloredLit_daIndTri), env, w,
+		nTris, r.daTri);
 
-	sort(measurements.begin(), measurements.end());
-	r.daTri.tps = (measurements[1]+measurements[2]+measurements[3]) / 3.0;
-	r.daTri.tpsLow = measurements[1];
-	r.daTri.tpsHigh = measurements[3];
-
-	// Verify that the image is the same as that produced by
-	// rendering independent triangles:
 	testImage.read(0, 0);
 	if (!colorGen.allPresent(testImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
@@ -561,10 +561,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 			<< "\t\tsome triangles.\n";
 		r.daTri.imageOK = false;
 	}
-	imageReg = testImage.reg(imTriImage);
-	if (imageReg.stats[0].max()
-	    + imageReg.stats[1].max()
-	    + imageReg.stats[2].max() != 0.0) {
+	if (imagesDiffer(testImage, imTriImage)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tDrawArrays independent triangle rendering\n"
 			<< "\t\tyielded different image than immediate-mode\n"
@@ -577,36 +574,18 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	//	XXX This is probably unrealistically favorable to
 	//	locked arrays.
 	////////////////////////////////////////////////////////////
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	w.swap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	if (glLockArraysEXT)
 		glLockArraysEXT(0, nVertices);
 
-	measurements.resize(0);
-	for (int i3 = 0; i3 < 5; ++i3) {
-		env->quiesce();
-		double t = time.time(static_cast<TIME_FUNC>(glFinish),
-			static_cast<TIME_FUNC>(coloredLit_daIndTri),
-			static_cast<TIME_FUNC>(glFinish));
-		w.swap();
-		measurements.push_back(nTris / t);
-	}
+	measure(time, static_cast<TIME_FUNC>(coloredLit_daIndTri), env, w,
+		nTris, r.ldaTri);
 
 	if (glUnlockArraysEXT)
 		glUnlockArraysEXT();
 
-	if (glLockArraysEXT) {
-		sort(measurements.begin(), measurements.end());
-		r.ldaTri.tps = (measurements[1]+measurements[2]+measurements[3])
-			/ 3.0;
-		r.ldaTri.tpsLow = measurements[1];
-		r.ldaTri.tpsHigh = measurements[3];
-	}
+	if (!glLockArraysEXT)
+		r.ldaTri.tps = r.ldaTri.tpsLow = r.ldaTri.tpsHigh = 0.0;
 
-	// Verify that the image is the same as that produced by
-	// rendering independent triangles:
 	testImage.read(0, 0);
 	if (!colorGen.allPresent(testImage, 0, lastID)) {
 		failHeader(passed, name, r.config, env);
@@ -614,10 +593,7 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 			<< "\t\tmissing some triangles.\n";
 		r.ldaTri.imageOK = false;
 	}
-	imageReg = testImage.reg(imTriImage);
-	if (imageReg.stats[0].max()
-	    + imageReg.stats[1].max()
-	    + imageReg.stats[2].max() != 0.0) {
+	if (imagesDiffer(testImage, imTriImage)) {
 		failHeader(passed, name, r.config, env);
 		env->log << "\tLocked DrawArrays independent triangle rendering\n"
 			<< "\t\tyielded different image than immediate-mode\n"
@@ -625,11 +601,91 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 		r.ldaTri.imageMatch = false;
 	}
 
+	////////////////////////////////////////////////////////////
+	// DrawElements on independent triangles
+	////////////////////////////////////////////////////////////
+	measure(time, static_cast<TIME_FUNC>(coloredLit_deIndTri), env, w,
+		nTris, r.deTri);
+
+	testImage.read(0, 0);
+	if (!colorGen.allPresent(testImage, 0, lastID)) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDrawElements independent triangle rendering is missing\n"
+			<< "\t\tsome triangles.\n";
+		r.deTri.imageOK = false;
+	}
+	if (imagesDiffer(testImage, imTriImage)) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tDrawElements independent triangle rendering\n"
+			<< "\t\tyielded different image than immediate-mode\n"
+			<< "\t\tindependent triangle rendering.\n";
+		r.deTri.imageMatch = false;
+	}
+
+	////////////////////////////////////////////////////////////
+	// Locked DrawElements on independent triangles
+	////////////////////////////////////////////////////////////
+	if (glLockArraysEXT)
+		glLockArraysEXT(0, nVertices);
+
+	measure(time, static_cast<TIME_FUNC>(coloredLit_deIndTri), env, w,
+		nTris, r.ldeTri);
+
+	if (glUnlockArraysEXT)
+		glUnlockArraysEXT();
+
+	if (!glLockArraysEXT)
+		r.ldeTri.tps = r.ldeTri.tpsLow = r.ldeTri.tpsHigh = 0.0;
+
+	testImage.read(0, 0);
+	if (!colorGen.allPresent(testImage, 0, lastID)) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tLocked DrawElements independent triangle rendering is\n"
+			<< "\t\tmissing some triangles.\n";
+		r.ldeTri.imageOK = false;
+	}
+	if (imagesDiffer(testImage, imTriImage)) {
+		failHeader(passed, name, r.config, env);
+		env->log << "\tLocked DrawElements independent triangle rendering\n"
+			<< "\t\tyielded different image than immediate-mode\n"
+			<< "\t\tindependent triangle rendering.\n";
+		r.ldeTri.imageMatch = false;
+	}
+
+
+
 	delete[] c4ub_n3f_v3f;
+	delete[] indices;
+
+	// Now we test triangle strips, rather than independent triangles.
+
+	nVertices = nTris + 2;
+	lastID = min(IDModulus - 1, nTris - 1);
+
+	c4ub_n3f_v3f = new C4UB_N3F_V3F[nVertices];
+	SpiralStrip2D is(nVertices, 0, drawingSize, 0, drawingSize);
+	for (int j2 = 0; j2 < nVertices; ++j2) {
+		float* t = is(j2);
+		GLubyte r, g, b;
+		colorGen.toRGB((j2 - 2) % IDModulus, r, g, b);
+
+		c4ub_n3f_v3f[j2].c[0] = r;
+		c4ub_n3f_v3f[j2].c[1] = g;
+		c4ub_n3f_v3f[j2].c[2] = b;
+		c4ub_n3f_v3f[j2].c[3] = 0xFF;
+		c4ub_n3f_v3f[j2].n[0] = 0.0;
+		c4ub_n3f_v3f[j2].n[1] = 0.0;
+		c4ub_n3f_v3f[j2].n[2] = 1.0;
+		c4ub_n3f_v3f[j2].v[0] = t[0];
+		c4ub_n3f_v3f[j2].v[1] = t[1];
+		c4ub_n3f_v3f[j2].v[2] = 0.0;
+	}
 
 	if (passed)
 		env->log << name << ":  PASS "
 			<< r.config->conciseDescription() << '\n';
+	else
+		env->log << '\n';
 	logStats(r, env);
 env->log
 << "\tTHIS TEST IS UNDER DEVELOPMENT; THE RESULTS ARE NOT YET USABLE.\n";
@@ -650,6 +706,10 @@ ColoredLitPerf::compareOne(Result& oldR, Result& newR) {
 		env, "DrawArrays independent triangle");
 	doComparison(oldR.ldaTri, newR.ldaTri, newR.config, same, name,
 		env, "Locked DrawArrays independent triangle");
+	doComparison(oldR.deTri, newR.deTri, newR.config, same, name,
+		env, "DrawElements independent triangle");
+	doComparison(oldR.ldeTri, newR.ldeTri, newR.config, same, name,
+		env, "Locked DrawElements independent triangle");
 
 	if (same && env->options.verbosity) {
 		env->log << name << ":  SAME "
@@ -690,6 +750,8 @@ ColoredLitPerf::Result::put(ostream& s) const {
 	dlTri.put(s);
 	daTri.put(s);
 	ldaTri.put(s);
+	deTri.put(s);
+	ldeTri.put(s);
 } // ColoredLitPerf::Result::put
 
 bool
@@ -703,6 +765,8 @@ ColoredLitPerf::Result::get(istream& s) {
 	dlTri.get(s);
 	daTri.get(s);
 	ldaTri.get(s);
+	deTri.get(s);
+	ldeTri.get(s);
 	return s.good();
 } // ColoredLitPerf::Result::get
 
