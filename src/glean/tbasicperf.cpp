@@ -47,12 +47,20 @@
 #include "glutils.h"
 #include "tbasicperf.h"
 #include "misc.h"
-#include "timer.h"
+#include "perf.h"
 
 namespace {
-void myfunc(void) {
-	sleep(1);
-}
+class MyPerf : public GLEAN::Perf {
+public:
+	int seconds;
+
+	void preop()  { glFinish(); }
+	void op()     { sleep(seconds); }
+	void postop() { glFinish(); }
+
+	MyPerf() { seconds = 1; }
+};
+
 
 // Complex results helper functions
 
@@ -272,16 +280,13 @@ BasicPerfTest::compare(Environment& environment) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 BasicPerfTest::runOne(Result& r, Window &w) {
-	Timer time;
+	MyPerf perf;
 
-	time.calibrate((GLEAN::Timer::FUNCPTR)glFinish,
-		       (GLEAN::Timer::FUNCPTR)glFinish);
+	perf.calibrate();
 	vector<float> m;
 	for (int i = 0; i < 5; i++) {
 		env->quiesce();
-		double t = time.time((Timer::FUNCPTR)glFinish,
-				     (Timer::FUNCPTR)myfunc,
-				     (Timer::FUNCPTR)glFinish);
+		double t = perf.time();
 		w.swap();	// So user can see something
 		m.push_back(t);
 	}
