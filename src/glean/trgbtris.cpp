@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,10 +26,15 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // trgbtris.cpp:  example image-based test to show use of TIFF images
+
+#include "trgbtris.h"
+#include "stats.h"
+#include "rand.h"
+#include "geomutil.h"
+#include "image.h"
+
+#if 0
 #if defined __UNIX__
 #include <unistd.h>
 #endif
@@ -44,18 +49,11 @@
 #include "environ.h"
 #include "rc.h"
 #include "glutils.h"
-#include "geomutil.h"
-#include "rand.h"
-#include "stats.h"
-#include "image.h"
 #include "trgbtris.h"
 #include "misc.h"
+#endif
 
 namespace {
-
-const int drawingSize = 64;	// Don't make this too large!
-				// Uncompressed TIFF images demand a lot of
-				// disk space and network bandwidth.
 
 void
 logStats(GLEAN::BasicStats& stats, GLEAN::Environment* env) {
@@ -69,127 +67,10 @@ logStats(GLEAN::BasicStats& stats, GLEAN::Environment* env) {
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-RGBTriStripTest::RGBTriStripTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // RGBTriStripTest::RGBTriStripTest()
-
-RGBTriStripTest::~RGBTriStripTest() {
-} // RGBTriStripTest::~RGBTriStripTest
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-RGBTriStripTest::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, drawingSize + 2, drawingSize + 2);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			r->imageNumber = 1 + (p - configs.begin());
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-RGBTriStripTest::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-RGBTriStripTest::runOne(Result& r, Window& w) {
+RGBTriStripTest::runOne(RGBTriStripResult& r, Window& w) {
 	GLUtils::useScreenCoords(drawingSize + 2, drawingSize + 2);
 
 	int nPoints = 20;	// Exact value doesn't really matter.
@@ -224,22 +105,30 @@ RGBTriStripTest::runOne(Result& r, Window& w) {
 	image.read(0, 0);	// Invoke glReadPixels to read the image.
 	image.writeTIFF(env->imageFileName(name, r.imageNumber));
 
+	r.pass = true;
+} // RGBTriStripTest::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+RGBTriStripTest::logOne(RGBTriStripResult& r) {
 	env->log << name << ":  NOTE "
-		<< r.config->conciseDescription() << '\n'
-		<< "\tImage number " << r.imageNumber << '\n';
+		 << r.config->conciseDescription() << '\n'
+		 << "\tImage number " << r.imageNumber << '\n';
 	if (env->options.verbosity)
 		env->log <<
 		   "\tThis test does not check its result.  Please view\n"
 		   "\tthe image to verify that the result is correct, or\n"
 		   "\tcompare it to a known-good result from a different\n"
 		   "\trun of glean.\n";
-} // RGBTriStripTest::runOne
+} // BasicTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-RGBTriStripTest::compareOne(Result& oldR, Result& newR) {
+RGBTriStripTest::compareOne(RGBTriStripResult& oldR, RGBTriStripResult& newR) {
 	// Fetch the old and new images:
 	Image oldI;
 	oldI.readTIFF(env->image1FileName(name, oldR.imageNumber));
@@ -284,56 +173,6 @@ RGBTriStripTest::compareOne(Result& oldR, Result& newR) {
 		logStats(reg.stats[2], env);
 	}
 } // RGBTriStripTest::compareOne
-
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-RGBTriStripTest::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // RGBTriStripTest::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-RGBTriStripTest::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-
-	s << imageNumber << '\n';
-} // RGBTriStripTest::Result::put
-
-bool
-RGBTriStripTest::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-
-	s >> imageNumber;
-	return s.good();
-} // RGBTriStripTest::Result::get
-
-vector<RGBTriStripTest::Result*>
-RGBTriStripTest::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // RGBTriStripTest::getResults
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

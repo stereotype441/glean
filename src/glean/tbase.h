@@ -1,6 +1,6 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
-// Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999-2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -26,9 +26,6 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tbase.h:  Base class for (most) tests
 
 // This class (derived from Test) provides a framework for a large set
@@ -52,10 +49,51 @@
 #ifndef __tbase_h__
 #define __tbase_h__
 
-#include "test.h"
+#ifdef __UNIX__
+#include <unistd.h>
+#endif
+
+#include <iostream>
+#include <fstream>
+#include "dsconfig.h"
+#include "dsfilt.h"
+#include "dsurf.h"
+#include "winsys.h"
+#include "environ.h"
+#include "rc.h"
+#include "glutils.h"
 #include "misc.h"
 
+#include "test.h"
+
 class DrawingSurfaceConfig;		// Forward reference.
+
+#define GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, ONE)                     \
+	TEST(const char* aName, const char* aFilter,                          \
+	     const char* aDescription):                                       \
+		BaseTest(aName, aFilter, aDescription) {                      \
+                fWidth  = WIDTH;                                              \
+                fHeight = HEIGHT;                                             \
+                testOne = ONE;                                                \
+	}                                                                     \
+	TEST(const char* aName, const char* aFilter,                          \
+	     const char* anExtensionList,                                     \
+	     const char* aDescription):                                       \
+		BaseTest(aName, aFilter, anExtensionList, aDescription) {     \
+                fWidth  = WIDTH;                                              \
+                fHeight = HEIGHT;                                             \
+	}                                                                     \
+	virtual ~TEST() {}                                                    \
+                                                                              \
+	virtual void runOne(RESULT& r, Window& w);                            \
+	virtual void compareOne(RESULT& oldR, RESULT& newR);                  \
+	virtual void logOne(RESULT& r)
+
+#define GLEAN_CLASS_WH(TEST, RESULT, WIDTH, HEIGHT) \
+        GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, false)
+
+#define GLEAN_CLASS(TEST, RESULT) \
+        GLEAN_CLASS_WHO(TEST, RESULT, 258, 258, false)
 
 namespace GLEAN {
 
@@ -90,6 +128,9 @@ public:
 		filter      = aFilter;
 		extensions  = 0;
 		description = aDescription;
+		fWidth      = 258;
+		fHeight     = 258;
+		testOne     = false;
 	}
 	BaseTest(const char* aName, const char* aFilter,
 		 const char* anExtensionList,
@@ -97,18 +138,24 @@ public:
 		filter      = aFilter;
 		extensions  = anExtensionList;
 		description = aDescription;
+		fWidth      = 258;
+		fHeight     = 258;
+		testOne     = false;
 	}
 
 	virtual ~BaseTest() {}
 
-	const char*     filter;	     // Drawing surface configuration filter.
-	const char*     extensions;  // Required extensions.
-	const char*     description; // Verbose description of test.
+	const char*         filter;	 // Drawing surface config filter.
+	const char*         extensions;  // Required extensions.
+	const char*         description; // Verbose description of test.
+	int                 fWidth;	 // Drawing surface width.
+	int                 fHeight;     // Drawing surface height.
+	bool                testOne;     // Test only one config?
 	vector<ResultType*> results;     // Test results.
 
-	virtual void runOne(ResultType& r);
-	virtual void compareOne(ResultType& oldR, ResultType& newR);
-	virtual void logOne(ResultType& r);
+	virtual void runOne(ResultType& r, Window& w) = 0;
+	virtual void compareOne(ResultType& oldR, ResultType& newR) = 0;
+	virtual void logOne(ResultType& r) = 0;
 
 	virtual vector<ResultType*> getResults(istream& s) {
 		vector<ResultType*> v;
@@ -150,7 +197,7 @@ public:
 				     p = configs.begin();
 			     p < configs.end();
 			     ++p) {
-				Window w(ws, **p, 258, 258);
+				Window w(ws, **p, fWidth, fHeight);
 				RenderingContext rc(ws, **p);
 				if (!ws.makeCurrent(rc, w))
 					; // XXX need to throw exception here
@@ -164,12 +211,13 @@ public:
 				// Create a result object and run the test:
 				ResultType* r = new ResultType();
 				r->config = *p;
-				runOne(*r);
+				runOne(*r, w);
 				logOne(*r);
 				
 				// Save the result
 				results.push_back(r);
 				r->put(os);
+				if (testOne) break;
 			}
 		}
 		catch (DrawingSurfaceFilter::Syntax e) {
@@ -237,6 +285,63 @@ public:
 		     op < oldR.end();
 		     ++op)
 			delete *op;
+	}
+
+	// comparePassFail is a helper function for tests that have a
+	// boolean result as all or part of their ResultType
+	virtual void comparePassFail(ResultType& oldR, ResultType& newR) {
+		if (oldR.pass == newR.pass) {
+			if (env->options.verbosity)
+				env->log << name
+					 << ":  SAME "
+					 << newR.config->conciseDescription()
+					 << '\n'
+					 << (oldR.pass
+					     ? "\tBoth PASS\n"
+					     : "\tBoth FAIL\n");
+		} else {
+			env->log << name
+				 << ":  DIFF "
+				 << newR.config->conciseDescription()
+				 << '\n'
+				 << '\t'
+				 << env->options.db1Name
+				 << (oldR.pass? " PASS, ": " FAIL, ")
+				 << env->options.db2Name
+				 << (newR.pass? " PASS\n": " FAIL\n");
+		}
+	}
+
+	virtual void compareMessage(bool& headerPrinted,
+				    const char *title,
+				    const ResultType& r,
+				    bool o,
+				    bool n,
+				    const char *tmsg,
+				    const char *fmsg) {
+		if (!headerPrinted) {
+			headerPrinted = true;
+			env->log << name
+				 << ": DIFF "
+				 << r.config->conciseDescription()
+				 << '\n';
+		}
+		
+		env->log << '\t' << env->options.db1Name;
+		if (title) env->log << ' ' << title;
+		env->log << ' ' << (o ? tmsg : fmsg) << '\n';
+
+		env->log << '\t' << env->options.db2Name;
+		if (title) env->log << ' ' << title;
+		env->log << ' ' << (n ? tmsg : fmsg) << '\n';
+	}
+
+	virtual void logPassFail(ResultType& r) {
+		env->log << name << (r.pass ? ":  PASS ": ":  FAIL ");
+	}
+
+	virtual void logConcise(ResultType& r) {
+		env->log << r.config->conciseDescription() << '\n';
 	}
 }; // class BaseTest
 

@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -34,6 +34,11 @@
 // glPolygonOffset test code integrated into glean framework by
 // Rickard E. (Rik) Faith <faith@valinux.com>, October 2000
 
+#include "tpgos.h"
+#include "image.h"
+
+#if 0
+
 #ifdef __UNIX__
 #include <unistd.h>
 #endif
@@ -50,10 +55,9 @@
 #include "glutils.h"
 #include "tpgos.h"
 #include "misc.h"
-#include "image.h"
+#endif
 
 namespace {
-const int WIN_SIZE         = 100; // Maximum window width/height.
 const int DISP_LIST_SPHERE = 1;
 
 static void
@@ -283,11 +287,6 @@ verify(GLEAN::Window& w, bool& badEdge, bool& badMiddle)
 void
 doTitle(const GLEAN::POResult& r, int t, GLEAN::Environment* env)
 {
-	if (t >= r.testcount) {
-		env->log << "Test " << t << " (out of range)";
-		return;
-	}
-	
 	env->log << "Test " << t
 		 << " (f=" << r.data[t].factor
 		 << ",u=" << r.data[t].units << ')'
@@ -340,9 +339,9 @@ doComparison(const GLEAN::POResult& oldR,
 	     const string& name,
 	     GLEAN::Environment* env)
 {
-	int count = (oldR.testcount < newR.testcount
-		     ? oldR.testcount
-		     : newR.testcount);
+	int count = (oldR.data.size() < newR.data.size()
+		     ? oldR.data.size()
+		     : newR.data.size());
 
 	for (int i = 0; i < count; i++) {
 		if (newR.data[i].badEdge != oldR.data[i].badEdge) {
@@ -380,143 +379,10 @@ doComparison(const GLEAN::POResult& oldR,
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructors/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-PgosTest::PgosTest(const char* aName, const char* aFilter,
-		   const char* anExtensionList, const char* aDescription):
-    	Test(aName), filter(aFilter), extensions(anExtensionList),
-	description(aDescription) {
-} // PgosTest::PgosTest()
-
-PgosTest::PgosTest(const char* aName, const char* aFilter,
-		   const char* aDescription):
-    	Test(aName), filter(aFilter), extensions(0),
-	description(aDescription) {
-} // PgosTest::PgosTest()
-
-PgosTest::~PgosTest() {
-} // PgosTest::~PgosTest
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-PgosTest::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*>configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-			     p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, WIN_SIZE, WIN_SIZE);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Check for all prerequisite extensions.  Note
-			// that this must be done after the rendering
-			// context has been created and made current!
-			if (!GLUtils::haveExtensions(extensions))
-				continue;
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-			
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-PgosTest::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-	
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	     ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	     newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name
-				 << ":  NOTE no matching config for "
-				 << (*newP)->config->conciseDescription()
-				 << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end();
-	     ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end();
-	     ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-PgosTest::runOne(Result& r, GLEAN::Window& w) {
+PgosTest::runOne(POResult& r, GLEAN::Window& w) {
 	int depthbits[4];
 	
 	glDepthFunc(GL_LESS); // This is the right test, especially
@@ -594,24 +460,22 @@ PgosTest::runOne(Result& r, GLEAN::Window& w) {
 		
 		verify(w, badEdge, badMiddle);
 		
-		r.po.addtest(params[i].factor, params[i].units,
-			     params[i].near, params[i].far,
-			     params[i].pt, params[i].ptt,
-			     badEdge, badMiddle);
+		r.addtest(params[i].factor, params[i].units,
+			  params[i].near, params[i].far,
+			  params[i].pt, params[i].ptt,
+			  badEdge, badMiddle);
 
 	}
-	
-	logStats(r, env);
 } // PgosTest::runOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-PgosTest::compareOne(Result& oldR, Result& newR) {
+PgosTest::compareOne(POResult& oldR, POResult& newR) {
 	bool same = true;
 
-	doComparison(oldR.po, newR.po, newR.config, same, name, env);
+	doComparison(oldR, newR, newR.config, same, name, env);
 
 	if (env->options.verbosity) {
 		if (same)
@@ -636,83 +500,32 @@ PgosTest::compareOne(Result& oldR, Result& newR) {
 			 << (newR.pass ? " PASS\n" : " FAIL\n");
 	}
 	
-	if (oldR.po.testcount > newR.po.testcount)
+	if (oldR.data.size() > newR.data.size())
 		env->log << "\tWARNING: "
 			 << "First test has more subtests than second test\n";
-	if (oldR.po.testcount < newR.po.testcount)
+	if (oldR.data.size() < newR.data.size())
 		env->log << "\tWARNING: "
 			 << "Second test has more subtests than first test\n";
 
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
-		logStats(oldR, env);
+		logOne(oldR);
 		env->log << env->options.db2Name << ':';
-		logStats(newR, env);
+		logOne(newR);
 	}
 } // PgosTest::compareOne
 
-///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
 void
-PgosTest::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-			 << description
-			 << '\n';
-} // PgosTest::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
-// Result I/O functions:
-///////////////////////////////////////////////////////////////////////////////
-void
-PgosTest::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-	po.put(s);
-} // PgosTest::Result::put
-
-bool
-PgosTest::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-	po.get(s);
-
-	return s.good();
-} // PgosTest::Result::get
-
-vector<PgosTest::Result*>
-PgosTest::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // PgosTest::getResults
-
-void
-PgosTest::logStats(PgosTest::Result& r, GLEAN::Environment* env) {
+PgosTest::logOne(POResult& r) {
+	unsigned int i;
 	bool pass = true;
-	for (int i = 0; i < r.po.testcount; i++)
-		if (r.po.data[i].badMiddle || r.po.data[i].badEdge)
+	for (i = 0; i < r.data.size(); i++)
+		if (r.data[i].badMiddle || r.data[i].badEdge)
 			pass = false;
-	env->log << name
-		 << ":  "
-		 << (pass ? "PASS " : "FAIL ")
-		 << r.config->conciseDescription()
-		 << '\n';
-	for (int i = 0; i < r.po.testcount; i++) logStats1(r.po, i, env);
+	r.pass = pass;
+	logPassFail(r);
+	logConcise(r);
+	for (i = 0; i < r.data.size(); i++) logStats1(r, i, env);
 } // OrthoPosPoints::logStats
 
 ///////////////////////////////////////////////////////////////////////////////

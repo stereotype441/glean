@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -34,50 +34,38 @@
 #ifndef __tbinding_h__
 #define __tbinding_h__
 
-#include "test.h"
+#include "tbasic.h"
 
 class DrawingSurfaceConfig;		// Forward reference.
 class GLEAN::Window;
 
 namespace GLEAN {
 
-class MakeCurrentTest: public Test {
-    public:
-	MakeCurrentTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~MakeCurrentTest();
+#define drawingSize 64
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+class MakeCurrentResult: public BaseResult {
+public:
+	bool pass;
+	// Short descriptions of the rendering contexts:
+	vector<const char*> descriptions;
+	// Complete record of rendering contexts made "current" during
+	// the test:
+	vector<int> testSequence;
 
-	virtual void run(Environment& env);	// Run test, save results.
+	void putresults(ostream& s) const {
+		s << pass << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		s >> pass;
+		return s.good();
+	}
+};
 
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-		bool pass;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-
+class MakeCurrentTest: public BaseTest<MakeCurrentResult> {
+public:
+	GLEAN_CLASS_WH(MakeCurrentTest, MakeCurrentResult,
+		       drawingSize, drawingSize);
 }; // class MakeCurrentTest
 
 } // namespace GLEAN

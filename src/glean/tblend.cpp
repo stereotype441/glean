@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,32 +26,11 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tblend.cpp:  Test blending functions.
 
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cmath>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
-#include "geomutil.h"
-#include "rand.h"
-#include "stats.h"
-#include "image.h"
 #include "tblend.h"
-#include "misc.h"
+#include "rand.h"
+#include "image.h"
 
 namespace {
 
@@ -89,11 +68,6 @@ nameToFactor(string& name) {
 			return factorNames[i].factor;
 	return GL_ZERO;
 } // nameToFactor
-
-const int drawingSize = 64;	// We will check each pair of blend factors
-				// for each pixel in a square image of this
-				// dimension, so if you make it too large,
-				// the tests may take quite a while to run.
 
 bool
 needsDstAlpha(const GLenum func) {
@@ -365,126 +339,10 @@ env.log << '\n'
 namespace GLEAN {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-BlendFuncTest::BlendFuncTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	Test(aName), filter(aFilter), description(aDescription) {
-} // BlendFuncTest::BlendFuncTest()
-
-BlendFuncTest::~BlendFuncTest() {
-} // BlendFuncTest::~BlendFuncTest
-
-///////////////////////////////////////////////////////////////////////////////
-// run: run tests, save results in a vector and in the results file
-///////////////////////////////////////////////////////////////////////////////
-void
-BlendFuncTest::run(Environment& environment) {
-	// Guard against multiple invocations:
-	if (hasRun)
-		return;
-
-	// Set up environment for use by other functions:
-	env = &environment;
-
-	// Document the test in the log, if requested:
-	logDescription();
-
-	// Compute results and make them available to subsequent tests:
-	WindowSystem& ws = env->winSys;
-	try {
-		// Open the results file:
-		OutputStream os(*this);
-
-		// Select the drawing configurations for testing:
-		DrawingSurfaceFilter f(filter);
-		vector<DrawingSurfaceConfig*> configs(f.filter(ws.surfConfigs));
-
-		// Test each config:
-		for (vector<DrawingSurfaceConfig*>::const_iterator
-		    p = configs.begin(); p < configs.end(); ++p) {
-			Window w(ws, **p, drawingSize + 2, drawingSize + 2);
-			RenderingContext rc(ws, **p);
-			if (!ws.makeCurrent(rc, w))
-				;	// XXX need to throw exception here
-
-			// Create a result object and run the test:
-			Result* r = new Result();
-			r->config = *p;
-			runOne(*r, w);
-
-			// Save the result locally and in the results file:
-			results.push_back(r);
-			r->put(os);
-		}
-	}
-	catch (DrawingSurfaceFilter::Syntax e) {
-		env->log << "Syntax error in test's drawing-surface selection"
-			"criteria:\n'" << filter << "'\n";
-		for (int i = 0; i < e.position; ++i)
-			env->log << ' ';
-		env->log << "^ " << e.err << '\n';
-	}
-	catch (RenderingContext::Error) {
-		env->log << "Could not create a rendering context\n";
-	}
-
-	env->log << '\n';
-
-	// Note that we've completed the run:
-	hasRun = true;
-}
-
-void
-BlendFuncTest::compare(Environment& environment) {
-	// Save the environment for use by other member functions:
-	env = &environment;
-
-	// Display the description if needed:
-	logDescription();
-
-	// Read results from previous runs:
-	Input1Stream is1(*this);
-	vector<Result*> oldR(getResults(is1));
-	Input2Stream is2(*this);
-	vector<Result*> newR(getResults(is2));
-
-	// Construct a vector of surface configurations from the old run.
-	// (Later we'll find the best match in this vector for each config
-	// in the new run.)
-	vector<DrawingSurfaceConfig*> oldConfigs;
-	for (vector<Result*>::const_iterator p = oldR.begin(); p < oldR.end();
-	    ++p)
-		oldConfigs.push_back((*p)->config);
-
-	// Compare results:
-	for (vector<Result*>::const_iterator newP = newR.begin();
-	    newP < newR.end(); ++newP) {
-
-	    	// Find the drawing surface config that most closely matches
-		// the config for this result:
-		int c = (*newP)->config->match(oldConfigs);
-
-		// If there was a match, compare the results:
-		if (c < 0)
-			env->log << name << ":  NOTE no matching config for " <<
-				(*newP)->config->conciseDescription() << '\n';
-		else
-			compareOne(*(oldR[c]), **newP);
-	}
-
-	// Get rid of the results; we don't need them for future comparisons.
-	for (vector<Result*>::iterator np = newR.begin(); np < newR.end(); ++np)
-		delete *np;
-	for (vector<Result*>::iterator op = oldR.begin(); op < oldR.end(); ++op)
-		delete *op;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-BlendFuncTest::runOne(Result& r, Window& w) {
+BlendFuncTest::runOne(BlendFuncResult& r, Window& w) {
 	GLUtils::useScreenCoords(drawingSize + 2, drawingSize + 2);
 
 	static GLenum srcFactors[] = {
@@ -516,7 +374,7 @@ BlendFuncTest::runOne(Result& r, Window& w) {
 		for (unsigned int df = 0;
 		    df < sizeof(dstFactors)/sizeof(dstFactors[0]); ++df) {
 
-			Result::PartialResult p;
+			BlendFuncResult::PartialResult p;
 			p.src = srcFactors[sf];
 			p.dst = dstFactors[df];
 
@@ -546,21 +404,31 @@ BlendFuncTest::runOne(Result& r, Window& w) {
 			}
 		}
 
-	if (allPassed)
-		env->log << name << ":  PASS "
-			<< r.config->conciseDescription() << '\n';
+	r.pass = allPassed;
 } // BlendFuncTest::runOne
+
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
+void
+BlendFuncTest::logOne(BlendFuncResult& r) {
+	if (r.pass) {
+		logPassFail(r);
+		logConcise(r);
+	}
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-BlendFuncTest::compareOne(Result& oldR, Result& newR) {
+BlendFuncTest::compareOne(BlendFuncResult& oldR, BlendFuncResult& newR) {
 	BasicStats readbackStats;
 	BasicStats blendStats;
 
-	vector<Result::PartialResult>::const_iterator np;
-	vector<Result::PartialResult>::const_iterator op;
+	vector<BlendFuncResult::PartialResult>::const_iterator np;
+	vector<BlendFuncResult::PartialResult>::const_iterator op;
 
 	for (np = newR.results.begin(); np != newR.results.end(); ++np)
 		// Find the matching case, if any, in the old results:
@@ -659,40 +527,20 @@ BlendFuncTest::compareOne(Result& oldR, Result& newR) {
 } // BlendFuncTest::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
-// logDescription:  Print description on the log file, according to the
-//	current verbosity level.
-///////////////////////////////////////////////////////////////////////////////
-void
-BlendFuncTest::logDescription() {
-	if (env->options.verbosity)
-		env->log <<
-"----------------------------------------------------------------------\n"
-		<< description << '\n';
-} // BlendFuncTest::logDescription
-
-///////////////////////////////////////////////////////////////////////////////
 // Result I/O functions:
 ///////////////////////////////////////////////////////////////////////////////
 void
-BlendFuncTest::Result::put(ostream& s) const {
-	s << config->canonicalDescription() << '\n';
-
+BlendFuncResult::putresults(ostream& s) const {
 	s << results.size() << '\n';
 	for (vector<PartialResult>::const_iterator p = results.begin();
-	    p != results.end(); ++p)
+	     p != results.end(); ++p)
 		s << factorToName(p->src) << ' '
 		  << factorToName(p->dst) << ' '
 		  << p->rbErr << ' ' << p->blErr << '\n';
-} // BlendFuncTest::Result::put
+} // BlendFuncResult::put
 
 bool
-BlendFuncTest::Result::get(istream& s) {
-	SkipWhitespace(s);
-	string configDesc;
-	if (!getline(s, configDesc))
-		return false;
-	config = new DrawingSurfaceConfig(configDesc);
-
+BlendFuncResult::getresults(istream& s) {
 	int n;
 	s >> n;
 	for (int i = 0; i < n; ++i) {
@@ -706,23 +554,7 @@ BlendFuncTest::Result::get(istream& s) {
 	}
 
 	return s.good();
-} // BlendFuncTest::Result::get
-
-vector<BlendFuncTest::Result*>
-BlendFuncTest::getResults(istream& s) {
-	vector<Result*> v;
-	while (s.good()) {
-		Result* r = new Result();
-		if (r->get(s))
-			v.push_back(r);
-		else {
-			delete r;
-			break;
-		}
-	}
-
-	return v;
-} // BlendFuncTest::getResults
+} // BlendFuncResult::get
 
 ///////////////////////////////////////////////////////////////////////////////
 // The test object itself:

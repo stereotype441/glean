@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Adam Haberlach   All Rights Reserved.
 // 
@@ -26,56 +26,35 @@
 // 
 // END_COPYRIGHT
 
-#ifndef tteapot_h
-#define tteapot_h
+#ifndef __tteapot_h_
+#define __tteapot_h_
 
-#include "test.h"
-
-class DrawingSurfaceConfig;		// Forward reference.
+#include "tbase.h"
 
 namespace GLEAN {
 
-class TeapotTest: public Test {
+class TeapotResult: public BaseResult {
 public:
-	TeapotTest(const char* testName, const char* filter, const char* description);
-	virtual ~TeapotTest();
+	bool pass;
+	double fTps; // speed in "Teapots per Second"
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+	void putresults(ostream& s) const {
+		s << pass << '\n';
+		s << fTps << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		s >> pass;
+		s >> fTps;
+		return s.good();
+	}
+};
 
-	virtual void run(Environment& env);	// Run test, save results.
-	virtual void compare(Environment& env);
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	public:
-		DrawingSurfaceConfig* config;
-		bool pass;
-
-		/* speed in "Teapots per Second" */
-		double fTps;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	int fWidth;
-	int fHeight;
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
+class TeapotTest: public BaseTest<TeapotResult> {
+public:
+	GLEAN_CLASS_WH(TeapotTest, TeapotResult, 300, 315);
 };
 
 } // namespace GLEAN
 
-#endif // __tbasic_h__
+#endif // __tteapot_h_

@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -27,59 +27,44 @@
 // END_COPYRIGHT
 
 
-
-
 // tchgperf.h:  Some basic tests of attribute-change performance.
 
 #ifndef __tchgperf_h__
 #define __tchgperf_h__
 
-#include "test.h"
-
-class DrawingSurfaceConfig;		// Forward reference.
-class GLEAN::Window;
+#include "tbase.h"
 
 namespace GLEAN {
 
-class TexBindPerf: public Test {
-    public:
-	TexBindPerf(const char* testName, const char* filter,
-		const char* description);
-	virtual ~TexBindPerf();
+#define drawingSize 128	// must be power-of-2, 128 or greater
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+class TexBindPerfResult: public BaseResult {
+public:
+	bool pass;
+	double bindTime;
+        double lowerBound;
+	double upperBound;
 
-	virtual void run(Environment& env);	// Run test, save results.
+	TexBindPerfResult() { bindTime = lowerBound = upperBound = 0.0; }
 
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
+	void putresults(ostream& s) const {
+		s << bindTime
+		  << ' ' << lowerBound
+		  << ' ' << upperBound
+		  << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		s >> bindTime >> lowerBound >> upperBound;
+		return s.good();
+	}
 
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-		float bindTime;
-		float lowerBound;
-		float upperBound;
+};
 
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-
+class TexBindPerf: public BaseTest<TexBindPerfResult> {
+public:
+	GLEAN_CLASS_WH(TexBindPerf, TexBindPerfResult,
+	       drawingSize, drawingSize);
 }; // class TexBindPerf
 
 } // namespace GLEAN

@@ -66,32 +66,8 @@
 // put them into this test.
 //
 
-
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <assert.h>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cmath>
-#include <stdio.h>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
-#include "geomutil.h"
-#include "rand.h"
-#include "stats.h"
-#include "image.h"
-#include "misc.h"
 #include "ttexcombine.h"
-
-
+#include <stdio.h>
 
 #define CLAMP(VAL, MIN, MAX)	\
 	((VAL) < (MIN) ? (MIN) : ((VAL) > (MAX) ? (MAX) : (VAL)))
@@ -622,7 +598,7 @@ void
 TexCombineTest::ReportFailure(const glmachine &machine,
 	const GLfloat expected[4],
 	const GLfloat rendered[4],
-	Result& r) {
+	BasicResult& r) {
 
 	env->log << name << ":  FAIL "
 		 << r.config->conciseDescription() << '\n'
@@ -836,7 +812,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 //
 bool
 TexCombineTest::RunSingleTextureTest(glmachine &machine,
-	const test_param testParams[], Result &r) {
+	const test_param testParams[], BasicResult &r) {
 
 	assert(machine.NumTexUnits == 1);
 	SetupColors(machine);
@@ -924,7 +900,7 @@ TexCombineTest::CountMultiTextureTestCombinations(const glmachine &machine) cons
 // Test texenv-combine with multiple texture units.
 //
 bool
-TexCombineTest::RunMultiTextureTest(glmachine &machine, Result &r) {
+TexCombineTest::RunMultiTextureTest(glmachine &machine, BasicResult &r) {
 
 	static const GLenum combineModes[5] = {
 		GL_REPLACE,
@@ -1024,21 +1000,12 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, Result &r) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constructor/Destructor:
-///////////////////////////////////////////////////////////////////////////////
-TexCombineTest::TexCombineTest(const char* aName, const char* aFilter,
-    const char* aDescription):
-    	BasicTest(aName, aFilter, "GL_EXT_texture_env_combine", aDescription) {
-} // TexCombineTest::TexCombineTest()
-
-
-///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 
 // XXX should we run a number of individual tests instead?
 void
-TexCombineTest::runOne(Result& r) {
+TexCombineTest::runOne(BasicResult& r) {
 	// Grab pointers to the extension functions.  It's safe to use
 	// these without testing them because we already know that we
 	// won't be invoked except on contexts that support the

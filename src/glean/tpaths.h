@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -36,17 +36,16 @@
 
 #include "tbasic.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-
 namespace GLEAN {
 
 class PathsTest: public BasicTest {
     public:
 	PathsTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~PathsTest();
+		  const char* description):
+	    BasicTest(testName, filter, description) {
+	}
 
-	virtual void runOne(Result& r);
+	virtual void runOne(BasicResult& r, Window& w);
 
     private:
 	enum Path {
@@ -68,7 +67,7 @@ class PathsTest: public BasicTest {
 	};
 
 	const char *PathName(Path path) const;
-	void FailMessage(Result &r, Path path, State state) const;
+	void FailMessage(BasicResult &r, Path path, State state) const;
 	void SetPathState(Path path, State state) const;
 
 }; // class PathsTest

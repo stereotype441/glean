@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -26,9 +26,6 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tbasicperf.h:  Example class for basic performance tests
 
 // This class provides a framework for performance tests that should
@@ -55,70 +52,39 @@
 #ifndef __tbasicperf_h__
 #define __tbasicperf_h__
 
-#include "test.h"
+#include "tbase.h"
 
 class DrawingSurfaceConfig;		// Forward reference.
 
 namespace GLEAN {
 
-struct TimeResult {
+class BasicPerfResult: public BaseResult {
+public:
+	bool   pass;
 	double timeAvg, timeLow, timeHigh;
 	
-	TimeResult() {
+	BasicPerfResult() {
 		timeAvg = timeLow = timeHigh = 0.0;
 	}
 
-	void put(ostream& s) const {
-		s << timeAvg << ' ' << timeLow << ' ' << timeHigh << '\n';
+	void putresults(ostream& s) const {
+		s << pass
+		  << ' ' << timeAvg
+		  << ' ' << timeLow
+		  << ' ' << timeHigh
+		  << '\n';
 	}
 
-	void get(istream& s) {
-		s >> timeAvg >> timeLow >> timeHigh;
+	bool getresults(istream& s) {
+		s >> pass >> timeAvg >> timeLow >> timeHigh;
+		return s.good();
 	}
 };
 
-class BasicPerfTest: public Test {
+class BasicPerfTest: public BaseTest<BasicPerfResult> {
 public:
-	BasicPerfTest(const char* testName, const char* filter,
-		      const char* description);
-	BasicPerfTest(const char* testName, const char* filter,
-		      const char* extensions, const char* description);
-	virtual ~BasicPerfTest();
-	
-	const char* filter;	 // Drawing surface configuration filter.
-	const char* extensions;	 // Required extensions.
-	const char* description; // Verbose description of test.
-
-	virtual void run(Environment& env);	// Run test, save results.
-
-	virtual void compare(Environment& env); // Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	public:
-		DrawingSurfaceConfig* config;
-
-		bool       pass;
-		TimeResult tr;
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-	
-	virtual void runOne(Result& r, Window &w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-	void logStats(Result& r, GLEAN::Environment* env);
-
+	GLEAN_CLASS(BasicPerfTest, BasicPerfResult);
+	void logStats(BasicPerfResult& r);
 }; // class BasicPerfTest
 
 } // namespace GLEAN

@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
 // 
@@ -26,9 +26,6 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tmaskedclear.h:  Test clearing of colorbuffers with glColorMask or
 // glIndexMask.
 // Author: Brian Paul (brianp@valinux.com)  September 2000
@@ -39,25 +36,25 @@
 
 #include "tbasic.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-
 namespace GLEAN {
 
 class MaskedClearTest: public BasicTest {
     public:
 	MaskedClearTest(const char* testName, const char* filter,
-		const char* description);
-	virtual ~MaskedClearTest();
+			const char* description):
+		BasicTest(testName, filter, description) {
+	}
 
-	virtual void runOne(Result& r);
+	virtual void runOne(BasicResult& r);
+	virtual void logOne(BasicResult& r);
 
     private:
-	void failRGB(Result& r, GLint chan, GLfloat expected, GLfloat actual,
-	    GLint buffer);
-	void failCI(Result& r, GLuint expected, GLuint actual, GLint buffer);
-	void failZ(Result& r, GLfloat expected, GLfloat actual);
-	void failStencil(Result& r, GLuint expected, GLuint actual);
-
+	void failRGB(BasicResult& r, GLint chan, GLfloat expected,
+		     GLfloat actual, GLint buffer);
+	void failCI(BasicResult& r, GLuint expected, GLuint actual,
+		    GLint buffer);
+	void failZ(BasicResult& r, GLfloat expected, GLfloat actual);
+	void failStencil(BasicResult& r, GLuint expected, GLuint actual);
 }; // class MaskedClearTest
 
 } // namespace GLEAN

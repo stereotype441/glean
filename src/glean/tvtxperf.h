@@ -1,4 +1,4 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 2000  Allen Akin   All Rights Reserved.
 // 
@@ -26,150 +26,112 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tvtxperf.h:  Test performance of various ways to specify vertex data
 
 #ifndef __tvtxperf_h__
 #define __tvtxperf_h__
 
-#include "test.h"
+#include "tbase.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-class GLEAN::Window;
+namespace {
+	const int drawingSize = 256;
+};
 
 namespace GLEAN {
 
 // Auxiliary struct for holding a vertex-performance result:
-struct VPResult {
-	float tps;		// Triangles Per Second
-	float tpsLow;		// Low end of tps range
-	float tpsHigh;		// High end of tps range
+class VPSubResult {
+public:
+	double tps;		// Triangles Per Second
+	double tpsLow;		// Low end of tps range
+	double tpsHigh;		// High end of tps range
 	bool imageOK;		// Image sanity-check status
 	bool imageMatch;	// Image comparison status
 
-	VPResult() {
+	VPSubResult() {
 		tps = tpsLow = tpsHigh = 0.0;
 		imageOK = imageMatch = true;
 	}
+	
 	void put(ostream& s) const {
 		s << tps
-		   << ' ' << tpsLow
-		   << ' ' << tpsHigh
-		   << ' ' << imageOK
-		   << ' ' << imageMatch
-		   << '\n';
+		  << ' ' << tpsLow
+		  << ' ' << tpsHigh
+		  << ' ' << imageOK
+		  << ' ' << imageMatch
+		  << '\n';
 	}
+	
 	void get(istream& s) {
 		s >> tps >> tpsLow >> tpsHigh >> imageOK >> imageMatch;
 	}
 };
 
-class ColoredLitPerf: public Test {
-    public:
-	ColoredLitPerf(const char* testName, const char* filter,
-		const char* description);
-	virtual ~ColoredLitPerf();
+class VPResult: public BaseResult {
+public:
+	bool        pass;	// not written to results file
+	
+	VPSubResult imTri;	// immediate-mode independent triangles
+	VPSubResult dlTri;	// display-listed independent triangles
+	VPSubResult daTri;	// DrawArrays independent triangles
+	VPSubResult ldaTri;	// Locked DrawArrays independent tris
+	VPSubResult deTri;	// DrawElements independent triangles
+	VPSubResult ldeTri;	// Locked DrawElements ind. tris
+	
+	VPSubResult imTS;	// immediate-mode triangle strip
+	VPSubResult dlTS;	// display-listed triangle strip
+	VPSubResult daTS;	// DrawArrays triangle strip
+	VPSubResult ldaTS;	// Locked DrawArrays triangle strip
+	VPSubResult deTS;	// DrawElements triangle strip
+	VPSubResult ldeTS;	// Locked DrawElements triangle strip
+		
+	virtual void putresults(ostream& s) const {
+		imTri.put(s);
+		dlTri.put(s);
+		daTri.put(s);
+		ldaTri.put(s);
+		deTri.put(s);
+		ldeTri.put(s);
 
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
+		imTS.put(s);
+		dlTS.put(s);
+		daTS.put(s);
+		ldaTS.put(s);
+		deTS.put(s);
+		ldeTS.put(s);
+	}
+	
+	virtual bool getresults(istream& s) {
+		imTri.get(s);
+		dlTri.get(s);
+		daTri.get(s);
+		ldaTri.get(s);
+		deTri.get(s);
+		ldeTri.get(s);
 
-	virtual void run(Environment& env);	// Run test, save results.
+		imTS.get(s);
+		dlTS.get(s);
+		daTS.get(s);
+		ldaTS.get(s);
+		deTS.get(s);
+		ldeTS.get(s);
+		
+		return s.good();
+	}
+};
 
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-
-		VPResult imTri;		// immediate-mode independent triangles
-		VPResult dlTri;		// display-listed independent triangles
-		VPResult daTri;		// DrawArrays independent triangles
-		VPResult ldaTri;	// Locked DrawArrays independent tris
-		VPResult deTri;		// DrawElements independent triangles
-		VPResult ldeTri;	// Locked DrawElements ind. tris
-
-		VPResult imTS;		// immediate-mode triangle strip
-		VPResult dlTS;		// display-listed triangle strip
-		VPResult daTS;		// DrawArrays triangle strip
-		VPResult ldaTS;		// Locked DrawArrays triangle strip
-		VPResult deTS;		// DrawElements triangle strip
-		VPResult ldeTS;		// Locked DrawElements triangle strip
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-	void logStats(Result& r, GLEAN::Environment* env);
-
+class ColoredLitPerf: public BaseTest<VPResult> {
+public:
+	GLEAN_CLASS_WHO(ColoredLitPerf, VPResult,
+			drawingSize, drawingSize, true);
+	void logStats(VPResult& r, GLEAN::Environment* env);
 }; // class ColoredLitPerf
 
-class ColoredTexPerf: public Test {
-    public:
-	ColoredTexPerf(const char* testName, const char* filter,
-		const char* description);
-	virtual ~ColoredTexPerf();
-
-	const char* filter;		// Drawing surface configuration filter.
-	const char* description;	// Verbose description of test.
-
-	virtual void run(Environment& env);	// Run test, save results.
-
-	virtual void compare(Environment& env);
-					// Compare two previous runs.
-
-	// Class for a single test result.  All basic tests have a
-	// drawing surface configuration, plus other information
-	// that's specific to the test.
-	class Result: public Test::Result {
-	    public:
-		DrawingSurfaceConfig* config;
-
-		VPResult imTri;		// immediate-mode independent triangles
-		VPResult dlTri;		// display-listed independent triangles
-		VPResult daTri;		// DrawArrays independent triangles
-		VPResult ldaTri;	// Locked DrawArrays independent tris
-		VPResult deTri;		// DrawElements independent triangles
-		VPResult ldeTri;	// Locked DrawElements ind. tris
-
-		VPResult imTS;		// immediate-mode triangle strip
-		VPResult dlTS;		// display-listed triangle strip
-		VPResult daTS;		// DrawArrays triangle strip
-		VPResult ldaTS;		// Locked DrawArrays triangle strip
-		VPResult deTS;		// DrawElements triangle strip
-		VPResult ldeTS;		// Locked DrawElements triangle strip
-
-		virtual void put(ostream& s) const;
-		virtual bool get(istream& s);
-
-		Result() { }
-		virtual ~Result() { }
-	};
-
-	vector<Result*> results;
-
-	virtual void runOne(Result& r, GLEAN::Window& w);
-	virtual void compareOne(Result& oldR, Result& newR);
-	virtual vector<Result*> getResults(istream& s);
-
-	void logDescription();
-	void logStats(Result& r, GLEAN::Environment* env);
-
+class ColoredTexPerf: public BaseTest<VPResult> {
+public:
+	GLEAN_CLASS_WHO(ColoredTexPerf, VPResult,
+			drawingSize, drawingSize, true);
+	void logStats(VPResult& r, GLEAN::Environment* env);
 }; // class ColoredTexPerf
 
 } // namespace GLEAN

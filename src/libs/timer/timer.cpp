@@ -1,6 +1,6 @@
-// BEGIN_COPYRIGHT
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
-// Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999-2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -26,25 +26,21 @@
 // 
 // END_COPYRIGHT
 
+// timer.cpp: Implementation of simple benchmark timer utilities.
 
+// This particular implementation is derived from the one in libpdb,
+// part of the isfast library for OpenGL.
 
-
-// timer.cpp:  Implementation of simple benchmark timer utilities.
-
-// This particular implementation is derived from the one in libpdb, part
-// of the isfast library for OpenGL.
-
-// XXX It's annoying that the function to be timed must receive all its
-// parameters through global variables.  Probably a better way to do this
-// is to make Timer a base class, and derive new classes for each function
-// to be timed.  That way it's easy to pass function-specific parameters
-// as arguments to the derived class's constructor.
-
-// XXXWIN as of 5/8/99:  The code for Windows timing is taken from
+// XXXWIN as of 5/8/99: The code for Windows timing is taken from
 // Michael Gold's implementation of libpdb.  I've probably introduced
-// some bugs in the translation, unfortunately.
+// some bugs in the translation, unfortunately.  [Allen]
+
+// Modified from original timer.cpp by Rickard E. (Rik) Faith
+// <faith@valinux.com>, December 2000
 
 #include "timer.h"
+#include "vector.h"
+#include <algorithm>
 
 #if defined(__UNIX__)
 #    include <sys/time.h>	// for gettimeofday, used by getClock
@@ -61,22 +57,21 @@ namespace GLEAN {
 //	and finalization routine
 ///////////////////////////////////////////////////////////////////////////////
 void
-Timer::calibrate(FUNCPTR initialize, FUNCPTR finalize) {
+Timer::calibrate() {
 	double runTime = chooseRunTime();
 
-	if (initialize)
-		(*initialize)();
+	preop();
 
 	long reps = 0;
 	double current;
 	double start = waitForTick();
 	do {
-		if (finalize)
-			(*finalize)();
+		postop();
 		++reps;
 	} while ((current = getClock()) < start + runTime);
 
-	overhead = (current - start) / (double) reps;
+	overhead   = (current - start) / (double) reps;
+	calibrated = true;
 } // Timer::calibrate
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,7 +100,7 @@ Timer::chooseRunTime() {
 		runTime = 5.0;
 
 	return runTime;
-}
+} // Timer::chooseRunTime
 
 ///////////////////////////////////////////////////////////////////////////////
 // getClock - get current wall-clock time (expressed in seconds)
@@ -143,7 +138,7 @@ Timer::getClock() {
 
 	return (double) t.tv_sec + (double) t.tv_usec * 1E-6;
 #endif
-}
+} // Timer::getClock
 
 ///////////////////////////////////////////////////////////////////////////////
 // waitForTick:  wait for beginning of next system clock tick; return the time.
@@ -161,20 +156,13 @@ Timer::waitForTick() {
 
 	// Start timing:
 	return current;
-}
+} // Timer::waitForTick
 
 ///////////////////////////////////////////////////////////////////////////////
 // time:  measure time (in seconds) to perform caller's operation
 ///////////////////////////////////////////////////////////////////////////////
 double
-Timer::time(
-    FUNCPTR initialize,
-    FUNCPTR operation,
-    FUNCPTR finalize) {
-
-	if (!operation)
-		return 0.0;
-
+Timer::time() {
 	// Select a run time that's appropriate for our timer resolution:
 	double runTime = chooseRunTime();
 
@@ -184,16 +172,14 @@ Timer::time(
 	double start;
 	double current;
 	for (;;) {
-		if (initialize)
-			(*initialize)();
+		preop();
 
 		start = waitForTick();
 
-		for (long i = reps; i > 0; --i)
-			(*operation)();
+		for (long i = reps; i > 0; --i) op();
 
-		if (finalize)
-			(*finalize)();
+
+		postop();
 
 		current = getClock();
 		if (current >= start + runTime + overhead)
@@ -215,5 +201,31 @@ Timer::time(
 	// Subtract overhead to determine the final operation rate:
 	return (current - start - overhead) / reps;
 } // Timer::time
+
+///////////////////////////////////////////////////////////////////////////////
+// measure:  measure several results for performing caller's operation
+///////////////////////////////////////////////////////////////////////////////
+void
+Timer::measure(int count, double* low, double* avg, double* high)
+{
+	vector<double> m;
+	double         sum = 0.0;
+
+	if (!calibrated) calibrate();
+	if (count < 3) count = 3;
+	premeasure();
+	for (int i = 0; i < count; i++) {
+		preop();
+		double t = time();
+		postop();
+		m.push_back(compute(t));
+	}
+	postmeasure();
+	sort(m.begin(), m.end());
+	for (int j = 1; j < count - 1; j++) sum += m[j];
+	*avg  = sum / (count - 2);
+	*low  = m[1];
+	*high = m[count - 2];
+} // Timer::measure
 
 } // namespace GLEAN

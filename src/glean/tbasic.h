@@ -1,6 +1,6 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
-// Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999-2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -25,9 +25,6 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // END_COPYRIGHT
-
-
-
 
 // tbasic.h:  Example class for basic tests
 
@@ -60,33 +57,20 @@ class BasicResult: public BaseResult {
 public:
 	bool pass;
 
-	void putresults(ostream& s) const { s << pass << '\n'; }
-	bool getresults(istream& s) { s >> pass; return s.good(); }
+	void putresults(ostream& s) const {
+		s << pass << '\n';
+	}
+	
+	bool getresults(istream& s) {
+		s >> pass;
+		return s.good();
+	}
 };
 
-#if 1
 class BasicTest: public BaseTest<BasicResult> {
 public:
-	BasicTest(const char* aName, const char* aFilter,
-		  const char* aDescription):
-		BaseTest(aName, aFilter, aDescription) {
-	}
-	BasicTest(const char* aName, const char* aFilter,
-		  const char* anExtensionList,
-		  const char* aDescription):
-		BaseTest(aName, aFilter, anExtensionList, aDescription) {
-	}
-	virtual ~BasicTest() {}
-
-#if 0
-	virtual void runOne(BasicResult& r);
-	virtual void compareOne(BasicResult& oldR, BasicResult& newR);
-	virtual void logOne(BasicResult& r);
-#endif
+	GLEAN_CLASS(BasicTest, BasicResult);
 };
-#else
-BaseTest<BasicResult> BasicTest;
-#endif
 
 } // namespace GLEAN
 

@@ -1,6 +1,6 @@
-// BEGIN_COPYRIGHT -*- linux-c -*-
+// BEGIN_COPYRIGHT -*- glean -*-
 // 
-// Copyright (C) 1999,2000  Allen Akin   All Rights Reserved.
+// Copyright (C) 1999-2000  Allen Akin   All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -26,26 +26,9 @@
 // 
 // END_COPYRIGHT
 
-
-
-
 // tbasic.cpp:  implementation of example class for basic tests
 
-#ifdef __UNIX__
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <fstream>
-#include "dsconfig.h"
-#include "dsfilt.h"
-#include "dsurf.h"
-#include "winsys.h"
-#include "environ.h"
-#include "rc.h"
-#include "glutils.h"
 #include "tbasic.h"
-#include "misc.h"
 
 namespace GLEAN {
 
@@ -53,37 +36,25 @@ namespace GLEAN {
 // runOne:  Run a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-BaseTest<BasicResult>::runOne(BasicResult& r) {
+BasicTest::runOne(BasicResult& r, Window&) {
 	r.pass = true;
 } // BasicTest::runOne
 
+///////////////////////////////////////////////////////////////////////////////
+// logOne:  Log a single test case
+///////////////////////////////////////////////////////////////////////////////
 void
-BaseTest<BasicResult>::logOne(BasicResult& r) {
-	env->log << name
-		 << (r.pass? ":  PASS ": ":  FAIL ")
-		 << r.config->conciseDescription()
-		 << '\n';
-}
+BasicTest::logOne(BasicResult& r) {
+	logPassFail(r);
+	logConcise(r);
+} // BasicTest::logOne
 
 ///////////////////////////////////////////////////////////////////////////////
 // compareOne:  Compare results for a single test case
 ///////////////////////////////////////////////////////////////////////////////
 void
-BaseTest<BasicResult>::compareOne(BasicResult& oldR, BasicResult& newR) {
-	if (oldR.pass == newR.pass) {
-		if (env->options.verbosity)
-			env->log << name << ":  SAME "
-				<< newR.config->conciseDescription() << '\n'
-				<< (oldR.pass? "\tBoth PASS\n": "\tBoth FAIL\n")
-				;
-	} else {
-		env->log << name << ":  DIFF "
-			<< newR.config->conciseDescription() << '\n'
-			<< '\t' << env->options.db1Name
-			<<	(oldR.pass? " PASS, ": " FAIL, ")
-			<< env->options.db2Name
-			<<	(newR.pass? " PASS\n": " FAIL\n");
-	}
+BasicTest::compareOne(BasicResult& oldR, BasicResult& newR) {
+	comparePassFail(oldR, newR);
 } // BasicTest::compareOne
 
 ///////////////////////////////////////////////////////////////////////////////
