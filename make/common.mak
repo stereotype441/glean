@@ -11,26 +11,48 @@
 #    The OS (for file operations, etc.).  Define either __UNIX__ or __MS__.
 #    The window system.  Define either __X11__ or __WIN__ or __BEWIN__.
 
+# The variable PLATFORM sets CONFIG and other variables to common
+# default values for various operating systems.  This allows the bulk
+# of the GNU-based Makefiles to be shared between operating systems.
+# The two values currently accepted are "BeOS" and "Unix".
+
 # Major configuration options:
+#PLATFORM:=BeOS
+PLATFORM:=Unix
 
-#
-
-#PLATFORM=BeOS
-PLATFORM=Unix
-
+ifeq ($(PLATFORM), Unix)
+	CONFIG:=-D__UNIX__ -D__X11__
+else
 ifeq ($(PLATFORM), BeOS)
 	CONFIG:=-D__UNIX__ -D__BEWIN__
-	AR:=/boot/develop/tools/gnupro/bin/ar
-	INSTALL:=/bin/install
-	GLINC:=/boot/develop/headers/be/opengl/
-	GLLIB:=/boot/beos/system/lib
-	RANLIB:=/boot/develop/tools/gnupro/bin/ranlib
-	TIFFINC:=/boot/somewhere
-	TIFFLIB:=/boot/somewhere
 else
-	CONFIG:=-D__UNIX__ -D__X11__
+	Configuration error.  Please set PLATFORM variable appropriately.
+endif # BeOS
+endif # Unix
+
+
+# Locations of common commands:
+ifeq ($(PLATFORM), Unix)
 	AR:=/usr/bin/ar
+	CC:=/usr/bin/g++
 	INSTALL:=/usr/bin/install
+	RANLIB:=/usr/bin/ranlib
+	RM:=/bin/rm
+	SED:=/bin/sed
+	SHELL:=/bin/sh
+endif # Unix
+ifeq ($(PLATFORM), BeOS)
+	AR:=/boot/develop/tools/gnupro/bin/ar
+	CC:=g++
+	INSTALL:=/bin/install
+	RANLIB:=/boot/develop/tools/gnupro/bin/ranlib
+	RM:=/bin/rm
+	SED:=/bin/sed
+	SHELL:=/bin/sh
+endif # BeOS
+
+# Locations of useful include and library files:
+ifeq ($(PLATFORM), Unix)
 	XINC:=/usr/include/X11
 	XLIB:=/usr/X11R6/lib
 	GLINC:=/usr/local/include
@@ -39,17 +61,13 @@ else
 	GLUTLIB:=/usr/local/lib
 	TIFFINC:=/usr/include
 	TIFFLIB:=/usr/lib
-	RANLIB:=/usr/bin/ranlib
-endif
-
-
-# Locations of common commands:
-SHELL:=/bin/sh
-CC:=g++
-RM:=/bin/rm
-SED:=/bin/sed
-
-# Locations of useful include and library files:
+endif # Unix
+ifeq ($(PLATFORM), BeOS)
+	GLINC:=/boot/develop/headers/be/opengl/
+	GLLIB:=/boot/beos/system/lib
+	TIFFINC:=/boot/somewhere
+	TIFFLIB:=/boot/somewhere
+endif # BeOS
 
 
 # Standard targets and subdirectory handling:
@@ -106,12 +124,20 @@ _OPT=\
 DBG:=-g		# Debugging options
 _DBG=\
 	$(DBG)
-WARN:=		# warning options /* BeOS requres -Wno-multichar -Wno-ctor-dtor-privacy \ */
+WARN:=		# warning options
+ifeq ($(PLATFORM), Unix)
+_WARN=\
+	-Wall \
+	-W \
+	$(WARN)
+endif # Unix
+ifeq ($(PLATFORM), BeOS)
 _WARN=\
 	-Wall \
 	-Wno-multichar -Wno-ctor-dtor-privacy \
 	-W \
 	$(WARN)
+endif # BeOS
 LIBDIR:=	# -L options for specifying library directories
 # Warning: you may need to change the order of the following library
 # directories if you have multiple installations of the same libraries.

@@ -150,7 +150,7 @@ WindowSystem::WindowSystem(Options& o) {
 #if defined(__X11__)
 WindowSystem::~WindowSystem() {
 	XFree(vip);
-} 
+} // WindowSystem:: ~WindowSystem
 
 #elif defined(__WIN__)
 WindowSystem::~WindowSystem() {
@@ -158,7 +158,7 @@ WindowSystem::~WindowSystem() {
 #elif defined(__BEWIN__)
 WindowSystem::~WindowSystem() {
 	delete theApp;
-}// WindowSystem:: ~WindowSystem
+} // WindowSystem:: ~WindowSystem
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

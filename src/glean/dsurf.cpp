@@ -189,7 +189,7 @@ Window::swap() {
 	glXSwapBuffers(winSys->dpy, xWindow);
 #   elif defined(__WIN__)
 	SwapBuffers(hDC);
-#	elif defined(__BEWIN__)
+#   elif defined(__BEWIN__)
 	tWindow->SwapBuffers();
 #   endif
 } // Window::swap

@@ -103,7 +103,7 @@ class WindowSystem {
 
 #   elif defined(__WIN__)
 
-#	elif defined(__BEWIN__)
+#   elif defined(__BEWIN__)
 	BApplication *theApp;
 #   endif
 
