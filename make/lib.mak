@@ -14,6 +14,7 @@ test_here:
 # Note:  The tricky test in the following commands ensures correct
 #	results if the destination file does not exist.
 install_here: $(TARGET)
+	@if [ ! -d $(LIBDST) ]; then $(MKDIR) $(LIBDST); fi
 	for t in $(TARGET); do \
 		if [ ! $(LIBDST)/$$t -nt $$t ]; then \
 			$(RM) -f $(LIBDST)/$$t; \

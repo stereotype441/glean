@@ -13,6 +13,7 @@ test_here:
 # Note:  The tricky test in the following commands ensures correct
 #	results if the destination file does not exist.
 install_here:
+	@if [ ! -d $(HDST) ]; then $(MKDIR) $(HDST); fi
 	for t in $(HTARGET); do \
 		if [ ! $(HDST)/$$t -nt $$t ]; then \
 			$(RM) -f $(HDST)/$$t; \

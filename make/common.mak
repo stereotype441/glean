@@ -40,6 +40,7 @@ ifeq ($(PLATFORM), Unix)
 	RM:=/bin/rm
 	SED:=/bin/sed
 	SHELL:=/bin/sh
+	MKDIR:=/bin/mkdir
 endif # Unix
 ifeq ($(PLATFORM), BeOS)
 	AR:=/boot/develop/tools/gnupro/bin/ar
@@ -49,6 +50,7 @@ ifeq ($(PLATFORM), BeOS)
 	RM:=/bin/rm
 	SED:=/bin/sed
 	SHELL:=/bin/sh
+	MKDIR:=/bin/mkdir
 endif # BeOS
 
 # Locations of useful include and library files:
@@ -61,12 +63,14 @@ ifeq ($(PLATFORM), Unix)
 	GLUTLIB:=/usr/lib
 	TIFFINC:=/usr/include
 	TIFFLIB:=/usr/lib
+	EXTRALIBS:=
 endif # Unix
 ifeq ($(PLATFORM), BeOS)
 	GLINC:=/boot/develop/headers/be/opengl/
 	GLLIB:=/boot/beos/system/lib
 	TIFFINC:=/boot/somewhere
 	TIFFLIB:=/boot/somewhere
+	EXTRALIBS:=
 endif # BeOS
 
 

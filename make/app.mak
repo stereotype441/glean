@@ -12,6 +12,7 @@ test_here:
 	@if [ -d Test ]; then (cd Test; $(MAKE) test); fi
 
 install_here: $(TARGET)
+	@if [ ! -d $(APPDST) ]; then $(MKDIR) $(APPDST); fi
 	(cd $(APPDST); $(RM) -f $(TARGET))
 	$(INSTALL) -m 0755 $(TARGET) $(APPDST)
 
