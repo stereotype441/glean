@@ -108,22 +108,22 @@ class Test {
 	// to the results database, and close the file streams automatically
 	// when their destructors are executed.
 	class OutputStream {	// Open an output stream for storing results.
-		ofstream* s;
 	    public:
+		ofstream* s;
 		OutputStream(Test& t);
 		~OutputStream();
 		operator ofstream& ();
 	};
 	class Input1Stream {	// Open db #1 input stream for reading results.
-		ifstream* s;
 	    public:
+		ifstream* s;
 	    	Input1Stream(Test& t);
 		~Input1Stream();
 		operator ifstream& ();
 	};
 	class Input2Stream {	// Open db #2 input stream for reading results.
-		ifstream* s;
 	    public:
+		ifstream* s;
 	    	Input2Stream(Test& t);
 		~Input2Stream();
 		operator ifstream& ();
