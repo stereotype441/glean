@@ -327,6 +327,8 @@ env.log << '\n'
 				}
 				return result;
 			}
+			aPix += 4;
+			ePix += 4;
 		}
 		sRow += actual.rowSizeInBytes();
 		dRow += expected.rowSizeInBytes();
