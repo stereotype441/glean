@@ -595,6 +595,21 @@ TexCombineTest::PrintMachineState(const glmachine &machine) const {
 			 << machine.RGB_SCALE[u] << "\n";
 		env->log << "\tGL_ALPHA_SCALE = "
 			 << machine.ALPHA_SCALE[u] << "\n";
+                env->log << "\tFragment Color = "
+                         << machine.FragColor[0] << ", "
+                         << machine.FragColor[1] << ", "
+                         << machine.FragColor[2] << ", "
+                         << machine.FragColor[3] << "\n";
+                env->log << "\tTex Env Color = "
+                         << machine.EnvColor[u][0] << ", "
+                         << machine.EnvColor[u][1] << ", "
+                         << machine.EnvColor[u][2] << ", "
+                         << machine.EnvColor[u][3] << "\n";
+                env->log << "\tTexture Color = "
+                         << machine.TexColor[u][0] << ", "
+                         << machine.TexColor[u][1] << ", "
+                         << machine.TexColor[u][2] << ", "
+                         << machine.TexColor[u][3] << "\n";
 	}
 }
 
@@ -746,7 +761,7 @@ TexCombineTest::SetupColors(glmachine &machine) {
 		{ 1.0, 1.0, 1.0, 0.5 }
 	};
 	static const GLfloat texColors[][4] = {
-		{ 1.00, 0.25, 0.25, 1.0 },
+		{ 1.00, 0.75, 0.25, 1.0 },
 		{ 0.25, 1.00, 0.25, 1.0 },
 		{ 0.25, 0.25, 1.00, 1.0 },
 		{ 0.50, 0.50, 0.50, 0.5 }
@@ -775,8 +790,42 @@ TexCombineTest::SetupColors(glmachine &machine) {
 		machine.TexColor[u][1] = texColors[u % 4][1];
 		machine.TexColor[u][2] = texColors[u % 4][2];
 		machine.TexColor[u][3] = texColors[u % 4][3];
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-			1, 1, 0, GL_RGBA, GL_FLOAT, texColors);
+
+                /* Make a 4x4 solid color texture */
+		{
+			GLfloat image[16][4];
+			int i;
+			for (i = 0; i < 16; i++) {
+				image[i][0] = texColors[u % 4][0];
+				image[i][1] = texColors[u % 4][1];
+				image[i][2] = texColors[u % 4][2];
+				image[i][3] = texColors[u % 4][3];
+			}
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+				     4, 4, 0, GL_RGBA, GL_FLOAT, image);
+#if 0 // Debug
+			GLfloat check[16][4];
+			GLint r, g, b, a;
+			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+						 GL_TEXTURE_RED_SIZE, &r);
+			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+						 GL_TEXTURE_GREEN_SIZE, &g);
+			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+						 GL_TEXTURE_BLUE_SIZE, &b);
+			glGetTexLevelParameteriv(GL_TEXTURE_2D, 0,
+						 GL_TEXTURE_ALPHA_SIZE, &a);
+			printf("Texture bits: %d %d %d %d\n", r, g, b, a);
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT,
+				      check);
+			for (i = 0;i < 16; i++) {
+				printf("%2d: %4f %4f %4f %4f  %4f %4f %4f %4f\n", i,
+				       image[i][0], image[i][1],
+				       image[i][2], image[i][3],
+				       check[i][0], check[i][1],
+				       check[i][2], check[i][3]);
+			}
+#endif
+                }
 	}
 }
 
@@ -821,19 +870,34 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 		//const GLfloat da = fabs(expected[3] - renderedResult[3]);
 		if (dr > epsilon || dg > epsilon || db > epsilon) {
 			ReportFailure(machine, expected, renderedResult, r);
-#if 0
+#if 0 // Debug
 			// For debugging, printing the state of the previous
 			// test is useful to see what's changed when we've
 			// failed a test but passed the previous one.
-			printf("test %d failed\n", test);
+			printf("single test %d failed\n", test);
 			if (test > 0) {
 				printf("prev test:\n");
-				SetupTest(machine, test - 1, testParams);
+				SetupTestEnv(machine, 0, test - 1, testParams);
 				PrintMachineState(machine);
 			}
 #endif
 			return false;
 		}
+#if 0 // Debug
+                else {
+			printf("PASSED test %d!\n", test);
+			env->log << "\texpected "
+				 << expected[0] << ", "
+				 << expected[1] << ", "
+				 << expected[2] << ", "
+				 << expected[3] << ", got "
+				 << renderedResult[0] << ", "
+				 << renderedResult[1] << ", "
+				 << renderedResult[2] << ", "
+				 << renderedResult[3] << "\n";
+			// PrintMachineState(machine);
+                }
+#endif
 	}
 	return true;
 }
@@ -942,6 +1006,15 @@ TexCombineTest::RunMultiTextureTest(glmachine &machine, Result &r) {
 		//const GLfloat da = fabs(expected[3] - renderedResult[3]);
 		if (dr > epsilon || dg > epsilon || db > epsilon) {
 			ReportFailure(machine, expected, renderedResult, r);
+			printf("multitex test %d failed\n", testNum);
+#if 0 // Debug
+			if (test > 0) {
+				printf("prev test:\n");
+				SetupTestEnv(machine, 0, test - 1, testParams);
+				PrintMachineState(machine);
+			}
+#endif
+                        
 			return false;
 		}
 	}
@@ -969,8 +1042,9 @@ TexCombineTest::runOne(Result& r) {
         // We'll only render a 4-pixel polygon
 	glViewport(0, 0, 2, 2);
 
-	// Do single texture unit tests first.
 	Machine.NumTexUnits = 1;
+
+	// Do single texture unit tests first.
 	bool passed = RunSingleTextureTest(Machine, ReplaceParams, r);
 	if (passed)
 		passed = RunSingleTextureTest(Machine, AddParams, r);
@@ -991,6 +1065,7 @@ TexCombineTest::runOne(Result& r) {
 			passed = RunMultiTextureTest(Machine, r);
 		}
 	}
+
 
 	if (passed) {
 		r.pass = true;
