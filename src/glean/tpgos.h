@@ -28,92 +28,95 @@
 
 
 // tpgos.h:  Polygon offset tests.
-//
-// glPolygonOffset test code donated to the glean project by
-// Angus Dorbie <dorbie@sgi.com>, Thu, 07 Sep 2000 04:13:45 -0700
-//
-// glPolygonOffset test code integrated into glean framework by
-// Rickard E. (Rik) Faith <faith@precisioninsight.com>, October 2000
-
+// Derived in part from tests written by Angus Dorbie <dorbie@sgi.com>
+// in September 2000 and Rickard E. (Rik) Faith <faith@valinux.com> in
+// October 2000.
 
 #ifndef __tpgos_h__
 #define __tpgos_h__
 
 #include "tbase.h"
+#include <iomanip>
 
 namespace GLEAN {
-
-#define WIN_SIZE 100
 
 // Auxiliary struct for holding a glPolygonOffset result
 class POResult: public BaseResult {
 public:
-	bool pass; // not logged to file
-	struct PartialResult {
-		float factor;
-		float units;
-		float near;
-		float far;
-		bool  punchthrough;
-		float punchthrough_translation;
-		bool  badEdge;
-		bool  badMiddle;
-	};
-	vector<PartialResult> data;
+	bool pass;
+	double nextToNear;
+	double nextToFar;
+	double idealMRDNear;
+	double idealMRDFar;
+	double actualMRDNear;
+	double actualMRDFar;
+	bool bigEnoughMRD;
+	bool smallEnoughMRD;
+	bool slopeOffsetsPassed;
+	float failingAngle;
+	float failingAxis[3];
+	double failingOffset;
+	double minGoodOffset;
+	double maxGoodOffset;
+
+	POResult() {
+		pass = true;
+		nextToNear = 1.0;
+		nextToFar = 2.0;
+		idealMRDNear = 0.1;
+		idealMRDFar = 0.1;
+		actualMRDNear = 0.1;
+		actualMRDFar = 0.1;
+		bigEnoughMRD = true;
+		smallEnoughMRD = true;
+		slopeOffsetsPassed = true;
+		failingAngle = 0.0;
+		failingAxis[0] = failingAxis[1] = failingAxis[2] = 0.0;
+		failingOffset = 1.0;
+		minGoodOffset = 0.1;
+		maxGoodOffset = 0.1;
+	}
 	
 	void putresults(ostream& s) const {
-		s << data.size() << '\n';
-		for (vector<PartialResult>::const_iterator p = data.begin();
-		     p != data.end(); ++p)
-			s << ' ' << p->factor
-			  << ' ' << p->units
-			  << ' ' << p->near
-			  << ' ' << p->far
-			  << ' ' << p->punchthrough
-			  << ' ' << p->punchthrough_translation
-			  << ' ' << p->badEdge
-			  << ' ' << p->badMiddle
-			  << '\n';
+		s << setprecision(16)
+		  << pass << '\n'
+		  << nextToNear << ' ' << nextToFar << '\n'
+		  << idealMRDNear << ' ' << idealMRDFar << '\n'
+		  << actualMRDNear << ' ' << actualMRDFar << '\n'
+		  << bigEnoughMRD << ' ' << smallEnoughMRD << '\n'
+		  << slopeOffsetsPassed << '\n'
+		  << failingAngle << '\n'
+		  << failingAxis[0] << ' ' << failingAxis[1] << ' '
+		  	<< failingAxis[2] << '\n'
+		  << failingOffset << ' ' << minGoodOffset << ' '
+		  	<< maxGoodOffset << '\n'
+		  ;
 	}
 	
 	bool getresults(istream& s) {
-		int n;
-		s >> n;
-		for (int i = 0; i < n; ++i) {
-			PartialResult p;
-			s >> p.factor
-			  >> p.units
-			  >> p.near
-			  >> p.far
-			  >> p.punchthrough
-			  >> p.punchthrough_translation
-			  >> p.badEdge
-			  >> p.badMiddle;
-			data.push_back(p);
-		}
+		s >> pass
+		  >> nextToNear
+		  >> nextToFar
+		  >> idealMRDNear
+		  >> idealMRDFar
+		  >> actualMRDNear
+		  >> actualMRDFar
+		  >> bigEnoughMRD
+		  >> smallEnoughMRD
+		  >> slopeOffsetsPassed
+		  >> failingAngle
+		  >> failingAxis[0] >> failingAxis[1] >> failingAxis[2]
+		  >> failingOffset >> minGoodOffset >> maxGoodOffset
+		  ;
 		return s.good();
-	}
-
-	void addtest(float factor, float units, float near, float far,
-		     bool punchthrough, float punchthrough_translation,
-		     bool badEdge, bool badMiddle) {
-		PartialResult p;
-		p.factor                   = factor;
-		p.units                    = units;
-		p.near                     = near;
-		p.far                      = far;
-		p.punchthrough             = punchthrough;
-		p.punchthrough_translation = punchthrough_translation;
-		p.badEdge                  = badEdge;
-		p.badMiddle                = badMiddle;
-		data.push_back(p);
 	}
 };
 
+#define PGOS_WIN_SIZE 128
 
 class PgosTest: public BaseTest<POResult> {
 public:
-	GLEAN_CLASS_WH(PgosTest, POResult, WIN_SIZE, WIN_SIZE);
+	GLEAN_CLASS_WH(PgosTest, POResult, PGOS_WIN_SIZE, PGOS_WIN_SIZE);
 }; // class PgosTest
 
 } // namespace GLEAN
