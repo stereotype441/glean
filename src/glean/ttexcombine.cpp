@@ -490,7 +490,7 @@ TexCombineTest::ComputeTexCombine(const glmachine &machine, int texUnit,
 		result[1] = dot;
 		result[2] = dot;
 		if (machine.COMBINE_RGB[texUnit] == GL_DOT3_RGBA_EXT)
-			result[4] = dot;
+			result[3] = dot;
 		break;
 	default:
 		problem("bad rgbCombine");
@@ -928,7 +928,7 @@ TexCombineTest::RunSingleTextureTest(glmachine &machine,
 			// For debugging, printing the state of the previous
 			// test is useful to see what's changed when we've
 			// failed a test but passed the previous one.
-			printf("single test %d failed\n", test);
+			printf("single-texture test %d failed\n", test);
 			if (test > 0) {
 				printf("prev test:\n");
 				SetupTestEnv(machine, 0, test - 1, testParams);
