@@ -358,21 +358,32 @@ TexBindPerf::runOne(Result& r, Window& w) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 TexBindPerf::compareOne(Result& oldR, Result& newR) {
-	if (oldR.lowerBound < newR.bindTime && newR.bindTime < oldR.upperBound
-	 && newR.lowerBound < oldR.bindTime && oldR.bindTime < newR.upperBound){
+	if (newR.bindTime < oldR.lowerBound) {
+		int percent = static_cast<int>(
+			100.0 * (oldR.bindTime - newR.bindTime) / newR.bindTime
+			+ 0.5);
+		env->log << name << ":  DIFF "
+			<< newR.config->conciseDescription() << '\n'
+			<< '\t' << env->options.db2Name << " may be "
+			<< percent << "% faster.\n";
+	} else if (newR.bindTime > oldR.upperBound) {
+		int percent = static_cast<int>(
+			100.0 * (newR.bindTime - oldR.bindTime) / oldR.bindTime
+			+ 0.5);
+		env->log << name << ":  DIFF "
+			<< oldR.config->conciseDescription() << '\n'
+			<< '\t' << env->options.db1Name << " may be "
+			<< percent << "% faster.\n";
+	} else {
 		if (env->options.verbosity)
 			env->log << name << ":  SAME "
 				<< newR.config->conciseDescription()
-				<< "\n\tEach test time falls within the "
-				"valid measurement range of the\n"
-				"\tother test time.\n";
-	} else {
-		env->log << name << ":  DIFF "
-			<< newR.config->conciseDescription() << '\n';
-		env->log << '\t'
-			<< ((oldR.bindTime < newR.bindTime)?
-				env->options.db1Name: env->options.db2Name)
-			<< " appears to have higher performance.\n";
+				<< "\n\t"
+				<< env->options.db2Name
+				<< " test time falls within the "
+				<< "valid measurement range of "
+				<< env->options.db1Name
+				<< " test time.\n";
 	}
 	if (env->options.verbosity) {
 		env->log << env->options.db1Name << ':';
