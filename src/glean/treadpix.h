@@ -163,6 +163,10 @@ public:
 	GLEAN_CLASS_WH(ReadPixSanityTest, ReadPixSanityResult,
 		READPIX_SANITY_WIN_SIZE, READPIX_SANITY_WIN_SIZE);
 
+	void checkRGBA(ReadPixSanityResult& r, Window& w);
+	void checkDepth(ReadPixSanityResult& r, Window& w);
+	void checkStencil(ReadPixSanityResult& r, Window& w);
+	void checkIndex(ReadPixSanityResult& r, Window& w);
 	void summarize(char* label, bool oldPass, bool newPass);
 }; // class ReadPixSanityTest
 

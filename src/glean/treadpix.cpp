@@ -35,11 +35,10 @@
 #include "treadpix.h"
 
 
-namespace {
+namespace GLEAN {
 
 void
-checkRGBA(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
-	using namespace GLEAN;
+ReadPixSanityTest::checkRGBA(ReadPixSanityResult& r, Window& w) {
 	DrawingSurfaceConfig& config = *r.config;
 	RandomBitsDouble rRand(config.r, 1066);
 	RandomBitsDouble gRand(config.g, 1492);
@@ -106,11 +105,10 @@ checkRGBA(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
 			r.passRGBA = false;
 		w.swap();
 	}
-} // checkRGBA
+} // ReadPixSanityTest::checkRGBA
 
 void
-checkDepth(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
-	using namespace GLEAN;
+ReadPixSanityTest::checkDepth(ReadPixSanityResult& r, Window& w) {
 	DrawingSurfaceConfig& config = *r.config;
 	RandomDouble dRand(35798);
 	int thresh = 1;
@@ -154,11 +152,10 @@ checkDepth(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
 			r.passDepth = false;
 		w.swap();
 	}
-} // checkDepth
+} // ReadPixSanityTest::checkDepth
 
 void
-checkStencil(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
-	using namespace GLEAN;
+ReadPixSanityTest::checkStencil(ReadPixSanityResult& r, Window& w) {
 	DrawingSurfaceConfig& config = *r.config;
 	RandomBits sRand(config.s, 10101);
 
@@ -187,11 +184,10 @@ checkStencil(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
 
 		w.swap();
 	}
-} // checkStencil
+} // ReadPixSanityTest::checkStencil
 
 void
-checkIndex(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
-	using namespace GLEAN;
+ReadPixSanityTest::checkIndex(ReadPixSanityResult& r, Window& w) {
 	DrawingSurfaceConfig& config = *r.config;
 	RandomBits iRand(config.bufSize, 2);
 
@@ -219,11 +215,7 @@ checkIndex(GLEAN::ReadPixSanityResult& r, GLEAN::Window& w) {
 
 		w.swap();
 	}
-} // checkIndex
-
-} // anonymous namespace
-
-namespace GLEAN {
+} // ReadPixSanityTest::checkIndex
 
 ///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
