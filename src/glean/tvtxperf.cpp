@@ -249,13 +249,11 @@ measure(GLEAN::Timer& time, GLEAN::Timer::FUNCPTR function,
 		// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
 		// change the default function type to __stdcall overall via some compiler
 		// switch?
-		//		GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-		//		double t = time.time(reinterpret_cast<TIME_FUNC>(glFinishPointer),
+		GLFINISH_FUNCTYPE glFinishPointer = glFinish;
 		double t = time.time(
-			static_cast<GLEAN::Timer::FUNCPTR>(glFinish),
+			reinterpret_cast<GLEAN::Timer::FUNCPTR>(glFinishPointer),
 			function,
-			//			reinterpret_cast<TIME_FUNC>(glFinishPointer));
-			static_cast<GLEAN::Timer::FUNCPTR>(glFinish));
+			reinterpret_cast<GLEAN::Timer::FUNCPTR>(glFinishPointer));
 		w.swap();	// give the user something to watch
 		measurements.push_back(nTris / t);
 	}
@@ -653,11 +651,9 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
 	// change the default function type to __stdcall overall via some compiler
 	// switch?
-	//	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-	//	time.calibrate(reinterpret_cast<TIME_FUNC>(glFinishPointer),
-	//		reinterpret_cast<TIME_FUNC>(glFinishPointer));
-	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
-		static_cast<Timer::FUNCPTR>(glFinish));
+	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
+	time.calibrate(reinterpret_cast<Timer::FUNCPTR>(glFinishPointer),
+		reinterpret_cast<Timer::FUNCPTR>(glFinishPointer));
 
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
@@ -1322,11 +1318,9 @@ ColoredTexPerf::runOne(Result& r, Window& w) {
 	// is a __cdecl function and glFinish is a __stdcall.  Perhaps we should
 	// change the default function type to __stdcall overall via some compiler
 	// switch?
-	//	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
-	//	time.calibrate(reinterpret_cast<TIME_FUNC>(glFinishPointer),
-	//		reinterpret_cast<TIME_FUNC>(glFinishPointer));
-	time.calibrate(static_cast<Timer::FUNCPTR>(glFinish),
-		static_cast<Timer::FUNCPTR>(glFinish));
+	GLFINISH_FUNCTYPE glFinishPointer = glFinish;
+	time.calibrate(reinterpret_cast<Timer::FUNCPTR>(glFinishPointer),
+		reinterpret_cast<Timer::FUNCPTR>(glFinishPointer));
 
 	////////////////////////////////////////////////////////////
 	// Immediate-mode independent triangles
