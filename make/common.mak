@@ -35,7 +35,7 @@ endif # Unix
 ifeq ($(PLATFORM), Unix)
 	AR:=/usr/bin/ar
 	CC:=/usr/bin/g++
-	INSTALL:=/usr/bin/install
+	INSTALL:=/usr/bin/install -c
 	RANLIB:=/usr/bin/ranlib
 	RM:=/bin/rm
 	SED:=/bin/sed
@@ -143,7 +143,7 @@ _INC=\
 OPT:=		# Optimization options
 _OPT=\
 	-march=pentiumpro \
-	-O3 -fno-unroll-all-loops \
+	-O -fno-unroll-all-loops \
 	$(OPT)
 DBG:=-g		# Debugging options
 _DBG=\
