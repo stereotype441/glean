@@ -128,7 +128,7 @@ main(int argc, char* argv[]) {
 
 
 #	elif defined(__X11__) && defined(GLX_VERSION_1_3)
-#		error "XXX Need to write GLX 1.3 FBConfig code"
+			// XXX Need to write GLX 1.3 FBConfig code
 			// Yeah, yeah, it shouldn't be hard.  I just don't
 			// have any way to test it yet.
 #	elif defined(__WIN__)

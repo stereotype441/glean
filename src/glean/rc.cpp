@@ -106,9 +106,9 @@ RenderingContext::RenderingContext(WindowSystem& ws, DrawingSurfaceConfig& c,
 
 #	if defined(GLX_VERSION_1_3)
 
-#	    error "XXX Need GLX 1.3 rc constructor code"
+	// XXX Need GLX 1.3 rc constructor code
 
-#	else
+#	endif
 
 	// Create the rendering context:
 	rc = glXCreateContext(winSys->dpy, c.vi, (share? share->rc: 0),
@@ -117,8 +117,6 @@ RenderingContext::RenderingContext(WindowSystem& ws, DrawingSurfaceConfig& c,
 		throw Error();
 	// XXX Ideally, we would deal with X11 and GLX errors here, too
 	// (Badmatch, BadValue, GLXBadContext, BadAlloc)
-
-#	endif
 
 #   elif defined(__WIN__)
 
@@ -137,10 +135,9 @@ RenderingContext::~RenderingContext() {
 	remove(winSys->contexts.begin(), winSys->contexts.end(), this);
 #   if defined(__X11__)
 #	if defined(GLX_VERSION_1_3)
-#		error "Need to write GLX 1.3 rc destructor"
-#       else
+		// XXX Need to write GLX 1.3 rc destructor
+#       endif
 		glXDestroyContext(winSys->dpy, rc);
-#	endif
 #   elif defined(__WIN__)
 		wglDeleteContext(rc);
 #   endif

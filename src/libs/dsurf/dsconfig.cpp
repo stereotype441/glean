@@ -270,7 +270,7 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::GLXFBConfig* pfbc)
 	if (!mapsInitialized)
 		initializeMaps();
 } // DrawingSurfaceConfig::DrawingSurfaceConfig
-#error "XXX Need to write drawing surface config code for GLX 1.3"
+// XXX Need to write drawing surface config code for GLX 1.3
 #endif
 
 #elif defined(__WIN__)

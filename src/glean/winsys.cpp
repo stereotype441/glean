@@ -169,10 +169,9 @@ bool
 WindowSystem::makeCurrent() {
 #   if defined(__X11__)
 #	if defined(GLX_VERSION_1_3)
-#	    error "XXX Need to write GLX 1.3 MakeCurrent code"
-#	else
+	    // XXX Need to write GLX 1.3 MakeCurrent code
+#	endif
 	    return glXMakeCurrent(dpy, None, 0);
-#       endif
 #   elif defined(__WIN__)
 		return wglMakeCurrent(0,0);
 #   endif
@@ -182,10 +181,9 @@ bool
 WindowSystem::makeCurrent(RenderingContext& r, Window& w) {
 #   if defined(__X11__)
 #	if defined(GLX_VERSION_1_3)
-#	    error "XXX Need to write GLX 1.3 MakeCurrent code"
-#	else
+	    // XXX Need to write GLX 1.3 MakeCurrent code
+#	endif
 	    return glXMakeCurrent(dpy, w.xWindow, r.rc);
-#       endif
 #   elif defined(__WIN__)
 		return wglMakeCurrent(w.get_dc(),r.rc);
 #   endif
