@@ -39,9 +39,9 @@
 // <faith@valinux.com>, December 2000
 
 #include "timer.h"
-using namespace std;
 #include <vector>
 #include <algorithm>
+using namespace std;
 
 #if defined(__UNIX__)
 #    include <sys/time.h>	// for gettimeofday, used by getClock
