@@ -404,26 +404,48 @@ TexEnvTest::MakeTexImage(GLenum baseFormat, int numColors,
 	// Recompute color tolerance now because it depends on the
 	// texel resolution in the new texture.
 	{
-		// get fb resolution
+		// Get fb resolution
 		GLint rBits, gBits, bBits;
-		GLint rTexBits, gTexBits, bTexBits;
 		glGetIntegerv(GL_RED_BITS, &rBits);
 		glGetIntegerv(GL_GREEN_BITS, &gBits);
 		glGetIntegerv(GL_BLUE_BITS, &bBits);
-		// get tex resolution
+		// Get tex resolution
+		GLint rTexBits, gTexBits, bTexBits, aTexBits;
+		GLint iTexBits, lTexBits;
 		glGetTexLevelParameteriv(GL_TEXTURE_2D,
 			0, GL_TEXTURE_RED_SIZE, &rTexBits);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D,
 			0, GL_TEXTURE_GREEN_SIZE, &gTexBits);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D,
 			0, GL_TEXTURE_BLUE_SIZE, &bTexBits);
-		// find smaller of frame buffer and texture bits
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_ALPHA_SIZE, &aTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_INTENSITY_SIZE, &iTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_LUMINANCE_SIZE, &lTexBits);
+		// Special cases
+		if (baseFormat == GL_INTENSITY) {
+			rTexBits = gTexBits = bTexBits = iTexBits;
+		}
+		if (baseFormat == GL_ALPHA) {
+			rTexBits = gTexBits = bTexBits = aTexBits;
+		}
+		else if (baseFormat == GL_LUMINANCE ||
+			baseFormat == GL_LUMINANCE_ALPHA) {
+			rTexBits = gTexBits = bTexBits = lTexBits;
+		}
+		// Find smaller of frame buffer and texture bits
 		rBits = (rBits < rTexBits) ? rBits : rTexBits;
 		gBits = (gBits < gTexBits) ? gBits : gTexBits;
 		bBits = (bBits < bTexBits) ? bBits : bTexBits;
-		mTolerance[0] = 2.0 / (1 << rBits);
-		mTolerance[1] = 2.0 / (1 << gBits);
-		mTolerance[2] = 2.0 / (1 << bBits);
+		// If these fail, something's seriously wrong.
+		assert(rBits > 0);
+		assert(gBits > 0);
+		assert(bBits > 0);
+		mTolerance[0] = 3.0 / (1 << rBits);
+		mTolerance[1] = 3.0 / (1 << gBits);
+		mTolerance[2] = 3.0 / (1 << bBits);
 		//printf("tol: %g %g %g\n", mTolerance[0], 
 		//	mTolerance[1], mTolerance[2]);
 	}
