@@ -287,7 +287,7 @@ runTest(GLenum logicop,
 	// operation to both the framebuffer and a copy in the image
 	// ``expected''.  Save the source pixels in the image ``src''
 	// so we can diagnose any problems we find later.
-	Image expected(dst);
+	Image expected(fbDst);
 	Image src(drawingSize, drawingSize, GL_RGBA, GL_UNSIGNED_BYTE);
 
 	glLogicOp(logicop);
@@ -354,6 +354,8 @@ env.log << '\n'
 				}
 				return result;
 			}
+			aPix += 4;
+			ePix += 4;
 		}
 		sRow += actual.rowSizeInBytes();
 		dRow += expected.rowSizeInBytes();
