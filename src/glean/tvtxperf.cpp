@@ -248,14 +248,20 @@ doComparison(const GLEAN::VPResult& oldR,
     bool& same, const string& name, GLEAN::Environment* env,
     const char* title) {
 	if (newR.tps < oldR.tpsLow) {
+		int percent = static_cast<int>(
+			100.0 * (oldR.tps - newR.tps) / newR.tps + 0.5);
 		diffHeader(same, name, config, env);
 		env->log << '\t' << env->options.db1Name
-			<< " may have higher " << title << " performance.\n";
+			<< " may be " << percent << "% faster on "
+			<< title << " drawing.\n";
 	}
 	if (newR.tps > oldR.tpsHigh) {
+		int percent = static_cast<int>(
+			100.0 * (newR.tps - oldR.tps) / oldR.tps + 0.5);
 		diffHeader(same, name, config, env);
 		env->log << '\t' << env->options.db2Name
-			<< " may have higher " << title << " performance.\n";
+			<< " may be " << percent << "% faster on "
+			<< title << " drawing.\n";
 	}
 	if (newR.imageOK != oldR.imageOK) {
 		diffHeader(same, name, config, env);
@@ -466,11 +472,11 @@ ColoredLitPerf::runOne(Result& r, Window& w) {
 	// However, we'd also like to guarantee that every triangle covers
 	// at least one pixel, so that we can confirm drawing actually took
 	// place.  As a compromise, we'll choose a number of triangles that
-	// yields approximately 5 pixels per triangle.
+	// yields approximately 3 pixels per triangle.
 	// We're drawing a filled spiral that approximates a circular area,
-	// so pi * (drawingSize/2)**2 / nTris = 5 implies...
+	// so pi * (drawingSize/2)**2 / nTris = 3 implies...
 	const int nTris = static_cast<int>
-		(((3.14159 / 4.0) * drawingSize * drawingSize) / 5.0 + 0.5);
+		(((3.14159 / 4.0) * drawingSize * drawingSize) / 3.0 + 0.5);
 	nVertices = nTris * 3;
 	int lastID = min(IDModulus - 1, nTris - 1);
 
