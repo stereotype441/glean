@@ -71,7 +71,7 @@ class DrawingSurfaceConfig;		// Forward reference.
 #define GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, ONE)                     \
 	TEST(const char* aName, const char* aFilter,                          \
 	     const char* aDescription):                                       \
-		BaseTest(aName, aFilter, aDescription) {                      \
+		BaseTest<RESULT>(aName, aFilter, aDescription) {                      \
                 fWidth  = WIDTH;                                              \
                 fHeight = HEIGHT;                                             \
                 testOne = ONE;                                                \
@@ -79,7 +79,7 @@ class DrawingSurfaceConfig;		// Forward reference.
 	TEST(const char* aName, const char* aFilter,                          \
 	     const char* anExtensionList,                                     \
 	     const char* aDescription):                                       \
-		BaseTest(aName, aFilter, anExtensionList, aDescription) {     \
+		BaseTest<RESULT>(aName, aFilter, anExtensionList, aDescription) {     \
                 fWidth  = WIDTH;                                              \
                 fHeight = HEIGHT;                                             \
 	}                                                                     \
