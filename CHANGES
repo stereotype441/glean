@@ -4,8 +4,32 @@
 Updated documentation to reflect glean's new home page on
 sourceforge.net.
 
-Adam Haberlach <adam@newsnipple.com> of Be added support for
-BeOS, as well as the "teapot" test.
+Adam Haberlach <adam@newsnipple.com> of Be added support for BeOS, as
+well as the "teapot" test.
+
+Prep work for new tests that rely on drawing lots of triangles, and
+being able to confirm that they're drawn:  Added RGBCodedID class
+(which maps an integer identifier into a unique RGB triple, and vice
+versa).  Added SpiralStrip2D and SpiralTri2D classes, which generate
+lots of geometry with well-defined characteristics.
+
+Added translation by 0.375 (as recommended by the Red Book) to the GL
+utility that sets up a simple mapping from object to screen
+coordinates.
+
+Added haveExtension() to GLUtils so that tests can conveniently check
+for the existence of a particular extension.
+
+Added the vertex-performance tests (coloredLitPerf, ...) that compare
+various ways of supplying vertex data to determine which is fastest.
+
+Added OpenGL state-setting "cheat-sheet."
+
+Added syntactic-sugar objects GLUtils::Light, GLUtils::LightModel, and
+GLUtils::Material for setting lighting parameters.
+
+Added --listtests option, which lists all the test names in sorted
+order and then exits.
 
 
 0.6 to 1.0:
