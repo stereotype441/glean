@@ -8,17 +8,27 @@ Adam Haberlach <adam@newsnipple.com> of Be added support for BeOS, as
 well as the "teapot" test.
 
 Prep work for new tests that rely on drawing lots of triangles, and
-being able to confirm that they're drawn:  Added RGBCodedID class
-(which maps an integer identifier into a unique RGB triple, and vice
-versa).  Added SpiralStrip2D and SpiralTri2D classes, which generate
-lots of geometry with well-defined characteristics.
+being able to confirm that they're drawn:  Added RGBCodedID class (which
+maps an integer identifier into a unique RGB triple, and vice versa).
+Added SpiralStrip2D and SpiralTri2D classes, which generate lots
+of geometry with well-defined characteristics.
+
+Fixed a bug in the RandomMesh2D algorithm, which sometimes generated
+overlapping triangles.
 
 Added translation by 0.375 (as recommended by the Red Book) to the GL
 utility that sets up a simple mapping from object to screen
 coordinates.
 
 Added haveExtension() to GLUtils so that tests can conveniently check
-for the existence of a particular extension.
+for the existence of a particular extension, and haveExtensions()
+so that they can check for an entire set of extensions at once.
+
+Added getProcAddress() to GLUtils to fetch addresses of extension
+functions.
+
+Added logGLErrors() to GLUtils to write textual versions of OpenGL
+errors to the logfile.
 
 Added the vertex-performance tests (coloredLitPerf, ...) that compare
 various ways of supplying vertex data to determine which is fastest.
@@ -37,6 +47,18 @@ from Brian Paul <brian@valinux.com>.)
 
 Added test for MakeCurrent functionality, checking all combinations
 of direct, indirect, and null contexts.
+
+Brian Paul added tests for masked clear and for the
+EXT_texture_env_combine extension.
+
+Made ErrorBits() function available in misc.h, so that all tests can
+conveniently compute accuracy in terms of the number of color-channel
+bits.  (Was in tblend.cpp.)
+
+Added a new constructor to the class BasicTest (tbasic.cpp) which allows
+the user to specify (as a string) a list of names of extensions which
+must be supported by a rendering context before the test will be run on
+that context.  Modified the EXT_texture_env_combine test to use it.
 
 
 0.6 to 1.0:
