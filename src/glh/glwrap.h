@@ -723,4 +723,4 @@ typedef void (GLAPIENTRY * PFNGLMULTITEXCOORD4SVARBPROC) (GLenum target, const G
 } // namespace GLEAN
 
 
-#endif  __glwrap_h__
+#endif // __glwrap_h__
