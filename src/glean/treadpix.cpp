@@ -659,6 +659,7 @@ ExactRGBATest::runOne(ExactRGBAResult& r, GLEAN::Window& w) {
 			break;
 	if (rpsRes == readPixSanityTest.results.end() || !(*rpsRes)->pass) {
 		r.skipped = true;
+		r.pass = false;
 		return;
 	}
 

@@ -32,6 +32,7 @@
 #ifndef __treadpix_h__
 #define __treadpix_h__
 
+#include <iomanip>
 #include "tbase.h"
 
 namespace GLEAN {
