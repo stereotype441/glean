@@ -100,7 +100,7 @@ TexEnvTest::TestColor(const GLfloat c1[3], const GLfloat c2[3]) {
 }
 
 //
-// Compute expected texen result given the texture env mode, the texture
+// Compute expected texenv result given the texture env mode, the texture
 // base format, texture color, fragment color, and texture env color.
 // This also blends the result with the background color if that option
 // is enabled (see above).
@@ -395,6 +395,35 @@ TexEnvTest::MakeTexImage(GLenum baseFormat, int numColors,
 	}
 	glTexImage2D(GL_TEXTURE_2D, 0, baseFormat, width, height, 0,
 		GL_RGBA, GL_FLOAT, (void *) img);
+
+	// Recompute color tolerance now because it depends on the
+	// texel resolution in the new texture.
+	{
+		// get fb resolution
+		GLint rBits, gBits, bBits;
+		GLint rTexBits, gTexBits, bTexBits;
+		glGetIntegerv(GL_RED_BITS, &rBits);
+		glGetIntegerv(GL_GREEN_BITS, &gBits);
+		glGetIntegerv(GL_BLUE_BITS, &bBits);
+		// get tex resolution
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_RED_SIZE, &rTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_GREEN_SIZE, &gTexBits);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D,
+			0, GL_TEXTURE_BLUE_SIZE, &bTexBits);
+		// find smaller of frame buffer and texture bits
+		rBits = (rBits < rTexBits) ? rBits : rTexBits;
+		gBits = (gBits < gTexBits) ? gBits : gTexBits;
+		bBits = (bBits < bTexBits) ? bBits : bTexBits;
+		mTolerance[0] = 2.0 / (1 << rBits);
+		mTolerance[1] = 2.0 / (1 << gBits);
+		mTolerance[2] = 2.0 / (1 << bBits);
+		//printf("tol: %g %g %g\n", mTolerance[0], 
+		//	mTolerance[1], mTolerance[2]);
+	}
+
+
 }
 
 
@@ -528,36 +557,6 @@ TexEnvTest::runOne(BasicResult& r, Window& w) {
 		colors[i][1] = (float) g / 2.0;
 		colors[i][2] = (float) b / 2.0;
 		colors[i][3] = (float) a / 2.0;
-	}
-
-	// compute RGB error tolerance
-	// XXX this may need to be tweaked a bit
-	{
-		// make dummy texture
-		static const GLfloat tex[8][8][4];
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0,
-			GL_RGBA, GL_FLOAT, (void *) tex);
-		// get fb and tex color resolution
-		GLint rBits, gBits, bBits;
-		GLint rTexBits, gTexBits, bTexBits;
-		glGetIntegerv(GL_RED_BITS, &rBits);
-		glGetIntegerv(GL_GREEN_BITS, &gBits);
-		glGetIntegerv(GL_BLUE_BITS, &bBits);
-		glGetTexLevelParameteriv(GL_TEXTURE_2D,
-			0, GL_TEXTURE_RED_SIZE, &rTexBits);
-		glGetTexLevelParameteriv(GL_TEXTURE_2D,
-			0, GL_TEXTURE_GREEN_SIZE, &gTexBits);
-		glGetTexLevelParameteriv(GL_TEXTURE_2D,
-			0, GL_TEXTURE_BLUE_SIZE, &bTexBits);
-		// find smaller of frame buffer and texture bits
-		rBits = (rBits < rTexBits) ? rBits : rTexBits;
-		gBits = (gBits < gTexBits) ? gBits : gTexBits;
-		bBits = (bBits < bTexBits) ? bBits : bTexBits;
-		mTolerance[0] = 2.0 / (1 << rBits);
-		mTolerance[1] = 2.0 / (1 << gBits);
-		mTolerance[2] = 2.0 / (1 << bBits);
-		//printf("tol: %g %g %g\n", mTolerance[0], 
-		//	mTolerance[1], mTolerance[2]);
 	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
