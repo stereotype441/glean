@@ -35,74 +35,6 @@ class DrawingSurfaceConfig;		// Forward reference.
 
 namespace GLEAN {
 
-struct point {
-	float nx,ny,nz;
-	float x,y,z;
-};
-
-struct tri {
-	int p1,p2,p3;
-};
-
-struct quadStrip {
-	int numpts;
-	int *pts;
-};
-
-
-/* I hope nobody minds this being entirely declared and implemented */
-/* in this header file... */
-template <class T>
-struct BufferArray
-{
-  T * items;
-  int num_items;
-  int num_slots;
-  int slot_inc;
-  
-  void resize(int i)
-  {
-    items = (T*)realloc(items,sizeof(T)*i);
-    num_slots = i;
-  };
-  
-  T & operator [](int index)
-  {
-    assert(index < num_items);
-    return items[index];
-  };
-
-  T & get(int index)
-  {
-    assert(index < num_items);
-    return items[index];
-  };
-  
-  void add(T &item)
-  {
-    if (num_items == num_slots)
-      resize(num_slots+slot_inc);
-    memcpy(items+num_items,&item,sizeof(item));
-    num_items++;
-  };
-  
-  BufferArray(int start_slots, int _slot_inc)
-  {
-    num_slots = start_slots;
-    slot_inc = _slot_inc;
-    assert(slot_inc > 0);
-    num_items = 0;
-    items = (T*)malloc(sizeof(T)*num_slots);
-  };  
-
-  ~BufferArray()
-  {
-  	free(items);
-  };
-};
-
-
-
 class TeapotTest: public Test {
 public:
 	TeapotTest(const char* testName, const char* filter, const char* description);
@@ -132,13 +64,8 @@ public:
 		virtual ~Result() { }
 	};
 
-	point *vertexArrayData;
-	BufferArray<tri>		triangles;
-	BufferArray<quadStrip>	qs;
-
-	int	fWidth;
+	int fWidth;
 	int fHeight;
-	bool fInitFailed;
 
 	vector<Result*> results;
 
