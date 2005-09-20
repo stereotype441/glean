@@ -277,6 +277,10 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::XVisualInfo* pvi) {
 #if defined(GLX_VERSION_1_3)
 DrawingSurfaceConfig::DrawingSurfaceConfig(::Display* dpy, ::GLXFBConfig* pfbc)
 {
+	// silence warnings about unused parameters:
+	(void) dpy;
+	(void) pfbc;
+
 	if (!mapsInitialized)
 		initializeMaps();
 // XXX Need to write drawing surface config code for GLX 1.3
