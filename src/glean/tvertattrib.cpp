@@ -45,6 +45,7 @@
 // Author: Brian Paul (brian.paul a t tungstengraphics.com)  October 2004
 
 
+#include <math.h>
 #include "tvertattrib.h"
 #include "glutils.h"
 #include <cassert>
@@ -1512,6 +1513,7 @@ VertAttribTest::Test20funcs(VertAttribResult &r)
 #ifdef GL_VERSION_2_0
 	PFNGLGETVERTEXATTRIBFVPROC getAttribfv;
 	GLint numAttribs;
+	Aliasing aliasing = REQUIRED;
 
 	getAttribfv = (PFNGLGETVERTEXATTRIBFVPROC) GLUtils::getProcAddress("glGetVertexAttribfv");
 	assert(getAttribfv);
