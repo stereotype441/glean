@@ -65,6 +65,8 @@ public:
 			     double* low, double* avg, double* high);
 	
 	Timer() { overhead = 0.0; calibrated = false; }
+        virtual ~Timer() { /* just silence warning */ }
+
 }; // class Timer
 
 } // namespace GLEAN
