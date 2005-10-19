@@ -30,8 +30,8 @@
 // Brian Paul  6 October 2005
 
 
-#define GL_GLEXT_PROTOTYPES
 #include "tpointatten.h"
+#include <assert.h>
 #include <cmath>
 
 
@@ -59,7 +59,7 @@ PointAttenuationTest::setup(void)
 		GLUtils::getProcAddress("glPointParameterfARB");
 	assert(PointParameterfARB);
 
-	glGetFloatv(GL_POINT_SIZE_RANGE, aliasedLimits);
+	glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, aliasedLimits);
 	glGetFloatv(GL_SMOOTH_POINT_SIZE_RANGE, smoothLimits);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
