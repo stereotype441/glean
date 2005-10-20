@@ -30,6 +30,7 @@
 // Brian Paul  1 October 2005
 
 
+#ifdef GL_EXT_packed_depth_stencil
 
 #include "tdepthstencil.h"
 #include "rand.h"
@@ -418,3 +419,5 @@ DepthStencilTest depthstencilTest("depthStencil", "window, rgb",
 
 
 } // namespace GLEAN
+
+#endif // GL_EXT_packed_depth_stencil
