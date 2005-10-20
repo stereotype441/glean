@@ -34,7 +34,7 @@ using namespace std;
 
 #include "geomutil.h"
 #include "rand.h"
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <cmath>
 #include <float.h>

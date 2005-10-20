@@ -31,7 +31,7 @@
 
 
 #include "tpointatten.h"
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 
 

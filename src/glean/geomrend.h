@@ -39,7 +39,7 @@
 #define __geomrend_h__
 
 #include "glwrap.h"
-#include <assert.h>
+#include <cassert>
 
 namespace GLEAN {
 

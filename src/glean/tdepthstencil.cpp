@@ -35,7 +35,7 @@
 #include "rand.h"
 #include "timer.h"
 #include "image.h"
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 
 

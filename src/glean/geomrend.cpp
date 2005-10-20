@@ -43,7 +43,7 @@ using namespace std;
 #include <iostream>
 #include <cmath>
 #include <float.h>
-#include <assert.h>
+#include <cassert>
 
 namespace GLEAN {
 
