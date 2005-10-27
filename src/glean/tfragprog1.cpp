@@ -239,7 +239,6 @@ FragmentProgramTest::setup(void)
 	glGenProgramsARB_func(1, &progID);
 	glBindProgramARB_func(GL_FRAGMENT_PROGRAM_ARB, progID);
 	glEnable(GL_FRAGMENT_PROGRAM_ARB);
-	glEnable(GL_DEPTH_TEST);
 
 	// load program inputs
 	glColor4fv(FragColor);
@@ -356,6 +355,12 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 		env->log << p.progString;
 		return false;
 	}
+
+	// to avoid potential issue with undefined result.depth.z
+	if (p.expectedZ == DONT_CARE_Z)
+		glDisable(GL_DEPTH_TEST);
+	else
+		glEnable(GL_DEPTH_TEST);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBegin(GL_POLYGON);
