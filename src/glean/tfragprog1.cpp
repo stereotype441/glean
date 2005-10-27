@@ -58,10 +58,12 @@ static PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB_func;
 
 // Clamp X to [0, 1]
 #define CLAMP01( X )  ( (X)<(0.0) ? (0.0) : ((X)>(1.0) ? (1.0) : (X)) )
+// Absolute value
+#define ABS(X)  ( (X) < 0.0 ? -(X) : (X) )
 
 #define DONT_CARE_Z -1.0
 
-#define FRAGCOLOR { 0.25, 0.5, 0.75, 0.5 }
+#define FRAGCOLOR { 0.25, 0.75, 0.5, 0.25 }
 #define PARAM0 { 0.0, 0.0, 0.0, 0.0 }
 #define PARAM1 { 0.5, 0.25, 1.0, 0.5 }
 #define PARAM2 { -1.0, 0.0, 0.25, -0.5 }
@@ -72,13 +74,19 @@ static const GLfloat Param2[4] = PARAM2;
 
 
 // These are the specific fragment programs which we'll test
-static FragmentProgram Programs[] = {
+// Alphabetical order, please
+static const FragmentProgram Programs[] = {
 	{
-		"MOV test",
+		"ABS test",
 		"!!ARBfp1.0\n"
-		"MOV result.color, fragment.color; \n"
+		"PARAM p = program.local[2]; \n"
+		"ABS result.color, p; \n"
 		"END \n",
-		FRAGCOLOR,
+		{ ABS(Param2[0]),
+		  ABS(Param2[1]),
+		  ABS(Param2[2]),
+		  ABS(Param2[3])
+		},
 		DONT_CARE_Z,
 	},
 	{
@@ -90,8 +98,58 @@ static FragmentProgram Programs[] = {
 		{ CLAMP01(FragColor[0] + Param1[0]),
 		  CLAMP01(FragColor[1] + Param1[1]),
 		  CLAMP01(FragColor[2] + Param1[2]),
-		  CLAMP01(FragColor[3] + Param1[3]) },		 
+		  CLAMP01(FragColor[3] + Param1[3])
+		},
 		DONT_CARE_Z
+	},
+	{
+		"CMP test",
+		"!!ARBfp1.0\n"
+		"PARAM zero = program.local[0]; \n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"CMP result.color, p2, zero, p1; \n"
+		"END \n",
+		{ Param0[0], Param1[1], Param1[2], Param0[3] },
+		DONT_CARE_Z
+	},
+	{
+		"DP3 test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"DP3 result.color, p1, fragment.color; \n"
+		"END \n",
+		{ CLAMP01(Param1[0] * FragColor[0] +
+			  Param1[1] * FragColor[1] +
+			  Param1[2] * FragColor[2]),
+		  CLAMP01(Param1[0] * FragColor[0] +
+			  Param1[1] * FragColor[1] +
+			  Param1[2] * FragColor[2]),
+		  CLAMP01(Param1[0] * FragColor[0] +
+			  Param1[1] * FragColor[1] +
+			  Param1[2] * FragColor[2]),
+		  CLAMP01(Param1[0] * FragColor[0] +
+			  Param1[1] * FragColor[1] +
+			  Param1[2] * FragColor[2])
+		},
+		DONT_CARE_Z
+	},
+	{
+		"FRC test",
+		"!!ARBfp1.0\n"
+		"PARAM values = {-1.1, 0.1, -2.2, 2.4 }; \n"
+		"FRC result.color, values; \n"
+		"END \n",
+		{ 0.9, 0.1, 0.8, 0.4 },
+		DONT_CARE_Z
+	},
+	{
+		"MOV test",
+		"!!ARBfp1.0\n"
+		"MOV result.color, fragment.color; \n"
+		"END \n",
+		FRAGCOLOR,
+		DONT_CARE_Z,
 	},
 	{
 		"MUL test",
@@ -102,7 +160,8 @@ static FragmentProgram Programs[] = {
 		{ CLAMP01(FragColor[0] * Param1[0]),
 		  CLAMP01(FragColor[1] * Param1[1]),
 		  CLAMP01(FragColor[2] * Param1[2]),
-		  CLAMP01(FragColor[3] * Param1[3]) },		 
+		  CLAMP01(FragColor[3] * Param1[3])
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -116,7 +175,8 @@ static FragmentProgram Programs[] = {
 		{ CLAMP01(FragColor[0] * Param1[0]),
 		  CLAMP01(FragColor[1] * Param1[1]),
 		  0.0,
-		  0.0 },
+		  0.0
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -128,7 +188,8 @@ static FragmentProgram Programs[] = {
 		{ 1.0,
 		  Param1[0],
 		  Param1[2],
-		  0.0 },
+		  0.0
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -141,22 +202,9 @@ static FragmentProgram Programs[] = {
 		{ Param1[0],
 		  Param1[1],
 		  Param1[2],
-		  Param1[3] },
+		  Param1[3]
+		},
 		Param1[1]
-	},
-        {
-		"CMP test",
-		"!!ARBfp1.0\n"
-		"PARAM zero = program.local[0]; \n"
-		"PARAM p1 = program.local[1]; \n"
-		"PARAM p2 = program.local[2]; \n"
-		"CMP result.color, p2, zero, p1; \n"
-		"END \n",
-		{ Param0[0],
-		  Param1[1],
-		  Param1[2],
-		  Param0[3] },
-		DONT_CARE_Z
 	},
 
 	// XXX add lots more tests here!
@@ -322,7 +370,8 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 		     GL_RGBA, GL_FLOAT, pixel);
 
         if (0) // debug
-           printf("Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
+           printf("%s: Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
+                  p.name,
                   p.expectedColor[0], p.expectedColor[1],
                   p.expectedColor[2], p.expectedColor[3], 
                   pixel[0], pixel[1], pixel[2], pixel[3]);
