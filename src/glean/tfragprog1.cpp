@@ -183,12 +183,12 @@ static const FragmentProgram Programs[] = {
 		"SWZ test",
 		"!!ARBfp1.0\n"
 		"PARAM p = program.local[1]; \n"
-		"SWZ result.color, p, 1,x,z,0; \n"
+		"SWZ result.color, p, -1,-y,z,0; \n"
 		"END \n",
-		{ 1.0,
-		  Param1[0],
-		  Param1[2],
-		  0.0
+		{ CLAMP01(-1.0),
+		  CLAMP01(-Param1[1]),
+		  CLAMP01(Param1[2]),
+		  CLAMP01(0.0)
 		},
 		DONT_CARE_Z
 	},
