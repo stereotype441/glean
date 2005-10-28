@@ -58,6 +58,7 @@ static GLuint progID;
 #define MAX( A, B )   ( (A) > (B) ? (A) : (B) )
 
 #define DONT_CARE_Z -1.0
+#define DONT_CARE_COLOR -1.0
 
 #define VERTCOLOR { 0.25, 0.75, 0.5, 0.25 }
 #define PARAM0 { 0.0, 0.0, 0.0, 0.0 }
@@ -141,6 +142,39 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(-Param1[1]),
 		  CLAMP01(-1),
 		  0.0
+		},
+		DONT_CARE_Z
+	},
+	{
+		"XPD test",
+		"!!ARBvp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"MOV result.position, vertex.position; \n"
+		"XPD result.color, p1, p2; \n"
+		"END \n",
+		{ CLAMP01(Param1[1] * Param2[2] - Param1[2] * Param2[1]),
+		  CLAMP01(Param1[2] * Param2[0] - Param1[0] * Param2[2]),
+		  CLAMP01(Param1[0] * Param2[1] - Param1[1] * Param2[0]),
+		  DONT_CARE_COLOR
+		},
+		DONT_CARE_Z
+	},
+	{
+		"XPD test 2 (same src/dst arg)",
+		"!!ARBvp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"TEMP t; \n"
+		"MOV result.position, vertex.position; \n"
+		"MOV t, p1; \n"
+		"XPD t, t, p2; \n"
+		"MOV result.color, t; \n"
+		"END \n",
+		{ CLAMP01(Param1[1] * Param2[2] - Param1[2] * Param2[1]),
+		  CLAMP01(Param1[2] * Param2[0] - Param1[0] * Param2[2]),
+		  CLAMP01(Param1[0] * Param2[1] - Param1[1] * Param2[0]),
+		  DONT_CARE_COLOR
 		},
 		DONT_CARE_Z
 	},
@@ -254,13 +288,14 @@ VertexProgramTest::reportSuccess(int count) const
 }
 
 
+// Compare actual and expected colors
 bool
-VertexProgramTest::equalColors(const GLfloat a[4], const GLfloat b[4]) const
+VertexProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
 {
-	if (fabsf(a[0] - b[0]) > tolerance[0] ||
-	    fabsf(a[1] - b[1]) > tolerance[1] ||
-	    fabsf(a[2] - b[2]) > tolerance[2] ||
-	    fabsf(a[3] - b[3]) > tolerance[3]) 
+	if (fabsf(act[0] - exp[0]) > tolerance[0] ||
+	    fabsf(act[1] - exp[1]) > tolerance[1] ||
+	    fabsf(act[2] - exp[2]) > tolerance[2] ||
+	    (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR))
 		return false;
 	else
 		return true;
@@ -337,6 +372,9 @@ VertexProgramTest::testProgram(const VertexProgram &p)
 			return false;
 		}
 	}
+
+	if (0) // debug
+	   printf("%s passed\n", p.name);
 
 	return true;
 }
