@@ -60,8 +60,15 @@ static PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB_func;
 #define CLAMP01( X )  ( (X)<(0.0) ? (0.0) : ((X)>(1.0) ? (1.0) : (X)) )
 // Absolute value
 #define ABS(X)  ( (X) < 0.0 ? -(X) : (X) )
+// Max
+#define MAX( A, B )   ( (A) > (B) ? (A) : (B) )
+// Min
+#define MIN( A, B )   ( (A) < (B) ? (A) : (B) )
+// Duplicate value four times
+#define SMEAR(X)  (X), (X), (X), (X)
 
 #define DONT_CARE_Z -1.0
+#define DONT_CARE_COLOR -1.0
 
 #define FRAGCOLOR { 0.25, 0.75, 0.5, 0.25 }
 #define PARAM0 { 0.0, 0.0, 0.0, 0.0 }
@@ -114,23 +121,108 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		"COS test",
+		"!!ARBfp1.0\n"
+		"PARAM values = { 0.0, 3.14159, 0.5, 1.0 }; \n"
+		"COS result.color.x, values.x; \n"
+		"COS result.color.y, values.y; \n"
+		"COS result.color.z, values.z; \n"
+		"COS result.color.w, values.w; \n"
+		"END \n",
+		{ CLAMP01(1.0),
+		  CLAMP01(-1.0),
+		  CLAMP01(0.8775),
+		  CLAMP01(0.5403)
+		},
+		DONT_CARE_Z
+	},
+	{
 		"DP3 test",
 		"!!ARBfp1.0\n"
 		"PARAM p1 = program.local[1]; \n"
 		"DP3 result.color, p1, fragment.color; \n"
 		"END \n",
-		{ CLAMP01(Param1[0] * FragColor[0] +
-			  Param1[1] * FragColor[1] +
-			  Param1[2] * FragColor[2]),
-		  CLAMP01(Param1[0] * FragColor[0] +
-			  Param1[1] * FragColor[1] +
-			  Param1[2] * FragColor[2]),
-		  CLAMP01(Param1[0] * FragColor[0] +
-			  Param1[1] * FragColor[1] +
-			  Param1[2] * FragColor[2]),
-		  CLAMP01(Param1[0] * FragColor[0] +
-			  Param1[1] * FragColor[1] +
-			  Param1[2] * FragColor[2])
+		{ SMEAR(CLAMP01(Param1[0] * FragColor[0] +
+                                Param1[1] * FragColor[1] +
+                                Param1[2] * FragColor[2]))
+		},
+		DONT_CARE_Z
+	},
+	{
+		"DP4 test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"DP4 result.color, p1, fragment.color; \n"
+		"END \n",
+		{ SMEAR(CLAMP01(Param1[0] * FragColor[0] +
+                                Param1[1] * FragColor[1] +
+                                Param1[2] * FragColor[2] +
+                                Param1[3] * FragColor[3]))
+		},
+		DONT_CARE_Z
+	},
+	{
+		"DPH test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+                "PARAM scale = {0.1, 0.1, 0.1, 0.1}; \n"
+                "TEMP t; \n"
+		"DPH t, p1, fragment.color; \n"
+		"MUL result.color, t, scale; \n"
+		"END \n",
+		{ SMEAR(CLAMP01((Param1[0] * FragColor[0] +
+                                 Param1[1] * FragColor[1] +
+                                 Param1[2] * FragColor[2] +
+                                 FragColor[3]) * 0.1))
+		},
+		DONT_CARE_Z
+	},
+	{
+		"DST test",
+		"!!ARBfp1.0\n"
+		"# let d = 0.4 \n"
+		"PARAM v1 = {9.9, 0.16, 0.16, 9.9}; \n"
+		"PARAM v2 = {9.9, 2.5, 9.9, 2.5}; \n"
+		"DST result.color, v1, v2; \n"
+		"END \n",
+		{ 1.0,
+		  0.4,           // v1.y * v2.y
+		  0.16,          // v1.z
+		  CLAMP01(2.5)   // v2.w
+		},
+		DONT_CARE_Z
+	},
+	{
+		"EX2 test",
+		"!!ARBfp1.0\n"
+                "PARAM scale = {0.01, 0.01, 0.01, 0.01}; \n"
+		"PARAM values = {0.0, 1.0, 4.0, -2.0 }; \n"
+                "TEMP t; \n"
+		"EX2 t.x, values.x; \n"
+		"EX2 t.y, values.y; \n"
+		"EX2 t.z, values.z; \n"
+		"EX2 t.w, values.w; \n"
+		"MUL result.color, t, scale; \n"
+		"END \n",
+		{  1.0 * 0.01,
+                   2.0 * 0.01,
+                  16.0 * 0.01,
+                  0.25 * 0.01 },
+		DONT_CARE_Z
+	},
+	{
+		"FLR test",
+		"!!ARBfp1.0\n"
+		"PARAM values = {4.8, 0.3, -0.2, 1.2}; \n"
+		"PARAM scale = {0.1, 0.1, 0.1, 0.1}; \n"
+		"TEMP t; \n"
+		"FLR t, values; \n"
+		"MUL result.color, t, scale; \n"
+		"END \n",
+		{ 0.4,
+		  0.0,
+		  CLAMP01(-0.1),
+		  0.1
 		},
 		DONT_CARE_Z
 	},
@@ -141,6 +233,119 @@ static const FragmentProgram Programs[] = {
 		"FRC result.color, values; \n"
 		"END \n",
 		{ 0.9, 0.1, 0.8, 0.4 },
+		DONT_CARE_Z
+	},
+	{
+		"LG2 test",
+		"!!ARBfp1.0\n"
+		"PARAM values = {64.0, 1, 30, 4}; \n"
+		"PARAM scale = {0.1, 0.1, 0.1, 0.1}; \n"
+		"TEMP t; \n"
+		"LG2 t.x, values.x; \n"
+		"LG2 t.y, values.y; \n"
+		"LG2 t.z, values.z; \n"
+		"LG2 t.w, values.w; \n"
+		"MUL result.color, t, scale; \n"
+		"END \n",
+		{ 0.6,
+		  0.0,
+		  0.49,
+		  0.2
+		},
+		DONT_CARE_Z
+	},
+	{
+		"LIT test 1",
+		"!!ARBfp1.0\n"
+		"PARAM values = {0.65, 0.9, 0.0, 8.0}; \n"
+		"LIT result.color, values; \n"
+		"END \n",
+		{ 1.0,
+		  0.65,    // values.x
+		  0.433,   // roughly Pow(values.y, values.w)
+		  1.0
+		},
+		DONT_CARE_Z
+	},
+	{
+		"LIT test 2 (degenerate case: 0 ^ 0 -> 1)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {0.65, 0.0, 0.0, 0.0}; \n"
+		"LIT result.color, values; \n"
+		"END \n",
+		{ 1.0,
+		  0.65,    // values.x
+		  1.0,     // 0^0
+		  1.0
+		},
+		DONT_CARE_Z
+	},
+	{
+		"LIT test 3 (case x < 0)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {-0.5, 0.0, 0.0, 0.0}; \n"
+		"LIT result.color, values; \n"
+		"END \n",
+		{ 1.0,
+		  CLAMP01(-0.5),    // values.x
+		  0.0,
+		  1.0
+		},
+		DONT_CARE_Z
+	},
+        {
+		"LRP test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM t = {0.2, 0.5, 1.0, 0.0}; \n"
+		"LRP result.color, t, fragment.color, p1; \n"
+		"END \n",
+		{ 0.2 * FragColor[0] + (1.0 - 0.2) * Param1[0],
+		  0.5 * FragColor[1] + (1.0 - 0.5) * Param1[1],
+		  1.0 * FragColor[2] + (1.0 - 1.0) * Param1[2],
+		  0.0 * FragColor[3] + (1.0 - 0.0) * Param1[3]
+		},
+		DONT_CARE_Z
+	},
+	{
+		"MAD test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"MAD result.color, fragment.color, p1, p2; \n"
+		"END \n",
+		{ CLAMP01(FragColor[0] * Param1[0] + Param2[0]),
+		  CLAMP01(FragColor[1] * Param1[1] + Param2[1]),
+		  CLAMP01(FragColor[2] * Param1[2] + Param2[2]),
+		  CLAMP01(FragColor[3] * Param1[3] + Param2[3])
+		},
+		DONT_CARE_Z
+	},
+	{
+		"MAX test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"MAX result.color, p1, p2; \n"
+		"END \n",
+		{ MAX(Param1[0], Param2[0]),
+		  MAX(Param1[1], Param2[1]),
+		  MAX(Param1[2], Param2[2]),
+		  MAX(Param1[3], Param2[3]),
+		},
+		DONT_CARE_Z
+	},
+	{
+		"MIN test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"MIN result.color, p1, fragment.color; \n"
+		"END \n",
+		{ MIN(Param1[0], FragColor[0]),
+		  MIN(Param1[1], FragColor[1]),
+		  MIN(Param1[2], FragColor[2]),
+		  MIN(Param1[3], FragColor[3]),
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -180,6 +385,115 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		"POW test (exponentiation)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {0.5, 2, 3, 4}; \n"
+		"POW result.color.x, values.x, values.y; \n"
+		"POW result.color.y, values.x, values.z; \n"
+		"POW result.color.z, values.x, values.w; \n"
+		"POW result.color.w, values.w, values.x; \n"
+		"END \n",
+		{ 0.5 * 0.5,
+		  0.5 * 0.5 * 0.5,
+		  0.5 * 0.5 * 0.5 * 0.5,
+		  CLAMP01(2.0) },
+		DONT_CARE_Z
+	},
+	{
+		"RCP test (reciprocal)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {8, -10, 1, 12 }; \n"
+		"RCP result.color.x, values.x; \n"
+		"RCP result.color.y, values.y; \n"
+		"RCP result.color.z, values.z; \n"
+		"RCP result.color.w, values.w; \n"
+		"END \n",
+		{ 1.0 / 8.0, CLAMP01(1.0 / -10.0), 1, 1.0 / 12.0 },
+		DONT_CARE_Z
+	},
+	{
+		"RSQ test (reciprocal square root)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {1, 4, 9, 100 }; \n"
+		"RSQ result.color.x, values.x; \n"
+		"RSQ result.color.y, values.y; \n"
+		"RSQ result.color.z, values.z; \n"
+		"RSQ result.color.w, values.w; \n"
+		"END \n",
+		{ 1.0, 0.5, 0.3333, 0.1 },
+		DONT_CARE_Z
+	},
+	{
+		"SCS test",
+		"!!ARBfp1.0\n"
+		"PARAM values = { 0.5, 0.5, 0.0, 0.0 }; \n"
+		"SCS result.color.x, values.x; \n"
+		"SCS result.color.y, values.y; \n"
+		"END \n",
+		{ CLAMP01(0.8775),
+		  CLAMP01(0.4794),
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		},
+		DONT_CARE_Z
+	},
+	{
+		"SGE test",
+		"!!ARBfp1.0\n"
+		"PARAM p0 = program.local[0]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"SGE result.color, p2, p0; \n"
+		"END \n",
+		{ Param2[0] >= Param0[0] ? 1.0 : 0.0,
+		  Param2[1] >= Param0[1] ? 1.0 : 0.0,
+		  Param2[2] >= Param0[2] ? 1.0 : 0.0,
+		  Param2[3] >= Param0[3] ? 1.0 : 0.0,
+		},
+		DONT_CARE_Z
+	},
+	{
+		"SIN test",
+		"!!ARBfp1.0\n"
+		"PARAM values = { 1.57079, -1.57079, 0.5, 1.0 }; \n"
+		"SIN result.color.x, values.x; \n"
+		"SIN result.color.y, values.y; \n"
+		"SIN result.color.z, values.z; \n"
+		"SIN result.color.w, values.w; \n"
+		"END \n",
+		{ CLAMP01(1.0),
+		  CLAMP01(-1.0),
+		  CLAMP01(0.4794),
+		  CLAMP01(0.8414)
+		},
+		DONT_CARE_Z
+	},
+	{
+		"SLT test",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"SLT result.color, fragment.color, p1; \n"
+		"END \n",
+		{ FragColor[0] < Param1[0] ? 1.0 : 0.0,
+		  FragColor[1] < Param1[1] ? 1.0 : 0.0,
+		  FragColor[2] < Param1[2] ? 1.0 : 0.0,
+		  FragColor[3] < Param1[3] ? 1.0 : 0.0,
+		},
+		DONT_CARE_Z
+	},
+	{
+		"SUB test (with swizzle)",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"SUB result.color, p1.yxwz, fragment.color.yxwz; \n"
+		"END \n",
+		{ CLAMP01(Param1[1] - FragColor[1]),
+		  CLAMP01(Param1[0] - FragColor[0]),
+		  CLAMP01(Param1[3] - FragColor[3]),
+		  CLAMP01(Param1[2] - FragColor[2])
+		},
+		DONT_CARE_Z
+	},
+	{
 		"SWZ test",
 		"!!ARBfp1.0\n"
 		"PARAM p = program.local[1]; \n"
@@ -189,6 +503,20 @@ static const FragmentProgram Programs[] = {
 		  CLAMP01(-Param1[1]),
 		  CLAMP01(Param1[2]),
 		  CLAMP01(0.0)
+		},
+		DONT_CARE_Z
+	},
+	{
+		"XPD test 1",
+		"!!ARBfp1.0\n"
+		"PARAM p1 = program.local[1]; \n"
+		"PARAM p2 = program.local[2]; \n"
+		"XPD result.color, p1, p2; \n"
+		"END \n",
+		{ CLAMP01(Param1[1] * Param2[2] - Param1[2] * Param2[1]),
+		  CLAMP01(Param1[2] * Param2[0] - Param1[0] * Param2[2]),
+		  CLAMP01(Param1[0] * Param2[1] - Param1[1] * Param2[0]),
+		  DONT_CARE_COLOR
 		},
 		DONT_CARE_Z
 	},
@@ -206,7 +534,6 @@ static const FragmentProgram Programs[] = {
 		},
 		Param1[1]
 	},
-
 	// XXX add lots more tests here!
 	{ NULL, NULL, {0,0,0,0}, 0 } // end of list sentinal
 };
@@ -286,13 +613,13 @@ FragmentProgramTest::reportFailure(const char *programName,
 				   const GLfloat actualColor[4] ) const
 {
 	env->log << "FAILURE:\n";
-	env->log << "Program: " << programName << "\n";
-	env->log << "Expected color: ";
+	env->log << "  Program: " << programName << "\n";
+	env->log << "  Expected color: ";
 	env->log << expectedColor[0] << ", ";
 	env->log << expectedColor[1] << ", ";
 	env->log << expectedColor[2] << ", ";
 	env->log << expectedColor[3] << "\n";
-	env->log << "Observed color: ";
+	env->log << "  Observed color: ";
 	env->log << actualColor[0] << ", ";
 	env->log << actualColor[1] << ", ";
 	env->log << actualColor[2] << ", ";
@@ -304,9 +631,9 @@ FragmentProgramTest::reportZFailure(const char *programName,
 				    GLfloat expectedZ, GLfloat actualZ) const
 {
 	env->log << "FAILURE:\n";
-	env->log << "Program: " << programName << "\n";
-	env->log << "Expected Z: " << expectedZ << "\n";
-	env->log << "Observed Z: " << actualZ << "\n";
+	env->log << "  Program: " << programName << "\n";
+	env->log << "  Expected Z: " << expectedZ << "\n";
+	env->log << "  Observed Z: " << actualZ << "\n";
 }
 
 void
@@ -317,13 +644,14 @@ FragmentProgramTest::reportSuccess(int count) const
 }
 
 
+// Compare actual and expected colors
 bool
-FragmentProgramTest::equalColors(const GLfloat a[4], const GLfloat b[4]) const
+FragmentProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
 {
-	if (fabsf(a[0] - b[0]) > tolerance[0] ||
-	    fabsf(a[1] - b[1]) > tolerance[1] ||
-	    fabsf(a[2] - b[2]) > tolerance[2] ||
-	    fabsf(a[3] - b[3]) > tolerance[3]) 
+	if (fabsf(act[0] - exp[0]) > tolerance[0] ||
+	    fabsf(act[1] - exp[1]) > tolerance[1] ||
+	    (fabsf(act[2] - exp[2]) > tolerance[2] && exp[2] != DONT_CARE_COLOR) ||
+	    (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR))
 		return false;
 	else
 		return true;
@@ -353,6 +681,7 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 		env->log << "OpenGL error " << (int) err << "\n";
 		env->log << "Invalid Fragment Program:\n";
 		env->log << p.progString;
+                env->log << glGetString(GL_PROGRAM_ERROR_STRING_ARB) << "\n";
 		return false;
 	}
 
@@ -404,15 +733,17 @@ FragmentProgramTest::runOne(BasicResult &r, Window &w)
 {
 	(void) w;
 	setup();
+	r.pass = true;
 	int i;
 	for (i = 0; Programs[i].name; i++) {
 		if (!testProgram(Programs[i])) {
 			r.pass = false;
-			return;
+			// continue with next test
 		}
 	}
-	reportSuccess(i);
-	r.pass = true;
+	if (r.pass) {
+		reportSuccess(i);
+	}
 }
 
 
