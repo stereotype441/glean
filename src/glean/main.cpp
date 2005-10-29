@@ -76,6 +76,9 @@ main(int argc, char* argv[]) {
 			o.mode = Options::run;
 			++i;
 			o.db1Name = mandatoryArg(argc, argv, i);
+		} else if (!strcmp(argv[i], "-o")
+		    || !strcmp(argv[i], "--overwrite")) {
+			o.overwrite = true;
 		} else if (!strcmp(argv[i], "-c")
 		    || !strcmp(argv[i], "--compare")) {
 			o.mode = Options::compare;
@@ -299,6 +302,7 @@ usage(char* command) {
 "options:\n"
 "       (-v|--verbose)             # each occurrence increases\n"
 "                                  # verbosity of output\n"
+"       (-o|--overwrite)           # overwrite existing results database\n"
 "       --visuals 'filter-string'  # select subset of visuals (FBConfigs,\n"
 "                                  # pixel formats) to test\n"
 "       (-t|--tests) {(+|-)test}   # choose tests to include (+) or exclude (-)\n"

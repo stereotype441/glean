@@ -60,6 +60,13 @@ Environment::Environment(Options& opt):
 	// If running tests, first create the results directory.
 	// Refuse to overwrite one that already exists.
 	if (opt.mode == Options::run) {
+		if (opt.overwrite) {
+			// remove existing db dir
+			// XXX using system() probably isn't ideal
+			char cmd[1000];
+			snprintf(cmd, 999, "rm -rf %s", opt.db1Name.c_str());
+			system(cmd);
+		}
 		if (mkdir(opt.db1Name.c_str(), 0755)) {
 			if (errno == EEXIST)
 				throw DBExists();
@@ -80,6 +87,10 @@ Environment::Environment(Options& opt):
 	// If running tests, first create the results directory.
 	// Refuse to overwrite one that already exists.
 	if (opt.mode == Options::run) {
+		if (opt.overwrite) {
+			// XXX a Windows programmer needs to complete this
+			abort();
+		}
 		if (!CreateDirectory(opt.db1Name.c_str(),0)) {
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 				throw DBExists();

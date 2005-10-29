@@ -47,6 +47,7 @@ Options::Options() {
 	db2Name = "previous";
 	visFilter = "1";
 	selectedTests.resize(0);
+	overwrite = false;
 #   if defined(__X11__)
 	{
 	char* display = getenv("DISPLAY");
