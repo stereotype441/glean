@@ -35,8 +35,8 @@ results in that directory:
 <PRE>
     $GLEAN_ROOT/bin/glean -r myogl
 </PRE>
-The results directory must not exist prior to running <I>glean</I>;
-<I>glean</I> will not overwrite existing information.
+Unless the <i>-o</i> or <i>--overwrite</i> option is specified,
+<I>glean</I> will not allow writing to an already existing results directory.
 
 <P>
 As glean runs, it produces a log containing information like
