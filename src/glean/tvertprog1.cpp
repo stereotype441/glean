@@ -68,10 +68,18 @@ static GLuint progID;
 #define PARAM0 { 0.0, 0.0, 0.0, 0.0 }     // all zero
 #define PARAM1 { 0.5, 0.25, 0.9, 0.5 }    // in [0,1]
 #define PARAM2 { -1.0, 0.0, 0.25, -0.5 }  // in [-1,1]
+#define AMBIENT { 0.2, 0.4, 0.6, 0.8 }
+#define DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
 static const GLfloat VertColor[4] = VERTCOLOR;
 static const GLfloat Param0[4] = PARAM0;
 static const GLfloat Param1[4] = PARAM1;
 static const GLfloat Param2[4] = PARAM2;
+static const GLfloat Ambient[4] = AMBIENT;
+static const GLfloat Diffuse[4] = DIFFUSE;
+static const GLfloat FogDensity = 0.5;
+static const GLfloat FogStart = 0.2;
+static const GLfloat FogEnd = 0.9;
+static GLfloat InfNan[4];
 
 
 // These are the specific vertex programs which we'll test.
@@ -454,7 +462,7 @@ static const VertexProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
-		"RSQ test (reciprocal square root)",
+		"RSQ test 1 (reciprocal square root)",
 		"!!ARBvp1.0\n"
 		"PARAM values = {1, 4, 9, 100 }; \n"
 		"MOV result.position, vertex.position; \n"
@@ -464,6 +472,23 @@ static const VertexProgram Programs[] = {
 		"RSQ result.color.w, values.w; \n"
 		"END \n",
 		{ 1.0, 0.5, 0.3333, 0.1 },
+		DONT_CARE_Z
+	},
+	{
+		"RSQ test 2 (reciprocal square root of negative value)",
+		"!!ARBvp1.0\n"
+		"PARAM values = {0, -100, -5, -1}; \n"
+		"MOV result.position, vertex.position; \n"
+		"RSQ result.color.x, values.x; \n"
+		"RSQ result.color.y, values.y; \n"
+		"RSQ result.color.z, values.z; \n"
+		"RSQ result.color.w, values.w; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  0.1,
+		  0.447,
+		  1.0,
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -610,7 +635,19 @@ static const VertexProgram Programs[] = {
 		DONT_CARE_Z
 	},
 
-	// ============= Test result.position.z writes ========================
+	// ============= Test result.position writes ==========================
+	{
+		"Position write test (compute position from texcoord)",
+		"!!ARBvp1.0\n"
+		"ATTRIB texcoord = vertex.texcoord[0]; \n"
+		"PARAM scale = {0.5, 0.5, 0.0, 1.0}; \n"
+		"PARAM bias = {-0.25, -0.25, 0.0, 0.0}; \n"
+		"MAD result.position, texcoord, scale, bias; \n"
+		"MOV result.color, vertex.color; \n"
+		"END \n",
+		VERTCOLOR,
+		DONT_CARE_Z
+	},
 	{
 		"Z-write test",
 		"!!ARBvp1.0\n"
@@ -624,10 +661,81 @@ static const VertexProgram Programs[] = {
 	},
 
 	// ============= Global state reference tests =========================
-	// XXX to do
+	{
+		"State reference test 1 (material ambient)",
+		"!!ARBvp1.0\n"
+		"PARAM ambient = state.material.front.ambient; \n"
+		"MOV result.position, vertex.position; \n"
+		"MOV result.color, ambient; \n"
+		"END \n",
+		AMBIENT,
+		DONT_CARE_Z
+	},
+	{
+		"State reference test 2 (light products)",
+		"!!ARBvp1.0\n"
+		"PARAM dprod = state.lightprod[0].diffuse; \n"
+		"MOV result.position, vertex.position; \n"
+		"MOV result.color, dprod; \n"
+		"END \n",
+		{ CLAMP01(Diffuse[0] * VertColor[0]),
+		  CLAMP01(Diffuse[1] * VertColor[1]),
+		  CLAMP01(Diffuse[2] * VertColor[2]),
+		  CLAMP01(Diffuse[3] * VertColor[3])
+		},
+		DONT_CARE_Z
+	},
+	{
+		"State reference test 3 (fog params)",
+		"!!ARBvp1.0\n"
+		"PARAM fog = state.fog.params; \n"
+		"PARAM scale = {1.0, 1.0, 1.0, 0.1}; \n"
+		"MOV result.position, vertex.position; \n"
+		"MUL result.color, fog, scale; \n"
+		"END \n",
+		{ FogDensity,
+		  FogStart,
+		  FogEnd,
+		  (1.0 / (FogEnd - FogStart)) * 0.1
+		},
+		DONT_CARE_Z
+	},
 
-	// ============= More swizzle/mask/negation tests =====================
-	// XXX to do
+	// ============= Numeric stress tests =================================
+	// Basically just check that we don't crash when we do divides by
+	// zero, etc.
+	{
+		"Divide by zero test",
+		"!!ARBvp1.0\n"
+		"PARAM zero = program.local[0]; \n"
+		"MOV result.position, vertex.position; \n"
+		"RCP result.color.x, zero.x; \n"
+		"RCP result.color.y, zero.y; \n"
+		"RCP result.color.z, zero.z; \n"
+		"RCP result.color.w, zero.w; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR
+		},
+		DONT_CARE_Z
+	},
+	{
+		"Infinity / nan test",
+		"!!ARBvp1.0\n"
+		"PARAM zero = program.local[0]; \n"
+		"PARAM infNan = program.local[9]; \n"
+		"MOV result.position, vertex.position; \n"
+		"ADD result.color, infNan, zero; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR
+		},
+		DONT_CARE_Z
+	},
 
 	// ============= Texcoord output tests ================================
 	// XXX to do
@@ -641,6 +749,21 @@ static const VertexProgram Programs[] = {
 void
 VertexProgramTest::setup(void)
 {
+	// setup Infinity, Nan values
+	int nan;
+	float *nanPtr;
+
+	nan = (0xff << 23) | (1 << 0);
+	nanPtr = (float *) &nan;
+	InfNan[0] = HUGE_VAL;
+	InfNan[1] = -HUGE_VAL;
+	InfNan[2] = (float) (*nanPtr);
+	InfNan[3] = 1.0 / HUGE_VAL;
+	/*
+	printf("InfNan = %f %f %f %f\n",
+	       InfNan[0], InfNan[1], InfNan[2], InfNan[3]);
+	*/
+
 	// get function pointers
 	glProgramLocalParameter4fvARB_func = (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC) GLUtils::getProcAddress("glProgramLocalParameter4fvARB");
 	assert(glProgramLocalParameter4fvARB_func);
@@ -669,6 +792,15 @@ VertexProgramTest::setup(void)
 	glProgramLocalParameter4fvARB_func(GL_VERTEX_PROGRAM_ARB, 0, Param0);
 	glProgramLocalParameter4fvARB_func(GL_VERTEX_PROGRAM_ARB, 1, Param1);
 	glProgramLocalParameter4fvARB_func(GL_VERTEX_PROGRAM_ARB, 2, Param2);
+	glProgramLocalParameter4fvARB_func(GL_VERTEX_PROGRAM_ARB, 9, InfNan);
+
+	// other GL state
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, VertColor);
+	glFogf(GL_FOG_DENSITY, FogDensity);
+	glFogf(GL_FOG_START, FogStart);
+	glFogf(GL_FOG_END, FogEnd);
 
 	GLenum err = glGetError();
 	assert(!err);  // should be OK
@@ -725,7 +857,7 @@ VertexProgramTest::reportFailure(const char *programName,
 
 void
 VertexProgramTest::reportZFailure(const char *programName,
-				    GLfloat expectedZ, GLfloat actualZ) const
+				  GLfloat expectedZ, GLfloat actualZ) const
 {
 	env->log << "FAILURE:\n";
 	env->log << "  Program: " << programName << "\n";
@@ -745,9 +877,9 @@ VertexProgramTest::reportSuccess(int count) const
 bool
 VertexProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
 {
-	if (fabsf(act[0] - exp[0]) > tolerance[0] ||
-	    fabsf(act[1] - exp[1]) > tolerance[1] ||
-	    fabsf(act[2] - exp[2]) > tolerance[2] ||
+	if ((fabsf(act[0] - exp[0]) > tolerance[0] && exp[0] != DONT_CARE_COLOR) ||
+	    (fabsf(act[1] - exp[1]) > tolerance[1] && exp[1] != DONT_CARE_COLOR) ||
+	    (fabsf(act[2] - exp[2]) > tolerance[2] && exp[2] != DONT_CARE_COLOR) ||
 	    (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR))
 		return false;
 	else
@@ -795,17 +927,17 @@ VertexProgramTest::testProgram(const VertexProgram &p)
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBegin(GL_POLYGON);
-	glVertex2f(-r, -r);
-	glVertex2f( r, -r);
-	glVertex2f( r,  r);
-	glVertex2f(-r,  r);
+	glTexCoord2f(0, 0);  glVertex2f(-r, -r);
+	glTexCoord2f(1, 0);  glVertex2f( r, -r);
+	glTexCoord2f(1, 1);  glVertex2f( r,  r);
+	glTexCoord2f(0, 1);  glVertex2f(-r,  r);
 	glEnd();
 
 	GLfloat pixel[4];
 	glReadPixels(windowSize / 2, windowSize / 2, 1, 1,
 		     GL_RGBA, GL_FLOAT, pixel);
 
-        if (0) // debug
+	if (0) // debug
            printf("%s: Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
                   p.name,
                   p.expectedColor[0], p.expectedColor[1],
