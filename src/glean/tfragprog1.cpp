@@ -54,6 +54,7 @@ static PFNGLPROGRAMSTRINGARBPROC glProgramStringARB_func;
 static PFNGLBINDPROGRAMARBPROC glBindProgramARB_func;
 static PFNGLISPROGRAMARBPROC glIsProgramARB_func;
 static PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB_func;
+static PFNGLGETPROGRAMIVARBPROC glGetProgramivARB_func;
 
 
 // Clamp X to [0, 1]
@@ -78,6 +79,7 @@ static const GLfloat FragColor[4] = FRAGCOLOR;
 static const GLfloat Param0[4] = PARAM0;
 static const GLfloat Param1[4] = PARAM1;
 static const GLfloat Param2[4] = PARAM2;
+static GLfloat InfNan[4];
 
 
 // These are the specific fragment programs which we'll test
@@ -412,7 +414,7 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
-		"RSQ test (reciprocal square root)",
+		"RSQ test 1 (reciprocal square root)",
 		"!!ARBfp1.0\n"
 		"PARAM values = {1, 4, 9, 100 }; \n"
 		"RSQ result.color.x, values.x; \n"
@@ -421,6 +423,22 @@ static const FragmentProgram Programs[] = {
 		"RSQ result.color.w, values.w; \n"
 		"END \n",
 		{ 1.0, 0.5, 0.3333, 0.1 },
+		DONT_CARE_Z
+	},
+	{
+		"RSQ test 2 (reciprocal square root of negative value)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {0, -100, -5, -1}; \n"
+		"RSQ result.color.x, values.x; \n"
+		"RSQ result.color.y, values.y; \n"
+		"RSQ result.color.z, values.z; \n"
+		"RSQ result.color.w, values.w; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  0.1,
+		  0.447,
+		  1.0,
+		},
 		DONT_CARE_Z
 	},
 	{
@@ -534,6 +552,41 @@ static const FragmentProgram Programs[] = {
 		},
 		Param1[1]
 	},
+
+	// ============= Numeric stress tests =================================
+	// Basically just check that we don't crash when we do divides by
+	// zero, etc.
+	{
+		"Divide by zero test",
+		"!!ARBfp1.0\n"
+		"PARAM zero = program.local[0]; \n"
+		"RCP result.color.x, zero.x; \n"
+		"RCP result.color.y, zero.y; \n"
+		"RCP result.color.z, zero.z; \n"
+		"RCP result.color.w, zero.w; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR
+		},
+		DONT_CARE_Z
+	},
+	{
+		"Infinity / nan test",
+		"!!ARBfp1.0\n"
+		"PARAM zero = program.local[0]; \n"
+		"PARAM infNan = program.local[9]; \n"
+		"ADD result.color, infNan, zero; \n"
+		"END \n",
+		{ DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR,
+		  DONT_CARE_COLOR
+		},
+		DONT_CARE_Z
+	},
+
 	// XXX add lots more tests here!
 	{ NULL, NULL, {0,0,0,0}, 0 } // end of list sentinal
 };
@@ -543,6 +596,17 @@ static const FragmentProgram Programs[] = {
 void
 FragmentProgramTest::setup(void)
 {
+	// setup Infinity, Nan values
+	int nan;
+	float *nanPtr;
+
+	nan = (0xff << 23) | (1 << 0);
+	nanPtr = (float *) &nan;
+	InfNan[0] = HUGE_VAL;
+	InfNan[1] = -HUGE_VAL;
+	InfNan[2] = (float) (*nanPtr);
+	InfNan[3] = 1.0 / HUGE_VAL;
+
 	// get function pointers
 	glProgramLocalParameter4fvARB_func = (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC) GLUtils::getProcAddress("glProgramLocalParameter4fvARB");
 	assert(glProgramLocalParameter4fvARB_func);
@@ -562,6 +626,9 @@ FragmentProgramTest::setup(void)
 	glDeleteProgramsARB_func = (PFNGLDELETEPROGRAMSARBPROC) GLUtils::getProcAddress("glDeleteProgramsARB");
 	assert(glDeleteProgramsARB_func);
 
+	glGetProgramivARB_func = (PFNGLGETPROGRAMIVARBPROC) GLUtils::getProcAddress("glGetProgramivARB");
+	assert(glGetProgramivARB_func);
+
 	GLuint progID;
 	glGenProgramsARB_func(1, &progID);
 	glBindProgramARB_func(GL_FRAGMENT_PROGRAM_ARB, progID);
@@ -572,6 +639,7 @@ FragmentProgramTest::setup(void)
 	glProgramLocalParameter4fvARB_func(GL_FRAGMENT_PROGRAM_ARB, 0, Param0);
 	glProgramLocalParameter4fvARB_func(GL_FRAGMENT_PROGRAM_ARB, 1, Param1);
 	glProgramLocalParameter4fvARB_func(GL_FRAGMENT_PROGRAM_ARB, 2, Param2);
+	glProgramLocalParameter4fvARB_func(GL_FRAGMENT_PROGRAM_ARB, 9, InfNan);
 
 	GLenum err = glGetError();
 	assert(!err);  // should be OK
@@ -648,13 +716,15 @@ FragmentProgramTest::reportSuccess(int count) const
 bool
 FragmentProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
 {
-	if (fabsf(act[0] - exp[0]) > tolerance[0] ||
-	    fabsf(act[1] - exp[1]) > tolerance[1] ||
-	    (fabsf(act[2] - exp[2]) > tolerance[2] && exp[2] != DONT_CARE_COLOR) ||
-	    (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR))
+	if (fabsf(act[0] - exp[0]) > tolerance[0] && exp[0] != DONT_CARE_COLOR)
 		return false;
-	else
-		return true;
+	if (fabsf(act[1] - exp[1]) > tolerance[1] && exp[1] != DONT_CARE_COLOR)
+		return false;
+	if (fabsf(act[2] - exp[2]) > tolerance[2] && exp[2] != DONT_CARE_COLOR)
+		return false;
+	if (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR)
+		return false;
+	return true;
 }
 
 
