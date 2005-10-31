@@ -55,6 +55,7 @@ static PFNGLBINDPROGRAMARBPROC glBindProgramARB_func;
 static PFNGLISPROGRAMARBPROC glIsProgramARB_func;
 static PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB_func;
 static PFNGLGETPROGRAMIVARBPROC glGetProgramivARB_func;
+static PFNGLFOGCOORDFPROC glFogCoordf_func;
 
 
 // Clamp X to [0, 1]
@@ -80,6 +81,11 @@ static const GLfloat Param0[4] = PARAM0;
 static const GLfloat Param1[4] = PARAM1;
 static const GLfloat Param2[4] = PARAM2;
 static GLfloat InfNan[4];
+static GLfloat FogColor[4] = {1.0, 1.0, 0.0, 0.0};
+static GLfloat FogStart = 10.0;
+static GLfloat FogEnd = 100.0;
+static GLfloat FogDensity = 0.03;
+static GLfloat FogCoord = 50.0;  /* Between FogStart and FogEnd */
 
 
 // These are the specific fragment programs which we'll test
@@ -587,6 +593,134 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 
+	// ============= Fog tests ============================================
+	// Linear fog
+#define FOG_FACT ((FogEnd - FogCoord) / (FogEnd - FogStart))
+	{
+		"ARB_fog_linear test",
+		"!!ARBfp1.0\n"
+		"OPTION ARB_fog_linear; \n"
+		"MOV result.color, fragment.color; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+	{
+		"Computed fog linear test",
+		"!!ARBfp1.0\n"
+		"# fogParams.x = density \n"
+		"# fogParams.y = start \n"
+		"# fogParams.z = end \n"
+		"# fogParams.w = 1/(end-start) \n"
+		"PARAM fogParams = state.fog.params; \n"
+		"ATTRIB fogCoord = fragment.fogcoord; \n"
+		"PARAM fogColor = state.fog.color; \n"
+		"TEMP numerator, f; \n"
+		"# f = (end - coord) / (end - start) \n"
+		"SUB numerator, fogParams.z, fogCoord.x; \n"
+		"MUL_SAT f, numerator, fogParams.w; \n"
+		"LRP result.color, f, fragment.color, fogColor; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+#undef FOG_FACT
+
+	// Exp fog
+#define FOG_FACT 0.2231   // = exp(-Density * Coord)
+	{
+		"ARB_fog_exp test",
+		"!!ARBfp1.0\n"
+		"OPTION ARB_fog_exp; \n"
+		"MOV result.color, fragment.color; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+#undef FOG_FACT
+#define FOG_FACT 0.3535   // = ex2(-Density * Coord)
+	{
+		// NOTE: we could also do this with the POW instruction
+		"Computed fog exp test",
+		"!!ARBfp1.0\n"
+		"# fogParams.x = density \n"
+		"# fogParams.y = start \n"
+		"# fogParams.z = end \n"
+		"# fogParams.w = 1/(end-start) \n"
+		"PARAM fogParams = state.fog.params; \n"
+		"ATTRIB fogCoord = fragment.fogcoord; \n"
+		"PARAM fogColor = state.fog.color; \n"
+		"TEMP f, dc; \n"
+		"# f = exp(-density * coord) \n"
+		"MUL dc.x, fogParams.x, fogCoord.x; \n"
+		"EX2_SAT f, -dc.x; \n"
+		"LRP result.color, f, fragment.color, fogColor; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+#undef FOG_FACT
+
+	// Exp2 fog
+#define FOG_FACT 0.1054   // = exp(-(Density * Coord)^2)
+	{
+		"ARB_fog_exp2 test",
+		"!!ARBfp1.0\n"
+		"OPTION ARB_fog_exp2; \n"
+		"MOV result.color, fragment.color; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+#undef FOG_FACT
+#define FOG_FACT 0.2102   // = ex2(-(Density * Coord)^2)
+	{
+		// NOTE: we could also do this with the POW instruction
+		"Computed fog exp2 test",
+		"!!ARBfp1.0\n"
+		"# fogParams.x = density \n"
+		"# fogParams.y = start \n"
+		"# fogParams.z = end \n"
+		"# fogParams.w = 1/(end-start) \n"
+		"PARAM fogParams = state.fog.params; \n"
+		"ATTRIB fogCoord = fragment.fogcoord; \n"
+		"PARAM fogColor = state.fog.color; \n"
+		"TEMP f, dc; \n"
+		"# f = exp(-(density * coord)^2) \n"
+		"MUL dc.x, fogParams.x, fogCoord.x; \n"
+		"MUL dc.x, dc.x, dc.x; \n"
+		"EX2_SAT f, -dc.x; \n"
+		"LRP result.color, f, fragment.color, fogColor; \n"
+		"END \n",
+		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
+		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
+		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
+		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		},
+		DONT_CARE_Z
+	},
+#undef FOG_FACT
+
 	// XXX add lots more tests here!
 	{ NULL, NULL, {0,0,0,0}, 0 } // end of list sentinal
 };
@@ -629,6 +763,9 @@ FragmentProgramTest::setup(void)
 	glGetProgramivARB_func = (PFNGLGETPROGRAMIVARBPROC) GLUtils::getProcAddress("glGetProgramivARB");
 	assert(glGetProgramivARB_func);
 
+	glFogCoordf_func = (PFNGLFOGCOORDFPROC) GLUtils::getProcAddress("glFogCoordf");
+	assert(glFogCoordf_func);
+
 	GLuint progID;
 	glGenProgramsARB_func(1, &progID);
 	glBindProgramARB_func(GL_FRAGMENT_PROGRAM_ARB, progID);
@@ -652,6 +789,13 @@ FragmentProgramTest::setup(void)
 	glLoadIdentity();
 	glDrawBuffer(GL_FRONT);
 	glReadBuffer(GL_FRONT); 
+
+	// other GL state
+	glFogf(GL_FOG_START, FogStart);
+	glFogf(GL_FOG_END, FogEnd);
+	glFogf(GL_FOG_DENSITY, FogDensity);
+	glFogfv(GL_FOG_COLOR, FogColor);
+	glFogCoordf_func(FogCoord);
 
 	// compute error tolerances (may need fine-tuning)
 	int bufferBits[5];
