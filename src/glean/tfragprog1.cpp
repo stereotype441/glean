@@ -605,7 +605,7 @@ static const FragmentProgram Programs[] = {
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
@@ -623,12 +623,13 @@ static const FragmentProgram Programs[] = {
 		"# f = (end - coord) / (end - start) \n"
 		"SUB numerator, fogParams.z, fogCoord.x; \n"
 		"MUL_SAT f, numerator, fogParams.w; \n"
-		"LRP result.color, f, fragment.color, fogColor; \n"
+		"LRP result.color.rgb, f, fragment.color, fogColor; \n"
+		"MOV result.color.a, fragment.color.a; \n"
 		"END \n",
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
@@ -645,7 +646,7 @@ static const FragmentProgram Programs[] = {
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
@@ -666,12 +667,13 @@ static const FragmentProgram Programs[] = {
 		"# f = exp(-density * coord) \n"
 		"MUL dc.x, fogParams.x, fogCoord.x; \n"
 		"EX2_SAT f, -dc.x; \n"
-		"LRP result.color, f, fragment.color, fogColor; \n"
+		"LRP result.color.rgb, f, fragment.color, fogColor; \n"
+		"MOV result.color.a, fragment.color.a; \n"
 		"END \n",
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+                  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
@@ -688,7 +690,7 @@ static const FragmentProgram Programs[] = {
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
@@ -710,12 +712,13 @@ static const FragmentProgram Programs[] = {
 		"MUL dc.x, fogParams.x, fogCoord.x; \n"
 		"MUL dc.x, dc.x, dc.x; \n"
 		"EX2_SAT f, -dc.x; \n"
-		"LRP result.color, f, fragment.color, fogColor; \n"
+		"LRP result.color.rgb, f, fragment.color, fogColor; \n"
+		"MOV result.color.a, fragment.color.a; \n"
 		"END \n",
 		{ FragColor[0] * FOG_FACT + FogColor[0] * (1.0 - FOG_FACT),
 		  FragColor[1] * FOG_FACT + FogColor[1] * (1.0 - FOG_FACT),
 		  FragColor[2] * FOG_FACT + FogColor[2] * (1.0 - FOG_FACT),
-		  FragColor[3] * FOG_FACT + FogColor[3] * (1.0 - FOG_FACT),
+		  FragColor[3]
 		},
 		DONT_CARE_Z
 	},
