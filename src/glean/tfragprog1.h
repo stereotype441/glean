@@ -36,7 +36,17 @@
 
 namespace GLEAN {
 
-#define windowSize 100
+// If DEVEL_MODE==1 we generate a tall window of color swatches, one per
+// fragment program, which can be eyeballed against a reference image.
+// Use this if glReadPixels functionality is not working yet.
+#define DEVEL_MODE 0
+#if DEVEL_MODE
+#define windowWidth 200
+#define windowHeight 850
+#else
+#define windowWidth 100
+#define windowHeight 100
+#endif
 
 
 class FragmentProgram

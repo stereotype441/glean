@@ -787,7 +787,11 @@ FragmentProgramTest::setup(void)
 	// setup vertex transform (we'll draw a quad in middle of window)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+#if DEVEL_MODE
+	glOrtho(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
+#else
 	glOrtho(-4.0, 4.0, -4.0, 4.0, 0.0, 1.0);
+#endif
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glDrawBuffer(GL_FRONT);
@@ -908,7 +912,9 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 	else
 		glEnable(GL_DEPTH_TEST);
 
+#if !DEVEL_MODE
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 	glBegin(GL_POLYGON);
 	glVertex2f(-1, -1);
 	glVertex2f( 1, -1);
@@ -916,8 +922,9 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 	glVertex2f(-1,  1);
 	glEnd();
 
+#if !DEVEL_MODE
 	GLfloat pixel[4];
-	glReadPixels(windowSize / 2, windowSize / 2, 1, 1,
+	glReadPixels(windowWidth / 2, windowHeight / 2, 1, 1,
 		     GL_RGBA, GL_FLOAT, pixel);
 
         if (0) // debug
@@ -934,14 +941,14 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 
 	if (p.expectedZ != DONT_CARE_Z) {
 		GLfloat z;
-		glReadPixels(windowSize / 2, windowSize / 2, 1, 1,
+		glReadPixels(windowWidth / 2, windowHeight / 2, 1, 1,
 			     GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 		if (!equalDepth(z, p.expectedZ)) {
 			reportZFailure(p.name, p.expectedZ, z);
 			return false;
 		}
 	}
-
+#endif
 	return true;
 }
 
@@ -952,12 +959,24 @@ FragmentProgramTest::runOne(BasicResult &r, Window &w)
 	setup();
 	r.pass = true;
 	int i;
+#if DEVEL_MODE
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 	for (i = 0; Programs[i].name; i++) {
+#if DEVEL_MODE
+		glViewport(0, i * 20, windowWidth, 20);
+#endif
 		if (!testProgram(Programs[i])) {
 			r.pass = false;
 			// continue with next test
 		}
 	}
+
+#if DEVEL_MODE
+	glFinish();
+	sleep(100);
+#endif
+
 	if (r.pass) {
 		reportSuccess(i);
 	}
@@ -981,8 +1000,8 @@ FragmentProgramTest::FragmentProgramTest(const char *testName,
 					   const char *description)
 	: BasicTest(testName, filter, extensions, description)
 {
-	fWidth  = windowSize;
-	fHeight = windowSize;
+	fWidth  = windowWidth;
+	fHeight = windowHeight;
 }
 
 
