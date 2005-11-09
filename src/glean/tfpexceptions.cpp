@@ -32,7 +32,7 @@
 #include <cassert>
 #include <cmath>
 
-#define INCLUDE_FPU_CONTROL 1
+#define INCLUDE_FPU_CONTROL 0
 #if INCLUDE_FPU_CONTROL
 #include <fpu_control.h>
 #endif
@@ -86,44 +86,73 @@ union fi {
 };
 
 
-static float
-make_float(unsigned sign, unsigned exponent, unsigned mantissa)
+static void
+make_float(float *dest, unsigned sign, unsigned exponent, unsigned mantissa)
 {
-	union fi fi;
-	fi.bits.sign = sign;
-	fi.bits.exponent = exponent;
-	fi.bits.mantissa = mantissa;
-	return fi.f;
+	union fi *destfi = (union fi *) dest;
+	destfi->bits.sign = sign;
+	destfi->bits.exponent = exponent;
+	destfi->bits.mantissa = mantissa;
 }
 
-static float
-make_denorm_float(int sign, int mantissa)
+static void
+make_denorm_float(float *dest, int sign, int mantissa)
 {
-	return make_float(sign, 0, mantissa);
+	make_float(dest, sign, 0, mantissa);
 }
 
-static float
-make_pos_inf_float(void)
+static void
+make_pos_inf_float(float *dest)
 {
-	return make_float(0, 255, 0); // or HUGE_VAL?
+	make_float(dest, 0, 255, 0); // or HUGE_VALF?
 }
 
-static float
-make_neg_inf_float(void)
+static void
+make_neg_inf_float(float *dest)
 {
-	return make_float(1, 255, 0); // or -HUGE_VAL?
+	make_float(dest, 1, 255, 0); // or -HUGE_VALF?
 }
 
-static float
-make_signaling_nan(void)
+static void
+make_signaling_nan_float(float *dest)
 {
-	return make_float(0, 255, 1);
+	make_float(dest, 0, 255, 1);
 }
 
-static float
-make_quiet_nan(void)
+static void
+make_quiet_nan_float(float *dest)
 {
-	return make_float(0, 255, 1 << 22);
+	make_float(dest, 0, 255, 1 << 22);
+}
+
+static void
+make_denorm_double(double *dest, int sign, int mantissa)
+{
+	// XXX to do
+}
+
+static void
+make_pos_inf_double(double *dest)
+{
+	*dest = HUGE_VAL;
+}
+
+static void
+make_neg_inf_double(double *dest)
+{
+	*dest = -HUGE_VAL;
+}
+
+static void
+make_signaling_nan_double(double *dest)
+{
+	// XXX to do
+}
+
+static void
+make_quiet_nan_double(double *dest)
+{
+	// XXX to do
 }
 
 
@@ -220,7 +249,7 @@ int main()
    /* Explicitly make a denormal - I've no idea how to create these
     * with regular calculations:
     */
-   f = make_float(0, 0, 0x1000);
+   make_float(&f, 0, 0, 0x1000);
    print_float(f);
 
    /* It seems you can just specify them!
@@ -230,33 +259,33 @@ int main()
 
    /* A little, non-denormalized float
     */
-   f = make_float(0, 1, 0x1);
+   make_float(&f, 0, 1, 0x1);
    print_float(f);
 
    /* A negative little, non-denormalized float
     */
-   f = make_float(1, 1, 0x1);
+   make_float(&f, 1, 1, 0x1);
    print_float(f);
 
    /* A big float
     */
-   f = make_float(0, 254, ~0);
+   make_float(&f, 0, 254, ~0);
    print_float(f);
 
-   f = make_float(1, 254, ~0);
+   make_float(&f, 1, 254, ~0);
    print_float(f);
 
    /* Littlest and biggest denormals:
     */
-   f = make_float(0, 0, 1);
+   make_float(&f, 0, 0, 1);
    print_float(f);
-   f = make_float(0, 0, ~0);
+   make_float(&f, 0, 0, ~0);
    print_float(f);
 
 
-   f = make_float(1, 0, 1);
+   make_float(&f, 1, 0, 1);
    print_float(f);
-   f = make_float(1, 0, ~0);
+   make_float(&f, 1, 0, ~0);
    print_float(f);
 
 }
@@ -278,12 +307,12 @@ FPExceptionsTest::testVertices(Mode m)
 	// set problematic values
 	switch (m) {
 	case MODE_INFINITY:
-		v[1][0] = make_pos_inf_float();
-		v[2][1] = make_neg_inf_float();
+		make_pos_inf_float(&v[1][0]);
+		make_neg_inf_float(&v[2][1]);
 		break;
 	case MODE_NAN:
-		v[1][0] = make_signaling_nan();
-		v[2][1] = make_quiet_nan();
+		make_signaling_nan_float(&v[1][0]);
+		make_quiet_nan_float(&v[2][1]);
 		break;
 	case MODE_DIVZERO:
 		v[0][3] = 0.0;
@@ -291,8 +320,8 @@ FPExceptionsTest::testVertices(Mode m)
 		v[2][3] = 0.0;
 		break;
 	case MODE_DENORM:
-		v[0][0] = make_denorm_float(0, 1);
-		v[1][1] = make_denorm_float(1, 1);
+		make_denorm_float(&v[0][0], 0, 1);
+		make_denorm_float(&v[1][1], 1, 1);
 		break;
 	default:
 		; // nothing
@@ -347,20 +376,20 @@ FPExceptionsTest::testTransformation(Mode m)
 	// set problematic values
 	switch (m) {
 	case MODE_INFINITY:
-		mat[0] = make_pos_inf_float();   // X scale
-		mat[13] = make_neg_inf_float();  // Y translate
+		make_pos_inf_float(&mat[0]);   // X scale
+		make_neg_inf_float(&mat[13]);  // Y translate
 		break;
 	case MODE_NAN:
-		mat[0] = make_signaling_nan();   // X scale
-		mat[13] = make_quiet_nan();  // Y translate
+		make_signaling_nan_float(&mat[0]);   // X scale
+		make_quiet_nan_float(&mat[13]);  // Y translate
 		break;
 	case MODE_DIVZERO:
 		// all zero matrix
 		mat[0] = mat[5] = mat[10] = mat[15] = 0.0;
 		break;
 	case MODE_DENORM:
-		mat[0] = make_denorm_float(0, 1);
-		mat[13] = make_denorm_float(1, 1);
+		make_denorm_float(&mat[0], 0, 1);
+		make_denorm_float(&mat[13], 1, 1);
 		break;
 	default:
 		; // nothing
@@ -394,19 +423,19 @@ FPExceptionsTest::testClipping(Mode m)
 	// set problematic values
 	switch (m) {
 	case MODE_INFINITY:
-		plane[0] = make_pos_inf_float();   // X scale
-		plane[3] = make_neg_inf_float();  // Y translate
+		make_pos_inf_double(&plane[0]);
+		make_neg_inf_double(&plane[3]);
 		break;
 	case MODE_NAN:
-		plane[0] = make_signaling_nan();   // X scale
-		plane[3] = make_quiet_nan();  // Y translate
+		make_signaling_nan_double(&plane[0]);
+		make_quiet_nan_double(&plane[3]);
 		break;
 	case MODE_DIVZERO:
 		// nothing		
 		break;
 	case MODE_DENORM:
-		plane[0] = make_denorm_float(0, 1);
-		plane[3] = make_denorm_float(1, 1);
+		make_denorm_double(&plane[0], 0, 1);
+		make_denorm_double(&plane[3], 1, 1);
 		break;
 	case MODE_OVERFLOW:
 		plane[0] = 1.0e300;
