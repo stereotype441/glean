@@ -30,8 +30,6 @@
 // Brian Paul  1 October 2005
 
 
-#ifdef GL_EXT_packed_depth_stencil
-
 #include "tdepthstencil.h"
 #include "rand.h"
 #include "timer.h"
@@ -39,6 +37,7 @@
 #include <cassert>
 #include <cmath>
 
+#ifdef GL_EXT_packed_depth_stencil
 
 namespace GLEAN {
 
