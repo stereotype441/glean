@@ -38,7 +38,7 @@
 //   OpenGL 2.0 (aliasing disallowed)
 //
 // If either GL_ARB_vertex_shader or OpenGL 2.0 is supported, that means
-// aliasing is required for GL_ARB_vertex_program.
+// aliasing is required for GL_ARB_vertex_program too.
 //
 // We test both immediate mode and display list mode.
 //
@@ -1422,6 +1422,7 @@ VertAttribTest::TestNVfuncs(VertAttribResult &r)
 #ifdef GL_NV_vertex_program
 	PFNGLGETVERTEXATTRIBFVNVPROC getAttribfv;
 	const GLint numAttribs = 16;
+	const Aliasing aliasing = REQUIRED;
 
 	getAttribfv = (PFNGLGETVERTEXATTRIBFVNVPROC) GLUtils::getProcAddress("glGetVertexAttribfvNV");
 	assert(getAttribfv);
@@ -1430,7 +1431,7 @@ VertAttribTest::TestNVfuncs(VertAttribResult &r)
 
 	for (int attribFunc = 0; attribFunc < NUM_NV_ATTRIB_FUNCS; attribFunc++) {
 		bool b;
-		b = TestAttribs(r, attribFunc, getAttribfv, REQUIRED, numAttribs);
+		b = TestAttribs(r, attribFunc, getAttribfv, aliasing, numAttribs);
 		if (!b)
 			result = false;
 		r.numNVtested++;
@@ -1461,18 +1462,19 @@ VertAttribTest::TestARBfuncs(VertAttribResult &r, bool shader)
 	r.numARBtested = 0;
 
 	if (shader) {
-		// test GL_ARB_vertex_shader
+		// test GL_ARB_vertex_shader (aliasing is disallowed)
+		const Aliasing aliasing = DISALLOWED;
 		for (int i = 0; i < NUM_ARB_ATTRIB_FUNCS; i++) {
 			int attribFunc = NUM_NV_ATTRIB_FUNCS + i;
 			bool b;
-			b = TestAttribs(r, attribFunc, getAttribfv, REQUIRED, numAttribs);
+			b = TestAttribs(r, attribFunc, getAttribfv, aliasing, numAttribs);
 			if (!b)
 				result = false;
 			r.numARBtested++;
 		}
 	}
 	else {
-		// GL_ARB_vertex_program:
+		// test GL_ARB_vertex_program:
 		// Determine if attribute aliasing is allowed
 		Aliasing aliasing;
 		if (GLUtils::haveExtension("GL_ARB_vertex_shader")) {
@@ -1485,6 +1487,7 @@ VertAttribTest::TestARBfuncs(VertAttribResult &r, bool shader)
 				aliasing = DISALLOWED;
 			}
 			else {
+				assert(vers[0] == '1'); /* revisit when we have OpenGL 3.x */
 				aliasing = OPTIONAL;
 			}
 		}
@@ -1513,7 +1516,7 @@ VertAttribTest::Test20funcs(VertAttribResult &r)
 #ifdef GL_VERSION_2_0
 	PFNGLGETVERTEXATTRIBFVPROC getAttribfv;
 	GLint numAttribs;
-	Aliasing aliasing = REQUIRED;
+	const Aliasing aliasing = DISALLOWED;
 
 	getAttribfv = (PFNGLGETVERTEXATTRIBFVPROC) GLUtils::getProcAddress("glGetVertexAttribfv");
 	assert(getAttribfv);
