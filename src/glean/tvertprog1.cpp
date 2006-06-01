@@ -672,6 +672,8 @@ static const VertexProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		// Note: material.diffuse = VertColor
+		//       light.diffuse = Diffuse
 		"State reference test 2 (light products)",
 		"!!ARBvp1.0\n"
 		"PARAM dprod = state.lightprod[0].diffuse; \n"
@@ -681,7 +683,7 @@ static const VertexProgram Programs[] = {
 		{ CLAMP01(Diffuse[0] * VertColor[0]),
 		  CLAMP01(Diffuse[1] * VertColor[1]),
 		  CLAMP01(Diffuse[2] * VertColor[2]),
-		  CLAMP01(Diffuse[3] * VertColor[3])
+		  CLAMP01(VertColor[3])  // material's diffuse alpha
 		},
 		DONT_CARE_Z
 	},
