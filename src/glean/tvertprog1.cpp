@@ -307,7 +307,7 @@ static const VertexProgram Programs[] = {
 		"END \n",
 		{ 1.0,
 		  0.65,    // values.x
-		  0.443,   // roughly Pow(values.y, values.w)
+		  0.430,   // roughly Pow(values.y, values.w)
 		  1.0
 		},
 		DONT_CARE_Z
