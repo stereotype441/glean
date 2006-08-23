@@ -126,7 +126,7 @@ make_quiet_nan_float(float *dest)
 }
 
 static void
-make_denorm_double(double *dest, int sign, int mantissa)
+make_denorm_double(double * /*dest*/, int /*sign*/, int /*mantissa*/)
 {
 	// XXX to do
 }
@@ -144,13 +144,13 @@ make_neg_inf_double(double *dest)
 }
 
 static void
-make_signaling_nan_double(double *dest)
+make_signaling_nan_double(double * /*dest*/)
 {
 	// XXX to do
 }
 
 static void
-make_quiet_nan_double(double *dest)
+make_quiet_nan_double(double * /*dest*/)
 {
 	// XXX to do
 }
@@ -176,7 +176,7 @@ print_float(float f)
 	 iexp = -126 - 23;	/* -149 */
 	 imnt = (int)fi.bits.mantissa;
 	 isgn = fi.bits.sign ? -1 : 1;
-	 fi2.f = isgn * imnt * ldexp(1, iexp);
+	 fi2.f = isgn * imnt * ldexp(1.0, iexp);
       
 	 printf("\trecombining: %d * 0x%x * 2.0^%d  == %f (%e)\n",
 		isgn, imnt, iexp, fi2.f, fi2.f);
@@ -198,7 +198,7 @@ print_float(float f)
       iexp = fi.bits.exponent - (127 + 23);
       imnt = (1<<23) + (int)fi.bits.mantissa;
       isgn = fi.bits.sign ? -1 : 1;
-      fi2.f = isgn * imnt * ldexp(1, iexp);
+      fi2.f = isgn * imnt * ldexp(1.0, iexp);
       
       printf("\trecombining: %d * 0x%x * 2.0^%d  == %f\n",
 	     isgn, imnt, iexp, fi2.f);
@@ -214,7 +214,7 @@ print_float(float f)
    iexp = fi.bits.exponent - (127 + 23);
    imnt = (1<<23) + (int)fi.bits.mantissa;
    isgn = fi.bits.sign ? -1 : 1;
-   fi2.f = isgn * imnt * ldexp(1, iexp);
+   fi2.f = isgn * imnt * ldexp(1.0, iexp);
 
    printf("\tvalue if treated as normalized: %f (%e)\n",
 	  fi2.f, fi2.f);
@@ -231,7 +231,7 @@ int main()
 
    for (i = -3; i < 10; i++) {
       printf("%d:\n  ", i);
-      print_float(ldexp(1, i));
+      print_float(ldexp(1.0, i));
    }
    
    for (f = -4 ; f < 4; f += 1)
