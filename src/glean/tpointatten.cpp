@@ -196,7 +196,7 @@ PointAttenuationTest::testPointRendering(GLboolean smooth)
 									reportFailure(size, atten, min, max,
 												  z, smooth,
 												  expected, actual);
-									//return false;
+									return false;
 								}
 							}
 						}
