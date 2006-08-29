@@ -120,12 +120,12 @@ TextureSRGBTest::testImageTransfer(void)
                 const int comps = Formats[i].components;
                 for (j = 0; j < 128 * 128 * comps; j++) {
                         if (image[j] != image2[j]) {
-				env.log << '\n'
+				env->log << '\n'
 					<< name
 					<< " glGetTexImage failed for internalFormat "
 					<< intFormat
 					<< "\n";
-				env.log << "Expected value at ["
+				env->log << "Expected value at ["
 					<< j
 					<< "] should be "
 					<< image[j]
