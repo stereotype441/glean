@@ -123,7 +123,7 @@ TextureSRGBTest::testImageTransfer(void)
 				env->log << '\n'
 					<< name
 					<< " glGetTexImage failed for internalFormat "
-					<< intFormat
+					<< Formats[i].sFormat
 					<< "\n";
 				env->log << "Expected value at ["
 					<< j
