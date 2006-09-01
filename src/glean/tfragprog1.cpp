@@ -802,6 +802,7 @@ FragmentProgramTest::setup(void)
 	glFogf(GL_FOG_END, FogEnd);
 	glFogf(GL_FOG_DENSITY, FogDensity);
 	glFogfv(GL_FOG_COLOR, FogColor);
+	glFogi(GL_FOG_COORDINATE_SOURCE_EXT, GL_FOG_COORDINATE_EXT);
 	glFogCoordf_func(FogCoord);
 
 	// compute error tolerances (may need fine-tuning)
