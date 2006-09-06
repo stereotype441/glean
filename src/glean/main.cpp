@@ -51,6 +51,7 @@ char* mandatoryArg(int argc, char* argv[], int i);
 void selectTests(Options& o, vector<string>& allTestNames, int argc,
         char* argv[], int i);
 void usage(char* command);
+void listTests(vector<string> &testNames);
 
 int
 main(int argc, char* argv[]) {
@@ -66,9 +67,9 @@ main(int argc, char* argv[]) {
         o.selectedTests = allTestNames;
 
 	for (int i = 1; i < argc; ++i) {
-		if (!strcmp(argv[i], "--help"))
+		if (!strcmp(argv[i], "--help")) {
 			usage(argv[0]);
-		else if (!strcmp(argv[i], "-v")
+		} else if (!strcmp(argv[i], "-v")
 		    || !strcmp(argv[i], "--verbose")) {
 			++o.verbosity;
 		} else if (!strcmp(argv[i], "-r")
@@ -89,24 +90,22 @@ main(int argc, char* argv[]) {
 		} else if (!strcmp(argv[i], "--visuals")) {
 			++i;
 			o.visFilter = mandatoryArg(argc, argv, i);
-                } else if (!strcmp(argv[i], "-t")
-                    || !strcmp(argv[i], "--tests")) {
-                        ++i;
-                        selectTests(o, allTestNames, argc, argv, i);
-		    } else if (!strcmp(argv[i], "--listtests")) {
-			for (vector<string>::const_iterator
-			    t = allTestNames.begin(); t != allTestNames.end();
-			    ++t)
-				cout << *t << '\n';
-				exit(0);
+		} else if (!strcmp(argv[i], "-t")
+			   || !strcmp(argv[i], "--tests")) {
+			++i;
+			selectTests(o, allTestNames, argc, argv, i);
+		} else if (!strcmp(argv[i], "--listtests")) {
+			listTests(allTestNames);
+			exit(0);
 #	    if defined(__X11__)
 		} else if (!strcmp(argv[i], "-display")
 		    || !strcmp(argv[i], "--display")) {
 			++i;
 			o.dpyName = mandatoryArg(argc, argv, i);
 #	    endif
-		} else
+		} else {
 			usage(argv[0]);
+		}
 	}
 
 	if (o.mode == Options::notSet)
@@ -288,6 +287,16 @@ selectTests(Options& o, vector<string>& allTestNames, int argc, char* argv[],
                 usage(argv[0]);
         }
 } // selectTests
+
+
+void
+listTests(vector<string> &testNames) {
+	for (vector<string>::const_iterator t = testNames.begin();
+	     t != testNames.end();
+	     ++t) {
+		cout << *t << '\n';
+	}
+}
 
 
 void
