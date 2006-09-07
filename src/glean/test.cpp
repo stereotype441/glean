@@ -59,8 +59,8 @@ int Test::testCount;		// Also initialized to zero.
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor:
 ///////////////////////////////////////////////////////////////////////////////
-Test::Test(const char* testName):
-    name(testName) {
+Test::Test(const char* testName, const char *descrip):
+    name(testName), description(descrip) {
 	prereqs = 0;
 	hasRun = false;
 	nextTest = testList;
@@ -68,8 +68,8 @@ Test::Test(const char* testName):
 	++testCount;
 } // Test::Test()
 
-Test::Test(const char* testName, Test** thePrereqs):
-    name(testName) {
+Test::Test(const char* testName, const char *descrip, Test** thePrereqs):
+    name(testName), description(descrip) {
 	prereqs = thePrereqs;
 	hasRun = false;
 	nextTest = testList;

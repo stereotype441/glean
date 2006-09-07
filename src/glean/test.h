@@ -76,14 +76,16 @@ public:
 
 class Test {
     public:
-	Test(const char* testName);
-	Test(const char* testName, Test** prereqs);
+	Test(const char* testName, const char *descrip);
+	Test(const char* testName, const char *descrip, Test** prereqs);
 	virtual ~Test();
 
 	string name;		// Test name.  Should avoid characters
 				// that aren't universally available in
 				// filenames, since it might be used to
 				// construct such names.
+
+	string description;	// Verbose description of test.
 
 	Test** prereqs;		// Pointer to array of prerequisite tests.
 				// These will always be run before the

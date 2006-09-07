@@ -188,7 +188,7 @@ public:
 template <class ResultType> class BaseTest: public Test {
 public:
 	BaseTest(const char* aName, const char* aFilter,
-		 const char* aDescription): Test(aName) {
+		 const char* aDescription): Test(aName, aDescription) {
 		filter      = aFilter;
 		extensions  = 0;
 		description = aDescription;
@@ -198,7 +198,7 @@ public:
 	}
 	BaseTest(const char* aName, const char* aFilter, Test** thePrereqs,
 		 const char* aDescription):
-			Test(aName, thePrereqs) {
+			Test(aName, aDescription, thePrereqs) {
 		filter      = aFilter;
 		extensions  = 0;
 		description = aDescription;
@@ -208,7 +208,7 @@ public:
 	}
 	BaseTest(const char* aName, const char* aFilter,
 		 const char* anExtensionList,
-		 const char* aDescription): Test(aName) {
+		 const char* aDescription): Test(aName, aDescription) {
 		filter      = aFilter;
 		extensions  = anExtensionList;
 		description = aDescription;
@@ -221,7 +221,6 @@ public:
 
 	const char*         filter;	 // Drawing surface config filter.
 	const char*         extensions;  // Required extensions.
-	const char*         description; // Verbose description of test.
 	int                 fWidth;	 // Drawing surface width.
 	int                 fHeight;     // Drawing surface height.
 	bool                testOne;     // Test only one config?

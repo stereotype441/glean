@@ -51,7 +51,7 @@ char* mandatoryArg(int argc, char* argv[], int i);
 void selectTests(Options& o, vector<string>& allTestNames, int argc,
         char* argv[], int i);
 void usage(char* command);
-void listTests(vector<string> &testNames);
+void listTests(const Test *tests, bool verbose);
 
 int
 main(int argc, char* argv[]) {
@@ -95,8 +95,7 @@ main(int argc, char* argv[]) {
 			++i;
 			selectTests(o, allTestNames, argc, argv, i);
 		} else if (!strcmp(argv[i], "--listtests")) {
-			listTests(allTestNames);
-			exit(0);
+			o.mode = Options::listtests;
 #	    if defined(__X11__)
 		} else if (!strcmp(argv[i], "-display")
 		    || !strcmp(argv[i], "--display")) {
@@ -110,6 +109,11 @@ main(int argc, char* argv[]) {
 
 	if (o.mode == Options::notSet)
 		usage(argv[0]);
+
+	if (o.mode == Options::listtests) {
+		listTests(Test::testList, o.verbosity);
+		exit(0);
+	}
 
 	// Create the test environment, then invoke each test to generate
 	// results or compare two previous runs.
@@ -290,11 +294,13 @@ selectTests(Options& o, vector<string>& allTestNames, int argc, char* argv[],
 
 
 void
-listTests(vector<string> &testNames) {
-	for (vector<string>::const_iterator t = testNames.begin();
-	     t != testNames.end();
-	     ++t) {
-		cout << *t << '\n';
+listTests(const Test *tests, bool verbose) {
+	for (const Test *t = tests; t; t = t->nextTest) {
+		cout << t->name << ":\n";
+		if (verbose) {
+			cout << t->description;
+			cout << '\n';
+		}
 	}
 }
 

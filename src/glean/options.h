@@ -57,7 +57,7 @@ namespace GLEAN {
 
 class Options {
     public:
-	typedef enum {notSet, run, compare} RunMode;
+	typedef enum {notSet, run, compare, listtests} RunMode;
 	RunMode mode;		// Indicates whether we're generating
 				// results, or comparing two previous runs.
 
