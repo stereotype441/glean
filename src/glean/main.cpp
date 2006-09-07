@@ -296,7 +296,7 @@ selectTests(Options& o, vector<string>& allTestNames, int argc, char* argv[],
 void
 listTests(const Test *tests, bool verbose) {
 	for (const Test *t = tests; t; t = t->nextTest) {
-		cout << t->name << ":\n";
+		cout << t->name << (verbose? ":" : "") << "\n";
 		if (verbose) {
 			cout << t->description;
 			cout << '\n';
