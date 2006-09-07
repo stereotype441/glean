@@ -65,7 +65,7 @@ static ImageFormat Formats[] =
 	{ "GL_ABGR, GL_UNSIGNED_BYTE", 4, GL_ABGR_EXT, GL_UNSIGNED_BYTE },
 	{ "GL_RGBA, GL_UNSIGNED_INT_8_8_8_8", 4, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8 },
 	{ "GL_BGRA, GL_UNSIGNED_INT_8_8_8_8", 4, GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8 },
-	{ "GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_rev", 4, GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8_REV },
+	{ "GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV", 4, GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8_REV },
 #ifdef GL_EXT_packed_depth_stencil
 	{ "GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8", 4, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT },
 #endif
@@ -122,6 +122,17 @@ isStencilFormat(GLenum format)
 	default:
 		return false;
 	}
+}
+
+
+static bool
+isDepthStencilFormat(GLenum format)
+{
+#ifdef GL_EXT_packed_depth_stencil
+	if (format == GL_DEPTH_STENCIL_EXT)
+		return true;
+#endif
+	return false;
 }
 
 
@@ -300,6 +311,16 @@ ReadpixPerfTest::setup(void)
 					 GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, buffer);
 	}
 	delete buffer;
+
+	GLint readBuf;
+	glGetIntegerv(GL_READ_BUFFER, &readBuf);
+	env->log << "ReadBuffer = ";
+	if (readBuf == GL_FRONT)
+		env->log << "GL_FRONT\n";
+	else if (readBuf == GL_BACK)
+		env->log << "GL_BACK\n";
+	else
+		env->log << "other?\n";
 }
 
 
@@ -322,6 +343,10 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 		if (isDepthFormat(Formats[res.formatNum].Format) && depthBits == 0)
 			continue;
 		if (isStencilFormat(Formats[res.formatNum].Format) && stencilBits == 0)
+			continue;
+
+		if (isDepthStencilFormat(Formats[res.formatNum].Format) &&
+			!GLUtils::haveExtensions("GL_EXT_packed_depth_stencil"))
 			continue;
 
 		for (res.work = 0; res.work < 2; res.work++) {
