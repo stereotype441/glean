@@ -74,6 +74,17 @@ option on the command line:
 </PRE>
 
 <P>
+To see a list of all available Glean tests:
+<PRE>
+    $GLEAN_ROOT/bin/glean --listtests
+</PRE>
+For a description of each test, run with <KBD>-v</KBD> (verbose):
+<PRE>
+    $GLEAN_ROOT/bin/glean -v --listtests
+</PRE>
+
+
+<P>
 Some of the tests in <I>glean</I> (such as the texBindPerf test
 shown in the example above) involve benchmarking OpenGL operations.
 To obtain the most accurate, repeatable results for these tests, there
