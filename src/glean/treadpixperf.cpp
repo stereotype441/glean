@@ -47,7 +47,8 @@ const GLuint PBO1 = 42, PBO2 = 43;
 const double minInterval = 1.0; // seconds
 
 
-struct ImageFormat {
+struct ImageFormat
+{
    const char *Name;
    GLuint Bytes;  // per pixel
    GLenum Format;
@@ -55,7 +56,8 @@ struct ImageFormat {
 };
 
 
-static ImageFormat Formats[] = {
+static ImageFormat Formats[] =
+{
 	{ "GL_RGB, GL_UNSIGNED_BYTE", 3, GL_RGB, GL_UNSIGNED_BYTE },
 	{ "GL_BGR, GL_UNSIGNED_BYTE", 3, GL_BGR, GL_UNSIGNED_BYTE },
 	{ "GL_RGBA, GL_UNSIGNED_BYTE", 4, GL_RGBA, GL_UNSIGNED_BYTE },
@@ -74,7 +76,8 @@ static ImageFormat Formats[] = {
 };
 
 
-static GLenum PBOmodes[4] = {
+static GLenum PBOmodes[4] =
+{
 	GL_NONE,
 #ifdef GL_ARB_pixel_buffer_object
 	GL_STREAM_READ_ARB,
@@ -83,7 +86,8 @@ static GLenum PBOmodes[4] = {
 #endif
 };
 
-static const char *PBOmodeStrings[4] = {
+static const char *PBOmodeStrings[4] =
+{
 	"No PBO",
 	"GL_STREAM_READ PBO",
 	"GL_STATIC_READ PBO",
@@ -149,7 +153,6 @@ double
 ReadpixPerfTest::runNonPBOtest(int formatNum, GLsizei width, GLsizei height,
 			       GLuint *sumOut)
 {
-	GLuint sum = 0;
 	const GLint bufferSize = width * height * Formats[formatNum].Bytes;
 	GLubyte *buffer = new GLubyte [bufferSize];
 
@@ -166,6 +169,7 @@ ReadpixPerfTest::runNonPBOtest(int formatNum, GLsizei width, GLsizei height,
 			     Formats[formatNum].Format,
 			     Formats[formatNum].Type, buffer);
 		if (sumOut) {
+			GLuint sum = 0;
 			for (int i = 0; i < bufferSize; i++) {
 				sum += buffer[i];
 			}
@@ -187,7 +191,7 @@ double
 ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 			    GLenum bufferUsage, GLuint *sumOut)
 {
-	GLuint sum = 0;
+#ifdef GL_ARB_pixel_buffer_object
 	const GLint bufferSize = width * height * Formats[formatNum].Bytes / 2;
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -216,33 +220,39 @@ ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 			     Formats[formatNum].Format,
 			     Formats[formatNum].Type, NULL);
 		if (sumOut) {
-				// sum lower half
-				BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO1);
-				GLubyte * b = (GLubyte *)
-					MapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
-				for (int i = 0; i < bufferSize; i++) {
-						sum += b[i];
-				}
-				UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+			GLuint sum = 0;
+			// sum lower half
+			BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO1);
+			GLubyte * b = (GLubyte *)
+				MapBuffer(GL_PIXEL_PACK_BUFFER_ARB,
+					  GL_READ_ONLY);
+			for (int i = 0; i < bufferSize; i++) {
+				sum += b[i];
+			}
+			UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
 
-				// sum upper half
-				BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO2);
-				b = (GLubyte *) MapBuffer(GL_PIXEL_PACK_BUFFER_ARB,
-										  GL_READ_ONLY);
-				for (int i = 0; i < bufferSize; i++) {
-						sum += b[i];
-				}
-				UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
-				*sumOut = sum;
+			// sum upper half
+			BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO2);
+			b = (GLubyte *) MapBuffer(GL_PIXEL_PACK_BUFFER_ARB,
+						  GL_READ_ONLY);
+			for (int i = 0; i < bufferSize; i++) {
+				sum += b[i];
+			}
+			UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+			*sumOut = sum;
 		}
 		double finish = t.getClock();
 		elapsedTime = finish - start;
 	} while (elapsedTime < minInterval);
 
+	BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+
 	double rate = width * height * iter / elapsedTime / 1000000.0;
 	return rate;
+#else
+	return 0.0;
+#endif /* GL_ARB_pixel_buffer_object */
 }
-
 
 
 
@@ -274,6 +284,22 @@ ReadpixPerfTest::setup(void)
 		numPBOmodes = 1;
 	}
 
+	// Fill colorbuffer with random data
+	GLubyte *buffer = new GLubyte [windowSize * windowSize * 4];
+	for (int i = 0; i < windowSize * windowSize * 4; i++)
+		buffer[i] = 5;
+	glDrawPixels(windowSize, windowSize, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	if (depthBits > 0) {
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_ALWAYS);
+		glDrawPixels(windowSize, windowSize,
+					 GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
+	}
+	if (stencilBits > 0) {
+		glDrawPixels(windowSize, windowSize,
+					 GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, buffer);
+	}
+	delete buffer;
 }
 
 
@@ -288,11 +314,10 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 	assert(numPBOmodes > 0);
 
 	r.pass = true;
-	res.width = 512;
-	res.height = 512;
+	res.width = windowSize;
+	res.height = windowSize;
 
 	for (res.formatNum = 0; Formats[res.formatNum].Name; res.formatNum++) {
-		GLuint firstSum = 0;
 
 		if (isDepthFormat(Formats[res.formatNum].Format) && depthBits == 0)
 			continue;
@@ -300,6 +325,7 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 			continue;
 
 		for (res.work = 0; res.work < 2; res.work++) {
+			GLuint firstSum = 0;
 
 			for (res.pboMode = 0; res.pboMode < numPBOmodes; res.pboMode++) {
 				GLuint sum = 0;
@@ -310,7 +336,6 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 															res.work ? &sum : NULL);
 				}
 				else {
-					BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
 					res.rate = runNonPBOtest(res.formatNum, res.width, res.height,
 																 res.work ? &sum : NULL);
 				}
@@ -322,10 +347,19 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 				if (res.pboMode == 0) {
 					firstSum = sum;
 				}
-				else {
-					assert(firstSum == sum);
+				else if (firstSum != sum) {
+					// this should never happen, probably an OpenGL bug
+					char s0[1000];
+					res.sprint(s0);
+					env->log << name
+						 << " Error: glReadPixels returned inconsistant data:\n"
+						 << s0
+						 << " returned "
+						 << firstSum
+						 << " but expected sum is "
+						 << sum << "\n";
+					r.pass = false;
 				}
-
 			}
 		}
 	}

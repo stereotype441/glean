@@ -35,8 +35,7 @@
 
 namespace GLEAN {
 
-#define drawingSize 1000
-#define windowSize (drawingSize)
+#define windowSize 1000
 
 
 class ReadpixPerfResult: public BaseResult
