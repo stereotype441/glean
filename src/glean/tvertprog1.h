@@ -38,6 +38,9 @@ namespace GLEAN {
 
 #define windowSize 100
 
+// to indicate a looser tolerance test is needed
+#define FLAG_NONE   0
+#define FLAG_LOOSE  1
 
 class VertexProgram
 {
@@ -46,6 +49,7 @@ public:
 	const char *progString;
 	const GLfloat expectedColor[4];
 	const GLfloat expectedZ;
+	int flags;
 };
 
 
@@ -62,8 +66,9 @@ public:
 
 private:
 	GLfloat tolerance[5];
+	GLfloat looseTolerance[5];
 	void setup(void);
-	bool equalColors(const GLfloat a[4], const GLfloat b[4]) const;
+	bool equalColors(const GLfloat a[4], const GLfloat b[4], int flags) const;
 	bool equalDepth(GLfloat z0, GLfloat z1) const;
 	bool testProgram(const VertexProgram &p);
 	void reportFailure(const char *programName,

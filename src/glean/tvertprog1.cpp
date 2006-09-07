@@ -98,7 +98,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(ABS(Param2[2])),
 		  CLAMP01(ABS(Param2[3])),
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"ADD test",
@@ -112,7 +113,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(VertColor[2] + Param1[2]),
 		  CLAMP01(VertColor[3] + Param1[3])
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"ARL test",
@@ -146,7 +148,8 @@ static const VertexProgram Programs[] = {
 		  0.33,
 		  0.44
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"DP3 test",
@@ -162,7 +165,8 @@ static const VertexProgram Programs[] = {
 			Param2[1] * VertColor[1] +
 			Param2[2] * VertColor[2] + 0.5)
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"DP4 test",
@@ -179,7 +183,8 @@ static const VertexProgram Programs[] = {
 			Param2[2] * VertColor[2] +
 			Param2[3] * VertColor[3] + 0.5)
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"DPH test",
@@ -194,7 +199,8 @@ static const VertexProgram Programs[] = {
 				Param2[2] * VertColor[2] +
 				VertColor[3]))
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"DST test",
@@ -210,7 +216,8 @@ static const VertexProgram Programs[] = {
 		  0.16,          // v1.z
 		  CLAMP01(2.5)   // v2.w
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"EX2 test",
@@ -229,7 +236,8 @@ static const VertexProgram Programs[] = {
                    2.0 * 0.01,
                   16.0 * 0.01,
                   0.25 * 0.01 },
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"EXP test",
@@ -241,11 +249,12 @@ static const VertexProgram Programs[] = {
 		"EXP t, values.x; \n"
 		"MUL result.color, t, scale; \n"
 		"END \n",
-		{  16.0  * 0.01,
-                    0.5  * 0.01,
-                   22.62 * 0.01,
-                    1.0  * 0.01 },
-		DONT_CARE_Z
+		{ 16.0   * 0.01,
+                   0.5   * 0.01,
+                  22.627 * 0.01,
+                   1.0   * 0.01 },
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"FLR test",
@@ -262,7 +271,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(-0.1),
 		  0.1
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"FRC test",
@@ -276,7 +286,8 @@ static const VertexProgram Programs[] = {
 		  0.9,
 		  0.2
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"LG2 test",
@@ -296,7 +307,8 @@ static const VertexProgram Programs[] = {
 		  0.49,
 		  0.2
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"LIT test 1",
@@ -310,7 +322,8 @@ static const VertexProgram Programs[] = {
 		  0.430,   // roughly Pow(values.y, values.w)
 		  1.0
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_LOOSE
 	},
 	{
 		"LIT test 2 (degenerate case: 0 ^ 0 -> 1)",
@@ -324,7 +337,8 @@ static const VertexProgram Programs[] = {
 		  1.0,     // 0^0
 		  1.0
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"LIT test 3 (case x < 0)",
@@ -338,7 +352,8 @@ static const VertexProgram Programs[] = {
 		  0.0,
 		  1.0
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"LOG test",
@@ -358,7 +373,8 @@ static const VertexProgram Programs[] = {
 		  0.49,  // roughApproxLog2(value.z)
 		  0.1
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"MAD test",
@@ -373,7 +389,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(VertColor[2] * Param1[2] + Param2[2]),
 		  CLAMP01(VertColor[3] * Param1[3] + Param2[3])
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"MAX test",
@@ -388,7 +405,8 @@ static const VertexProgram Programs[] = {
 		  MAX(Param1[2], Param2[2]),
 		  MAX(Param1[3], Param2[3]),
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"MIN test",
@@ -402,7 +420,8 @@ static const VertexProgram Programs[] = {
 		  MIN(Param1[2], VertColor[2]),
 		  MIN(Param1[3], VertColor[3]),
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"MOV test (with swizzle)",
@@ -415,7 +434,8 @@ static const VertexProgram Programs[] = {
 		  VertColor[0],
 		  VertColor[1]
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"MUL test (with swizzle and masking)",
@@ -430,7 +450,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(Param1[1] * VertColor[1]),
 		  CLAMP01(Param1[0] * VertColor[0]),
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"POW test (exponentiation)",
@@ -446,7 +467,8 @@ static const VertexProgram Programs[] = {
 		  0.5 * 0.5 * 0.5,
 		  0.5 * 0.5 * 0.5 * 0.5,
 		  CLAMP01(2.0) },
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"RCP test (reciprocal)",
@@ -459,7 +481,8 @@ static const VertexProgram Programs[] = {
 		"RCP result.color.w, values.w; \n"
 		"END \n",
 		{ 1.0 / 8.0, CLAMP01(1.0 / -10.0), 1, 1.0 / 12.0 },
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"RSQ test 1 (reciprocal square root)",
@@ -472,7 +495,8 @@ static const VertexProgram Programs[] = {
 		"RSQ result.color.w, values.w; \n"
 		"END \n",
 		{ 1.0, 0.5, 0.3333, 0.1 },
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"RSQ test 2 (reciprocal square root of negative value)",
@@ -489,7 +513,8 @@ static const VertexProgram Programs[] = {
 		  0.447,
 		  1.0,
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SGE test",
@@ -504,7 +529,8 @@ static const VertexProgram Programs[] = {
 		  Param2[2] >= Param0[2] ? 1.0 : 0.0,
 		  Param2[3] >= Param0[3] ? 1.0 : 0.0,
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SLT test",
@@ -519,7 +545,8 @@ static const VertexProgram Programs[] = {
 		  Param2[2] < Param0[2] ? 1.0 : 0.0,
 		  Param2[3] < Param0[3] ? 1.0 : 0.0,
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SUB test (with swizzle)",
@@ -533,7 +560,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(Param1[3] - VertColor[3]),
 		  CLAMP01(Param1[2] - VertColor[2])
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SWZ test 1",
@@ -547,7 +575,8 @@ static const VertexProgram Programs[] = {
 		  Param1[0],
 		  Param1[1]
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SWZ test 2",
@@ -561,7 +590,8 @@ static const VertexProgram Programs[] = {
 		  Param1[0],
 		  Param1[1]
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SWZ test 3",
@@ -571,7 +601,8 @@ static const VertexProgram Programs[] = {
 		"SWZ result.color, p, 0,1,0,1; \n"
 		"END \n",
 		{ 0.0, 1.0, 0.0, 1.0 },
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SWZ test 4",
@@ -585,7 +616,8 @@ static const VertexProgram Programs[] = {
 		  Param1[2],
 		  0.0
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"SWZ test 5",
@@ -599,7 +631,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(-1),
 		  0.0
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"XPD test 1",
@@ -614,7 +647,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(Param1[0] * Param2[1] - Param1[1] * Param2[0]),
 		  DONT_CARE_COLOR
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"XPD test 2 (same src/dst arg)",
@@ -632,7 +666,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(Param1[0] * Param2[1] - Param1[1] * Param2[0]),
 		  DONT_CARE_COLOR
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 
 	// ============= Test result.position writes ==========================
@@ -646,7 +681,8 @@ static const VertexProgram Programs[] = {
 		"MOV result.color, vertex.color; \n"
 		"END \n",
 		VERTCOLOR,
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"Z-write test",
@@ -657,7 +693,8 @@ static const VertexProgram Programs[] = {
 		"MOV result.color, vertex.color; \n"
 		"END \n",
 		VERTCOLOR,
-		Param1[1] * 0.5 + 0.5  // map clip Z to win Z
+		Param1[1] * 0.5 + 0.5,  // map clip Z to win Z
+		FLAG_NONE
 	},
 
 	// ============= Global state reference tests =========================
@@ -669,7 +706,8 @@ static const VertexProgram Programs[] = {
 		"MOV result.color, ambient; \n"
 		"END \n",
 		AMBIENT,
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		// Note: material.diffuse = VertColor
@@ -685,7 +723,8 @@ static const VertexProgram Programs[] = {
 		  CLAMP01(Diffuse[2] * VertColor[2]),
 		  CLAMP01(VertColor[3])  // material's diffuse alpha
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"State reference test 3 (fog params)",
@@ -700,7 +739,8 @@ static const VertexProgram Programs[] = {
 		  FogEnd,
 		  (1.0 / (FogEnd - FogStart)) * 0.1
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 
 	// ============= Numeric stress tests =================================
@@ -721,7 +761,8 @@ static const VertexProgram Programs[] = {
 		  DONT_CARE_COLOR,
 		  DONT_CARE_COLOR
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 	{
 		"Infinity / nan test",
@@ -736,14 +777,15 @@ static const VertexProgram Programs[] = {
 		  DONT_CARE_COLOR,
 		  DONT_CARE_COLOR
 		},
-		DONT_CARE_Z
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 
 	// ============= Texcoord output tests ================================
 	// XXX to do
 
 	// XXX add lots more tests here!
-	{ NULL, NULL, {0,0,0,0}, 0 } // end of list sentinal
+	{ NULL, NULL, {0,0,0,0}, 0, FLAG_NONE } // end of list sentinal
 };
 
 
@@ -835,6 +877,11 @@ VertexProgramTest::setup(void)
 		tolerance[4] = 16.0 / (1 << bufferBits[4]);
 	else
 		tolerance[4] = 1.0;
+
+        // Some tests request a looser tolerance:
+        // XXX a factor of 4 may be too much...
+        for (int i = 0; i < 5; i++)
+                looseTolerance[i] = 4.0 * tolerance[i];
 }
 
 
@@ -877,12 +924,17 @@ VertexProgramTest::reportSuccess(int count) const
 
 // Compare actual and expected colors
 bool
-VertexProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
+VertexProgramTest::equalColors(const GLfloat act[4], const GLfloat exp[4], int flags) const
 {
-	if ((fabsf(act[0] - exp[0]) > tolerance[0] && exp[0] != DONT_CARE_COLOR) ||
-	    (fabsf(act[1] - exp[1]) > tolerance[1] && exp[1] != DONT_CARE_COLOR) ||
-	    (fabsf(act[2] - exp[2]) > tolerance[2] && exp[2] != DONT_CARE_COLOR) ||
-	    (fabsf(act[3] - exp[3]) > tolerance[3] && exp[3] != DONT_CARE_COLOR))
+        const GLfloat *tol;
+        if (flags & FLAG_LOOSE)
+                tol = looseTolerance;
+        else
+                tol = tolerance;
+	if ((fabsf(act[0] - exp[0]) > tol[0] && exp[0] != DONT_CARE_COLOR) ||
+	    (fabsf(act[1] - exp[1]) > tol[1] && exp[1] != DONT_CARE_COLOR) ||
+	    (fabsf(act[2] - exp[2]) > tol[2] && exp[2] != DONT_CARE_COLOR) ||
+	    (fabsf(act[3] - exp[3]) > tol[3] && exp[3] != DONT_CARE_COLOR))
 		return false;
 	else
 		return true;
@@ -946,7 +998,7 @@ VertexProgramTest::testProgram(const VertexProgram &p)
                   p.expectedColor[2], p.expectedColor[3], 
                   pixel[0], pixel[1], pixel[2], pixel[3]);
 
-	if (!equalColors(pixel, p.expectedColor)) {
+	if (!equalColors(pixel, p.expectedColor, p.flags)) {
 		reportFailure(p.name, p.expectedColor, pixel);
 		return false;
 	}
