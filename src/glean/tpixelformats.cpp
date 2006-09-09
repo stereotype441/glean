@@ -28,9 +28,6 @@
 
 
 #include "tpixelformats.h"
-#include "rand.h"
-#include "timer.h"
-#include "image.h"
 #include <cassert>
 #include <cmath>
 
