@@ -33,6 +33,8 @@
 
 
 // Set to 1 to help debug test failures:
+// Also, when a test failure is found, rearrange the order of the
+// formats, types, internformats below so the failure case comes first.
 #define DEBUG 0
 
 
@@ -81,6 +83,9 @@ static const NameTokenComps Formats[] =
 	{ "GL_BGRA", GL_BGRA, 4 },
 	{ "GL_RGB", GL_RGB, 3 },
 	{ "GL_BGR", GL_BGR, 3 },
+	{ "GL_ALPHA", GL_ALPHA, 1 },
+	{ "GL_LUMINANCE", GL_LUMINANCE, 1 },
+	{ "GL_LUMINANCE_ALPHA", GL_LUMINANCE_ALPHA, 2 },
 #ifdef GL_EXT_abgr
 	{ "GL_ABGR_EXT", GL_ABGR_EXT, 4 }
 #endif
@@ -92,6 +97,20 @@ static const NameTokenComps Formats[] =
 static const NameTokenComps InternalFormats[] =
 {
 	{ "glDrawPixels", 0, 4 },  // special case for glDrawPixels
+
+	{ "4", 4, 4 },
+	{ "GL_RGBA", GL_RGBA, 4 },
+	{ "GL_RGBA2", GL_RGBA2, 4 },
+	{ "GL_RGBA4", GL_RGBA4, 4 },
+	{ "GL_RGB5_A1", GL_RGB5_A1, 4 },
+	{ "GL_RGBA8", GL_RGBA8, 4 },
+	{ "GL_RGB10_A2", GL_RGB10_A2, 4 },
+	{ "GL_RGBA12", GL_RGBA12, 4 },
+	{ "GL_RGBA16", GL_RGBA16, 4 },
+#ifdef GL_EXT_texture_sRGB
+	{ "GL_SRGB_ALPHA_EXT", GL_SRGB_ALPHA_EXT, 4 },
+	{ "GL_SRGB8_ALPHA8_EXT", GL_SRGB8_ALPHA8_EXT, 4 },
+#endif
 
 	{ "3", 3, 3 },
 	{ "GL_RGB", GL_RGB, 3 },
@@ -107,20 +126,42 @@ static const NameTokenComps InternalFormats[] =
 	{ "GL_SRGB8_EXT", GL_SRGB8_EXT, 3 },
 #endif
 
-	{ "GL_RGBA", GL_RGBA, 4 },
-	{ "4", 4, 4 },
-	{ "GL_RGBA2", GL_RGBA2, 4 },
-	{ "GL_RGBA4", GL_RGBA4, 4 },
-	{ "GL_RGB5_A1", GL_RGB5_A1, 4 },
-	{ "GL_RGBA8", GL_RGBA8, 4 },
-	{ "GL_RGB10_A2", GL_RGB10_A2, 4 },
-	{ "GL_RGBA12", GL_RGBA12, 4 },
-	{ "GL_RGBA16", GL_RGBA16, 4 },
+	{ "2", 2, 1 },
+	{ "GL_LUMINANCE_ALPHA", GL_LUMINANCE_ALPHA, 1 },
+	{ "GL_LUMINANCE4_ALPHA4", GL_LUMINANCE4_ALPHA4, 1 },
+	{ "GL_LUMINANCE6_ALPHA2", GL_LUMINANCE6_ALPHA2, 1 },
+	{ "GL_LUMINANCE8_ALPHA8", GL_LUMINANCE8_ALPHA8, 1 },
+	{ "GL_LUMINANCE12_ALPHA4", GL_LUMINANCE12_ALPHA4, 1 },
+	{ "GL_LUMINANCE12_ALPHA12", GL_LUMINANCE12_ALPHA12, 1 },
+	{ "GL_LUMINANCE16_ALPHA16", GL_LUMINANCE16_ALPHA16, 1 },
 #ifdef GL_EXT_texture_sRGB
-	{ "GL_SRGB_ALPHA_EXT", GL_SRGB_ALPHA_EXT, 4 },
-	{ "GL_SRGB8_ALPHA8_EXT", GL_SRGB8_ALPHA8_EXT, 4 },
+	{ "GL_SLUMINANCE_ALPHA_EXT", GL_SLUMINANCE_ALPHA_EXT, 3 },
+	{ "GL_SLUMINANCE8_ALPHA8_EXT", GL_SLUMINANCE8_ALPHA8_EXT, 3 },
 #endif
-	// XXX maybe add ALPHA, LUMINANCE, INTENSITY formats someday
+
+	{ "1", 1, 1 },
+	{ "GL_LUMINANCE", GL_LUMINANCE, 1 },
+	{ "GL_LUMINANCE4", GL_LUMINANCE4, 1 },
+	{ "GL_LUMINANCE8", GL_LUMINANCE8, 1 },
+	{ "GL_LUMINANCE12", GL_LUMINANCE12, 1 },
+	{ "GL_LUMINANCE16", GL_LUMINANCE16, 1 },
+#ifdef GL_EXT_texture_sRGB
+	{ "GL_SLUMINANCE_EXT", GL_SLUMINANCE_EXT, 3 },
+	{ "GL_SLUMINANCE8_EXT", GL_SLUMINANCE8_EXT, 3 },
+#endif
+
+	{ "GL_ALPHA", GL_ALPHA, 1 },
+	{ "GL_ALPHA4", GL_ALPHA4, 1 },
+	{ "GL_ALPHA8", GL_ALPHA8, 1 },
+	{ "GL_ALPHA12", GL_ALPHA12, 1 },
+	{ "GL_ALPHA16", GL_ALPHA16, 1 },
+
+	{ "GL_INTENSITY", GL_INTENSITY, 1 },
+	{ "GL_INTENSITY4", GL_INTENSITY4, 1 },
+	{ "GL_INTENSITY8", GL_INTENSITY8, 1 },
+	{ "GL_INTENSITY12", GL_INTENSITY12, 1 },
+	{ "GL_INTENSITY16", GL_INTENSITY16, 1 },
+
 	// XXX maybe add compressed formats too...
 };
 
@@ -259,6 +300,24 @@ ComponentPositions(GLenum format, GLint pos[4])
 		pos[2] = 0;
 		pos[3] = -1;
 		break;
+	case GL_LUMINANCE:
+		pos[0] = 0;
+		pos[1] = -1;
+		pos[2] = -1;
+		pos[3] = -1;
+		break;
+	case GL_LUMINANCE_ALPHA:
+		pos[0] = 0;
+		pos[1] = -1;
+		pos[2] = -1;
+		pos[3] = 1;
+		break;
+	case GL_ALPHA:
+		pos[0] = -1;
+		pos[1] = -1;
+		pos[2] = -1;
+		pos[3] = 0;
+		break;
 #ifdef GL_EXT_abgr
 	case GL_ABGR_EXT:
 		pos[0] = 3;
@@ -271,6 +330,92 @@ ComponentPositions(GLenum format, GLint pos[4])
 		abort();
 	}
 }
+
+
+// Given a texture internal format, return the corresponding base format.
+static GLenum
+BaseTextureFormat(GLint intFormat)
+{
+	switch (intFormat) {
+	case 0:
+		return 0;  // for glDrawPixels
+	case GL_ALPHA:
+	case GL_ALPHA4:
+	case GL_ALPHA8:
+	case GL_ALPHA12:
+	case GL_ALPHA16:
+		return GL_ALPHA;
+	case 1:
+	case GL_LUMINANCE:
+	case GL_LUMINANCE4:
+	case GL_LUMINANCE8:
+	case GL_LUMINANCE12:
+	case GL_LUMINANCE16:
+		return GL_LUMINANCE;
+	case 2:
+	case GL_LUMINANCE_ALPHA:
+	case GL_LUMINANCE4_ALPHA4:
+	case GL_LUMINANCE6_ALPHA2:
+	case GL_LUMINANCE8_ALPHA8:
+	case GL_LUMINANCE12_ALPHA4:
+	case GL_LUMINANCE12_ALPHA12:
+	case GL_LUMINANCE16_ALPHA16:
+		return GL_LUMINANCE_ALPHA;
+	case GL_INTENSITY:
+	case GL_INTENSITY4:
+	case GL_INTENSITY8:
+	case GL_INTENSITY12:
+	case GL_INTENSITY16:
+		return GL_INTENSITY;
+	case 3:
+	case GL_RGB:
+	case GL_R3_G3_B2:
+	case GL_RGB4:
+	case GL_RGB5:
+	case GL_RGB8:
+	case GL_RGB10:
+	case GL_RGB12:
+	case GL_RGB16:
+		return GL_RGB;
+	case 4:
+	case GL_RGBA:
+	case GL_RGBA2:
+	case GL_RGBA4:
+	case GL_RGB5_A1:
+	case GL_RGBA8:
+	case GL_RGB10_A2:
+	case GL_RGBA12:
+	case GL_RGBA16:
+		return GL_RGBA;
+
+#ifdef GL_EXT_texture_sRGB
+	case GL_SRGB_EXT:
+	case GL_SRGB8_EXT:
+	case GL_COMPRESSED_SRGB_EXT:
+	case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+		return GL_RGB;
+	case GL_SRGB_ALPHA_EXT:
+	case GL_SRGB8_ALPHA8_EXT:
+	case GL_COMPRESSED_SRGB_ALPHA_EXT:
+	case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+	case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+	case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+		return GL_RGBA;
+	case GL_SLUMINANCE_ALPHA_EXT:
+	case GL_SLUMINANCE8_ALPHA8_EXT:
+	case GL_COMPRESSED_SLUMINANCE_EXT:
+	case GL_COMPRESSED_SLUMINANCE_ALPHA_EXT:
+		return GL_LUMINANCE_ALPHA;
+	case GL_SLUMINANCE_EXT:
+	case GL_SLUMINANCE8_EXT:
+		return GL_LUMINANCE;
+#endif
+	default:
+		abort();
+	}
+}
+
+
 
 
 // Return number components in the given datatype.  This is 3 or 4 for
@@ -303,17 +448,6 @@ NumberOfComponentsInFormat(GLenum format)
 	for (unsigned i = 0; i < NUM_FORMATS; i++) {
 		if (Formats[i].Token == format)
 			return Formats[i].Components;
-	}
-	abort();
-}
-
-
-static int
-NumberOfComponentsInInternalFormat(GLint intFormat)
-{
-	for (unsigned i = 0; i < NUM_INT_FORMATS; i++) {
-		if (InternalFormats[i].Token == (unsigned) intFormat)
-			return InternalFormats[i].Components;
 	}
 	abort();
 }
@@ -589,7 +723,7 @@ PixelFormatsTest::CheckError(const char *where) const
 bool
 PixelFormatsTest::DrawImage(int width, int height,
 							GLenum format, GLenum type, GLint intFormat,
-							const GLubyte *image)
+							const GLubyte *image) const
 {
 	if (intFormat) {
 		glEnable(GL_TEXTURE_2D);
@@ -632,48 +766,352 @@ ColorsEqual(const GLubyte img[4], const GLubyte expected[4])
 }
 
 
+// Compute the expected RGBA color we're expecting to find with glReadPixels
+// if the texture was defined with the given image format and texture
+// internal format.  'testChan' indicates which of the srcFormat's image
+// channels was set (to 1.0) when the image was filled.
+static void
+ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
+				GLubyte exp[4])
+{
+	const GLenum baseIntFormat = BaseTextureFormat(intFormat);
+
+	switch (srcFormat) {
+
+	case GL_RGBA:
+	case GL_BGRA:
+#ifdef GL_EXT_abgr
+	case GL_ABGR_EXT:
+#endif
+		assert(testChan < 4);
+		switch (baseIntFormat) {
+		case 0: // == glReadPixels
+			// fallthrough
+		case GL_RGBA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 0;
+			exp[testChan] = 255;
+			break;
+		case GL_RGB:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[testChan] = 255;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = testChan == 3 ? 255 : 0;
+			break;
+		case GL_LUMINANCE:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = testChan == 3 ? 255 : 0;
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] =
+			exp[3] = testChan == 0 ? 255 : 0;
+			break;
+		default:
+			abort();
+		}
+		break;
+
+	case GL_RGB:
+	case GL_BGR:
+		assert(testChan < 3);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[testChan] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_RGB:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[testChan] = 255;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_LUMINANCE:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 255;  // texture's alpha
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] =
+			exp[3] = testChan == 0 ? 255 : 0;
+			break;
+		default:
+			abort();
+		}
+		break;
+
+	case GL_ALPHA:
+		assert(testChan == 0);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_RGB:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_LUMINANCE:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		default:
+			abort();
+		}
+		break;
+
+	case GL_LUMINANCE:
+		assert(testChan == 0);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] = 255;
+			exp[1] = 255;
+			exp[2] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_RGB:
+			exp[0] = 255;
+			exp[1] = 255;
+			exp[2] = 255;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_LUMINANCE:
+			exp[0] = 255;
+			exp[1] = 255;
+			exp[2] = 255;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] = 255;
+			exp[1] = 255;
+			exp[2] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_INTENSITY:
+			exp[0] = 255;
+			exp[1] = 255;
+			exp[2] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		default:
+			abort();
+		}
+		break;
+
+	case GL_LUMINANCE_ALPHA:
+		assert(testChan < 2);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_RGB:
+			exp[0] = 
+			exp[1] = 
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0; // fragment color
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_LUMINANCE:
+			exp[0] = 
+			exp[1] = 
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] = testChan == 0 ? 255 : 0;
+			exp[1] = testChan == 0 ? 255 : 0;
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] =
+			exp[3] = testChan == 0 ? 255 : 0;
+			break;
+		default:
+			abort();
+		}
+		break;
+
+#if 0
+	case GL_INTENSITY:
+		assert(testChan == 0);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] =
+			exp[1] =
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_RGB:
+			exp[0] = 
+			exp[1] = 
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0; // fragment color
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_LUMINANCE:
+			exp[0] = 
+			exp[1] = 
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] = testChan == 0 ? 255 : 0;
+			exp[1] = testChan == 0 ? 255 : 0;
+			exp[2] = testChan == 0 ? 255 : 0;
+			exp[3] = testChan == 1 ? 255 : 0;
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] =
+			exp[3] = testChan == 0 ? 255 : 0;
+			break;
+		default:
+			abort();
+		}
+		break;
+#endif
+	default:
+		abort();
+	}
+}
+
+
 // Read framebuffer and check that region [width x height] is the expected
 // solid color, except the upper-right quadrant will always be black/zero.
-// colorChan: 0 = red, 1 = green, 2 = blue, 3 = alpha.
+// comp: which color channel in src image was set (0 = red, 1 = green,
+//  2 = blue, 3 = alpha), other channels are zero.
 // format is the color format we're testing.
 bool
-PixelFormatsTest::CheckRendering(int width, int height, int colorChan, GLenum format, GLint intFormat) const
+PixelFormatsTest::CheckRendering(int width, int height, int comp,
+								 GLenum format, GLint intFormat) const
 {
-	const int comps = NumberOfComponentsInFormat(format);
-	const int intComps = NumberOfComponentsInInternalFormat(intFormat);
-	const int checkAlpha = alphaBits > 0 && comps == 4 && intComps == 4;
+	const int checkAlpha = alphaBits > 0;
 	GLubyte *image = new GLubyte [width * height * 4];
 	GLboolean ok = 1;
 	GLubyte expected[4];
 	int i;
 
-	assert(colorChan >= 0 && colorChan < 4);
+	assert(comp >= 0 && comp < 4);
 
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	for (i = 0; i < width * height; i += 4) {
-		// determine which pixel color we're looking for
-		expected[0] =
-		expected[1] =
-		expected[2] =
-		expected[3] = 0;
-		if (!IsUpperRight(i/4, width, height)) {
-			expected[colorChan] = 0xff;
+
+		ComputeExpected(format, comp, intFormat, expected);
+		if (IsUpperRight(i/4, width, height)) {
+			expected[0] =
+			expected[1] =
+			expected[2] =
+			expected[3] = 0;
 		}
+
 		if (!checkAlpha) {
 			expected[3] = 0xff;
 		}
 
 		// do the color check
 		if (!ColorsEqual(image+i, expected)) {
-			ok = false;
-#if DEBUG
+			// report failure info
 			char msg[1000];
-			sprintf(msg, "for color %d at (%d,%d):  expected: 0x%x 0x%x 0x%x 0x%x  "
-				"got: 0x%x 0x%x 0x%x 0x%x\n", colorChan, i/width, i%width,
-				expected[0], expected[1], expected[2], expected[3],
-				image[i + 0], image[i + 1], image[i + 2], image[i + 3]);
+			env->log << name;
+			sprintf(msg, " failed at pixel (%d,%d), color channel %d:\n",
+					i/width, i%width, comp);
 			env->log << msg;
-#endif
+			sprintf(msg, "  Expected: 0x%02x 0x%02x 0x%02x 0x%02x\n",
+					expected[0], expected[1], expected[2], expected[3]);
+			env->log << msg;
+			sprintf(msg, "  Found:    0x%02x 0x%02x 0x%02x 0x%02x\n", 
+					image[i + 0], image[i + 1], image[i + 2], image[i + 3]);
+			env->log << msg;
+			ok = false;
 			break;
 		}
 	}
@@ -689,24 +1127,24 @@ PixelFormatsTest::CheckRendering(int width, int height, int colorChan, GLenum fo
 bool
 PixelFormatsTest::TestCombination(GLenum format, GLenum type, GLint intFormat)
 {
+	const int numComps = NumberOfComponentsInFormat(format);
 	const int width = 16;
 	const int height = 16;
-
 	int colorPos[4];
 	ComponentPositions(format, colorPos);
 
-	for (int color = 0; color < 4; color++) {
-		if (colorPos[color] >= 0) {
-			// make test incoming image
-			const int comp = colorPos[color];
-			GLubyte *image = MakeImage(width, height, format, type, comp);
+	for (int comp = 0; comp < numComps; comp++) {
+		if (colorPos[comp] >= 0) {
+			// make original/incoming image
+			const int comp2 = colorPos[comp];
+			GLubyte *image = MakeImage(width, height, format, type, comp2);
 
 			// render with image (texture / glDrawPixels)
 			bool ok = DrawImage(width, height, format, type, intFormat, image);
 
 			if (ok) {
 				// check rendering
-				ok = CheckRendering(width, height, color, format, intFormat);
+				ok = CheckRendering(width, height, comp, format, intFormat);
 			}
 
 			delete [] image;
@@ -737,6 +1175,8 @@ PixelFormatsTest::setup(void)
 
 	glDrawBuffer(GL_FRONT);
 	glReadBuffer(GL_FRONT);
+
+	glColor4f(0, 0, 0, 0);
 }
 
 
@@ -746,6 +1186,7 @@ PixelFormatsTest::setup(void)
 void
 PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 {
+	int testNum = 0;
 	(void) w;  // silence warning
 
 	setup();
@@ -765,7 +1206,9 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 						continue;
 
 #if DEBUG
-					env->log << "testing:\n";
+					env->log << "testing "
+							 << testNum
+							 << ":\n";
 					env->log << "  Format:    " << Formats[formatIndex].Name << "\n";
 					env->log << "  Type:      " << Types[typeIndex].Name << "\n";
 					env->log << "  IntFormat: " << InternalFormats[intFormat].Name << "\n";
@@ -776,17 +1219,19 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 																		InternalFormats[intFormat].Token);
 
 					if (!ok) {
-						// report error
-						env->log << name << " Failure:\n";
+						// error was reported to log, add format info here:
 						env->log << "  Format: " << Formats[formatIndex].Name << "\n";
 						env->log << "  Type: " << Types[typeIndex].Name << "\n";
 						env->log << "  Internal Format: " << InternalFormats[intFormat].Name << "\n";
 
 						r.numFailed++;
+
+						abort();
 					}
 					else {
 						r.numPassed++;
 					}
+					testNum++;
 				}
 			}
 		}
@@ -857,10 +1302,8 @@ PixelFormatsTest pixelFormatsTest("pixelFormats", "window, rgb",
 	"GL_BGRA/GL_UNSIGNED_SHORT_4_4_4_4_REV) operate correctly.\n"
 	"Test both glTexImage and glDrawPixels.\n"
 	"For textures, also test all the various internal texture formats.\n"
-	"Well over a thousand combinations are possible!\n"
+	"Thousands of combinations are possible!\n"
 	);
-
-
 
 
 } // namespace GLEAN

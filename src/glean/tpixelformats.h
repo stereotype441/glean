@@ -64,13 +64,14 @@ private:
 
 	bool CompatibleFormatAndType(GLenum format, GLenum datatype) const;
 
-	bool SupportedIntFormat(GLint intFormat) const ;
+	bool SupportedIntFormat(GLint intFormat) const;
 
 	bool DrawImage(int width, int height,
 				   GLenum format, GLenum type, GLint intFormat,
-				   const GLubyte *image);
+				   const GLubyte *image) const;
 
-	bool CheckRendering(int width, int height, int color, GLenum format, GLint intFormat) const;
+	bool CheckRendering(int width, int height, int color,
+			    GLenum format, GLint intFormat) const;
 
 	bool TestCombination(GLenum format, GLenum type, GLint intFormat);
 
