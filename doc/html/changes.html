@@ -21,9 +21,18 @@
 Added <i>--overwrite</i> command line option.
 </P>
 <P>
+<i>glean --listtests --verbose</i> now lists all tests with their
+descriptions.
+</P>
+<P>
 Added the following new tests:
 </P>
 <UL>
+<LI>pixelFormats - tests all the different combinations of format, type and
+internalFormat parameters for glTexImage2D (plus format/type for
+glDrawPixels).</LI>
+<LI>texture_srgb - tests the GL_EXT_texture_sRGBA extension.</LI>
+<LI>readpixPerf - measures performance of glReadPixels with a number of pixel formats, with and without Pixel Buffer Objects.</LI>
 <LI>fragProg1 - test basic ARB fragment program operation</LI>
 <LI>vertProg1 - test basic ARB vertex program operation</LI>
 <LI>depthStencil - test the GL_EXT_packed_depth_stencil extension</LI>
