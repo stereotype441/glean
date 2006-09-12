@@ -83,6 +83,9 @@ static const NameTokenComps Formats[] =
 	{ "GL_BGRA", GL_BGRA, 4 },
 	{ "GL_RGB", GL_RGB, 3 },
 	{ "GL_BGR", GL_BGR, 3 },
+	{ "GL_RED", GL_RED, 1 },
+	{ "GL_GREEN", GL_GREEN, 1 },
+	{ "GL_BLUE", GL_BLUE, 1 },
 	{ "GL_ALPHA", GL_ALPHA, 1 },
 	{ "GL_LUMINANCE", GL_LUMINANCE, 1 },
 	{ "GL_LUMINANCE_ALPHA", GL_LUMINANCE_ALPHA, 2 },
@@ -311,6 +314,24 @@ ComponentPositions(GLenum format, GLint pos[4])
 		pos[1] = -1;
 		pos[2] = -1;
 		pos[3] = 1;
+		break;
+	case GL_RED:
+		pos[0] = 0;
+		pos[1] = -1;
+		pos[2] = -1;
+		pos[3] = -1;
+		break;
+	case GL_GREEN:
+		pos[0] = -1;
+		pos[1] = 0;
+		pos[2] = -1;
+		pos[3] = -1;
+		break;
+	case GL_BLUE:
+		pos[0] = -1;
+		pos[1] = -1;
+		pos[2] = 0;
+		pos[3] = -1;
 		break;
 	case GL_ALPHA:
 		pos[0] = -1;
@@ -878,6 +899,97 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 		}
 		break;
 
+	case GL_RED:
+		assert(testChan == 0);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] = 255;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_RGB:
+			exp[0] = 255;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_LUMINANCE:
+			exp[0] =
+			exp[1] =
+			exp[2] = 255;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] = 255;
+			exp[3] = 255; // texture's alpha
+			break;
+		default:
+			abort();
+		}
+		break;
+
+	case GL_GREEN:
+	case GL_BLUE:
+		assert(testChan == 0);
+		switch (baseIntFormat) {
+		case 0:
+		case GL_RGBA:
+			exp[0] = 0;
+			exp[1] = 255;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_RGB:
+			exp[0] = 0;
+			exp[1] = 255;
+			exp[2] = 0;
+			exp[3] = 0; // fragment's alpha
+			break;
+		case GL_ALPHA:
+			exp[0] = 0;
+			exp[1] = 0;
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_LUMINANCE:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 0;  // fragment's alpha
+			break;
+		case GL_LUMINANCE_ALPHA:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 255; // texture's alpha
+			break;
+		case GL_INTENSITY:
+			exp[0] =
+			exp[1] =
+			exp[2] = 0;
+			exp[3] = 0; // texture's alpha
+			break;
+		default:
+			abort();
+		}
+		break;
+
 	case GL_ALPHA:
 		assert(testChan == 0);
 		switch (baseIntFormat) {
@@ -1013,52 +1125,6 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 		}
 		break;
 
-#if 0
-	case GL_INTENSITY:
-		assert(testChan == 0);
-		switch (baseIntFormat) {
-		case 0:
-		case GL_RGBA:
-			exp[0] =
-			exp[1] =
-			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = testChan == 1 ? 255 : 0;
-			break;
-		case GL_RGB:
-			exp[0] = 
-			exp[1] = 
-			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0; // fragment's alpha
-			break;
-		case GL_ALPHA:
-			exp[0] =
-			exp[1] =
-			exp[2] = 0; // fragment color
-			exp[3] = testChan == 1 ? 255 : 0;
-			break;
-		case GL_LUMINANCE:
-			exp[0] = 
-			exp[1] = 
-			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0;  // fragment's alpha
-			break;
-		case GL_LUMINANCE_ALPHA:
-			exp[0] = testChan == 0 ? 255 : 0;
-			exp[1] = testChan == 0 ? 255 : 0;
-			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = testChan == 1 ? 255 : 0;
-			break;
-		case GL_INTENSITY:
-			exp[0] =
-			exp[1] =
-			exp[2] =
-			exp[3] = testChan == 0 ? 255 : 0;
-			break;
-		default:
-			abort();
-		}
-		break;
-#endif
 	default:
 		abort();
 	}
