@@ -41,6 +41,7 @@ static PFNGLBINDBUFFERARBPROC BindBuffer = NULL;
 static PFNGLBUFFERDATAARBPROC BufferData = NULL;
 static PFNGLMAPBUFFERARBPROC MapBuffer = NULL;
 static PFNGLUNMAPBUFFERARBPROC UnmapBuffer = NULL;
+static PFNGLGETBUFFERSUBDATAARBPROC GetBufferSubData = NULL;
 
 const GLuint PBO1 = 42, PBO2 = 43;
 
@@ -158,6 +159,15 @@ ReadpixPerfResult::SubResult::print(Environment *env) const
 }
 
 
+static void
+SimpleRender()
+{
+   glBegin(GL_POINTS);
+   glVertex2f(0, 0);
+   glEnd();
+}
+
+
 // Exercise glReadPixels for a particular image size, format and type.
 // Return read rate in megapixels / second
 double
@@ -176,6 +186,9 @@ ReadpixPerfTest::runNonPBOtest(int formatNum, GLsizei width, GLsizei height,
 
 	do {
 		iter++;
+		if (sumOut) {
+		   SimpleRender();
+		}
 		glReadPixels(0, 0, width, height,
 			     Formats[formatNum].Format,
 			     Formats[formatNum].Type, buffer);
@@ -196,7 +209,8 @@ ReadpixPerfTest::runNonPBOtest(int formatNum, GLsizei width, GLsizei height,
 	return rate;
 }
 
-
+// use glMapBufferARB or glGetBufferSubDataARB:
+#define MAP_BUFFER 1
 
 double
 ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
@@ -213,6 +227,10 @@ ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 	BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO2);
 	BufferData(GL_PIXEL_PACK_BUFFER_ARB, bufferSize, NULL, bufferUsage);
 
+#if !MAP_BUFFER
+	GLubyte *b = new GLubyte [bufferSize];
+#endif
+
 	Timer t;
 	double start = t.getClock();
 	double elapsedTime = 0.0;
@@ -220,6 +238,9 @@ ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 
 	do {
 		iter++;
+		if (sumOut) {
+		   SimpleRender();
+		}
 		// read lower half
 		BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO1);
 		glReadPixels(0, 0, width, height / 2,
@@ -234,22 +255,36 @@ ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 			GLuint sum = 0;
 			// sum lower half
 			BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO1);
-			GLubyte * b = (GLubyte *)
+#if MAP_BUFFER
+			GLubyte *b = (GLubyte *)
 				MapBuffer(GL_PIXEL_PACK_BUFFER_ARB,
 					  GL_READ_ONLY);
+#else
+			GetBufferSubData(GL_PIXEL_PACK_BUFFER_ARB,
+					 0, bufferSize, b);
+#endif
 			for (int i = 0; i < bufferSize; i++) {
 				sum += b[i];
 			}
+#if MAP_BUFFER
 			UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+#endif
 
 			// sum upper half
 			BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, PBO2);
+#if MAP_BUFFER
 			b = (GLubyte *) MapBuffer(GL_PIXEL_PACK_BUFFER_ARB,
 						  GL_READ_ONLY);
+#else
+			GetBufferSubData(GL_PIXEL_PACK_BUFFER_ARB,
+					 0, bufferSize, b);
+#endif
 			for (int i = 0; i < bufferSize; i++) {
 				sum += b[i];
 			}
+#if MAP_BUFFER
 			UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+#endif
 			*sumOut = sum;
 		}
 		double finish = t.getClock();
@@ -257,6 +292,10 @@ ReadpixPerfTest::runPBOtest(int formatNum, GLsizei width, GLsizei height,
 	} while (elapsedTime < minInterval);
 
 	BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+
+#if !MAP_BUFFER
+	delete b;
+#endif
 
 	double rate = width * height * iter / elapsedTime / 1000000.0;
 	return rate;
@@ -289,6 +328,9 @@ ReadpixPerfTest::setup(void)
 		UnmapBuffer = (PFNGLUNMAPBUFFERARBPROC)
 			GLUtils::getProcAddress("glUnmapBufferARB");
 		assert(UnmapBuffer);
+		GetBufferSubData = (PFNGLGETBUFFERSUBDATAARBPROC)
+			GLUtils::getProcAddress("glGetBufferSubDataARB");
+		assert(GetBufferSubData);
 		numPBOmodes = 4;
 	}
 	else {
