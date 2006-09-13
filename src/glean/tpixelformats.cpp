@@ -58,8 +58,9 @@ static const NameTokenComps Types[] =
 	{ "GL_INT", GL_INT, 0 },
 	{ "GL_FLOAT", GL_FLOAT, 0 },
 #ifdef GL_ARB_half_float_pixel
-	{ "GL_HALF", GL_HALF_FLOAT_ARB, 0 },
+	{ "GL_HALF_FLOAT_ARB", GL_HALF_FLOAT_ARB, 0 },
 #endif
+
 	{ "GL_UNSIGNED_INT_8_8_8_8", GL_UNSIGNED_INT_8_8_8_8, 4 },
 	{ "GL_UNSIGNED_INT_8_8_8_8_REV", GL_UNSIGNED_INT_8_8_8_8_REV, 4 },
 	{ "GL_UNSIGNED_INT_10_10_10_2", GL_UNSIGNED_INT_10_10_10_2, 4 },
@@ -522,7 +523,7 @@ PixelFormatsTest::CompatibleFormatAndType(GLenum format, GLenum datatype) const
 		return false;
 
 #ifdef GL_ARB_half_float_pixel
-	if (format == GL_HALF_FLOAT_ARB && !haveHalfFloat)
+	if (datatype == GL_HALF_FLOAT_ARB && !haveHalfFloat)
 		return false;
 #endif
 
