@@ -1292,8 +1292,6 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 						env->log << "  Internal Format: " << InternalFormats[intFormat].Name << "\n";
 
 						r.numFailed++;
-
-						abort();
 					}
 					else {
 						r.numPassed++;
