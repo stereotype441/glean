@@ -167,13 +167,11 @@ _INC=\
 OPT:=		# Optimization options
 ifeq ($(PLATFORM), Unix)
 _OPT=\
-	-march=pentiumpro \
 	-O -fno-unroll-all-loops \
 	$(OPT)
 endif # Unix
 ifeq ($(PLATFORM), BeOS)
 _OPT=\
-	-march=pentiumpro \
 	-O3 -fno-unroll-all-loops \
 	$(OPT)
 endif # BeOS
