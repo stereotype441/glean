@@ -541,11 +541,21 @@ PixelFormatsTest::CompatibleFormatAndType(GLenum format, GLenum datatype) const
 bool
 PixelFormatsTest::SupportedIntFormat(GLint intFormat) const
 {
+	switch (intFormat) {
 #ifdef GL_EXT_texture_sRGB
-	if (intFormat == GL_SRGB_EXT && !haveSRGB)
-		return false;
+	case GL_SRGB_ALPHA_EXT:
+	case GL_SRGB8_ALPHA8_EXT:
+	case GL_SRGB_EXT:
+	case GL_SRGB8_EXT:
+	case GL_SLUMINANCE_ALPHA_EXT:
+	case GL_SLUMINANCE8_ALPHA8_EXT:
+	case GL_SLUMINANCE_EXT:
+	case GL_SLUMINANCE8_EXT:
+		return haveSRGB;
 #endif
-	return true;
+	default:
+		return true;
+	}
 }
 
 
@@ -1290,7 +1300,6 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 						env->log << "  Format: " << Formats[formatIndex].Name << "\n";
 						env->log << "  Type: " << Types[typeIndex].Name << "\n";
 						env->log << "  Internal Format: " << InternalFormats[intFormat].Name << "\n";
-
 						r.numFailed++;
 					}
 					else {
@@ -1313,10 +1322,10 @@ void
 PixelFormatsTest::logOne(PixelFormatsResult &r)
 {
 	logPassFail(r);
-	env->log << ": "
+	logConcise(r);
+	env->log << "\t"
 			 << r.numPassed << " combinations passed, "
 			 << r.numFailed << " combinations failed.\n";
-	logConcise(r);
 }
 
 
