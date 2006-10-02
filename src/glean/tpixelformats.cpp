@@ -38,6 +38,9 @@
 #define DEBUG 0
 
 
+#define USE_FRAG_PROG 0
+
+
 namespace GLEAN {
 
 
@@ -764,6 +767,9 @@ PixelFormatsTest::DrawImage(int width, int height,
 					 format, type, image);
 		if (CheckError("glTexImage2D"))
 			return false;
+#if USE_FRAG_PROG
+		glEnable(GL_FRAGMENT_PROGRAM_ARB);
+#endif
 		glBegin(GL_POLYGON);
 		glTexCoord2f(0, 0);  glVertex2f(-1, -1);
 		glTexCoord2f(1, 0);  glVertex2f(1, -1);
@@ -771,6 +777,9 @@ PixelFormatsTest::DrawImage(int width, int height,
 		glTexCoord2f(0, 1);  glVertex2f(-1, 1);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
+#if USE_FRAG_PROG
+		glDisable(GL_FRAGMENT_PROGRAM_ARB);
+#endif
 	}
 	else {
 		// glDrawPixels
@@ -1254,6 +1263,33 @@ PixelFormatsTest::setup(void)
 	glReadBuffer(GL_FRONT);
 
 	glColor4f(0, 0, 0, 0);
+
+#if USE_FRAG_PROG
+	{
+		PFNGLPROGRAMSTRINGARBPROC glProgramStringARB_func;
+		PFNGLBINDPROGRAMARBPROC glBindProgramARB_func;
+		static const char *progText =
+			"!!ARBfp1.0\n"
+			"TEX result.color, fragment.texcoord[0], texture[0], 2D; \n"
+			"END \n"
+			;
+		glProgramStringARB_func = (PFNGLPROGRAMSTRINGARBPROC)
+			GLUtils::getProcAddress("glProgramStringARB");
+		assert(glProgramStringARB_func);
+		glBindProgramARB_func = (PFNGLBINDPROGRAMARBPROC)
+			GLUtils::getProcAddress("glBindProgramARB");
+		assert(glBindProgramARB_func);
+		glBindProgramARB_func(GL_FRAGMENT_PROGRAM_ARB, 1);
+		glProgramStringARB_func(GL_FRAGMENT_PROGRAM_ARB,
+								GL_PROGRAM_FORMAT_ASCII_ARB,
+								strlen(progText), (const GLubyte *) progText);
+		if (glGetError()) {
+			fprintf(stderr, "Bad fragment program, error: %s\n",
+					(const char *) glGetString(GL_PROGRAM_ERROR_STRING_ARB));
+			exit(0);
+		}
+	}
+#endif
 }
 
 
