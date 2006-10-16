@@ -56,9 +56,12 @@ public:
 
 private:
 	int alphaBits;
+	int defaultAlpha;  // depends on texture env mode
+	// extensions
 	bool haveHalfFloat;
 	bool haveABGR;
 	bool haveSRGB;
+	bool haveCombine;
 
 	bool CheckError(const char *where) const;
 
@@ -69,6 +72,9 @@ private:
 	bool DrawImage(int width, int height,
 				   GLenum format, GLenum type, GLint intFormat,
 				   const GLubyte *image) const;
+
+	void ComputeExpected(GLenum srcFormat, int testChan,
+						 GLint intFormat, GLubyte exp[4]) const;
 
 	bool CheckRendering(int width, int height, int color,
 			    GLenum format, GLint intFormat) const;

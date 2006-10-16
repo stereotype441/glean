@@ -38,7 +38,7 @@
 #define DEBUG 0
 
 
-#define USE_FRAG_PROG 0
+#define USE_FRAG_PROG 0 // just for extra debugging
 
 
 namespace GLEAN {
@@ -174,6 +174,11 @@ static const NameTokenComps InternalFormats[] =
 
 #define NUM_INT_FORMATS (sizeof(InternalFormats) / sizeof(InternalFormats[0]))
 
+
+static const char *EnvModes[] = {
+	"GL_REPLACE",
+	"GL_COMBINE_ARB"
+};
 
 
 // Return four bitmasks indicating which bits correspond to the
@@ -811,9 +816,9 @@ ColorsEqual(const GLubyte img[4], const GLubyte expected[4])
 // if the texture was defined with the given image format and texture
 // internal format.  'testChan' indicates which of the srcFormat's image
 // channels was set (to 1.0) when the image was filled.
-static void
-ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
-				GLubyte exp[4])
+void
+PixelFormatsTest::ComputeExpected(GLenum srcFormat, int testChan,
+								  GLint intFormat, GLubyte exp[4]) const
 {
 	const GLenum baseIntFormat = BaseTextureFormat(intFormat);
 
@@ -840,7 +845,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[1] = 0;
 			exp[2] = 0;
 			exp[testChan] = 255;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -852,7 +857,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] =
@@ -888,7 +893,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[1] = 0;
 			exp[2] = 0;
 			exp[testChan] = 255;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -900,7 +905,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] =
@@ -933,7 +938,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 255;
 			exp[1] = 0;
 			exp[2] = 0;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -945,7 +950,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = 255;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] =
@@ -979,7 +984,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 0;
 			exp[1] = 255;
 			exp[2] = 0;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -991,7 +996,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = 0;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] =
@@ -1024,7 +1029,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 0;
 			exp[1] = 0;
 			exp[2] = 0;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -1036,7 +1041,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = 0;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] =
@@ -1048,7 +1053,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] =
 			exp[1] =
 			exp[2] = 0;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		default:
 			abort();
@@ -1069,7 +1074,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 255;
 			exp[1] = 255;
 			exp[2] = 255;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] = 0;
@@ -1081,7 +1086,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 255;
 			exp[1] = 255;
 			exp[2] = 255;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] = 255;
@@ -1114,7 +1119,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 
 			exp[1] = 
 			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0; // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_ALPHA:
 			exp[0] =
@@ -1126,7 +1131,7 @@ ComputeExpected(GLenum srcFormat, int testChan, GLint intFormat,
 			exp[0] = 
 			exp[1] = 
 			exp[2] = testChan == 0 ? 255 : 0;
-			exp[3] = 0;  // fragment's alpha
+			exp[3] = defaultAlpha; // fragment alpha or texture alpha
 			break;
 		case GL_LUMINANCE_ALPHA:
 			exp[0] = testChan == 0 ? 255 : 0;
@@ -1252,12 +1257,16 @@ PixelFormatsTest::setup(void)
 	haveHalfFloat = GLUtils::haveExtensions("GL_ARB_half_float_pixel");
 	haveABGR = GLUtils::haveExtensions("GL_EXT_abgr");
 	haveSRGB = GLUtils::haveExtensions("GL_EXT_texture_sRGB");
+#if GL_ARB_texture_env_combine
+	haveCombine = GLUtils::haveExtensions("GL_ARB_texture_env_combine");
+#else
+	haveCombine = false;
+#endif
 
 	glGetIntegerv(GL_ALPHA_BITS, &alphaBits);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	glDrawBuffer(GL_FRONT);
 	glReadBuffer(GL_FRONT);
@@ -1304,44 +1313,72 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 
 	setup();
 
+	const unsigned numEnvModes = haveCombine ? 2 : 1;
+
 	r.numPassed = 0;
 	r.numFailed = 0;
 
-	for (unsigned formatIndex = 0; formatIndex < NUM_FORMATS; formatIndex++) {
-		for (unsigned typeIndex = 0; typeIndex < NUM_TYPES; typeIndex++) {
+	for (unsigned envMode = 0; envMode < numEnvModes; envMode++) {
+		if (envMode == 0) {
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			// When the texture internal format is GL_LUMINANCE or GL_RGB,
+			// GL_REPLACE takes alpha from the fragment, which we set to zero
+			// with glColor4f(0,0,0,0).
+			defaultAlpha = 0;
+		}
+		else {
+			assert(haveCombine);
+#if GL_ARB_texture_env_combine
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_REPLACE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_REPLACE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB, GL_SRC_COLOR);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_ARB, GL_SRC_ALPHA);
+#endif
+			// For this GL_COMBINE mode, when sampling a texture that does
+			// not have an alpha channel, alpha is effectively 1.0.
+			defaultAlpha = 255;
+		}
 
-			if (CompatibleFormatAndType(Formats[formatIndex].Token,
-										Types[typeIndex].Token)) {
+		for (unsigned formatIndex = 0; formatIndex < NUM_FORMATS; formatIndex++) {
+			for (unsigned typeIndex = 0; typeIndex < NUM_TYPES; typeIndex++) {
 
-				for (unsigned intFormat = 0; intFormat < NUM_INT_FORMATS; intFormat++) {
+				if (CompatibleFormatAndType(Formats[formatIndex].Token,
+											Types[typeIndex].Token)) {
 
-					if (!SupportedIntFormat(InternalFormats[intFormat].Token))
-						continue;
+					for (unsigned intFormat = 0; intFormat < NUM_INT_FORMATS; intFormat++) {
+
+						if (!SupportedIntFormat(InternalFormats[intFormat].Token))
+							continue;
 
 #if DEBUG
-					env->log << "testing "
-							 << testNum
-							 << ":\n";
-					env->log << "  Format:    " << Formats[formatIndex].Name << "\n";
-					env->log << "  Type:      " << Types[typeIndex].Name << "\n";
-					env->log << "  IntFormat: " << InternalFormats[intFormat].Name << "\n";
+						env->log << "testing "
+								 << testNum
+								 << ":\n";
+						env->log << "  Format:    " << Formats[formatIndex].Name << "\n";
+						env->log << "  Type:      " << Types[typeIndex].Name << "\n";
+						env->log << "  IntFormat: " << InternalFormats[intFormat].Name << "\n";
 
 #endif
-					bool ok = TestCombination(Formats[formatIndex].Token,
-																		Types[typeIndex].Token,
-																		InternalFormats[intFormat].Token);
+						bool ok = TestCombination(Formats[formatIndex].Token,
+																			Types[typeIndex].Token,
+																			InternalFormats[intFormat].Token);
 
-					if (!ok) {
-						// error was reported to log, add format info here:
-						env->log << "  Format: " << Formats[formatIndex].Name << "\n";
-						env->log << "  Type: " << Types[typeIndex].Name << "\n";
-						env->log << "  Internal Format: " << InternalFormats[intFormat].Name << "\n";
-						r.numFailed++;
+						if (!ok) {
+							// error was reported to log, add format info here:
+							env->log << "  Format: " << Formats[formatIndex].Name << "\n";
+							env->log << "  Type: " << Types[typeIndex].Name << "\n";
+							env->log << "  Internal Format: " << InternalFormats[intFormat].Name << "\n";
+							env->log << "  EnvMode: " << EnvModes[envMode] << "\n";
+							r.numFailed++;
+						}
+						else {
+							r.numPassed++;
+						}
+						testNum++;
 					}
-					else {
-						r.numPassed++;
-					}
-					testNum++;
 				}
 			}
 		}
