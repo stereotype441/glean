@@ -38,7 +38,9 @@
 #define DEBUG 0
 
 
-#define USE_FRAG_PROG 0 // just for extra debugging
+// just for extra debugging
+// Maybe add fragment program path as a 3rd envMode (below) someday.
+#define USE_FRAG_PROG 0
 
 
 namespace GLEAN {
@@ -1324,7 +1326,11 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 			// When the texture internal format is GL_LUMINANCE or GL_RGB,
 			// GL_REPLACE takes alpha from the fragment, which we set to zero
 			// with glColor4f(0,0,0,0).
+#if USE_FRAG_PROG
+			defaultAlpha = 255;
+#else
 			defaultAlpha = 0;
+#endif
 		}
 		else {
 			assert(haveCombine);
