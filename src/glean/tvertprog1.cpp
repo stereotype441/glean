@@ -1018,7 +1018,6 @@ VertexProgramTest::runOne(MultiTestResult &r, Window &w)
 {
 	(void) w;
 	setup();
-	r.numPassed = r.numFailed = 0;
 
 	for (int i = 0; Programs[i].name; i++) {
 		if (!testProgram(Programs[i])) {

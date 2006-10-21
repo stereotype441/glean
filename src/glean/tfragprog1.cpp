@@ -952,8 +952,6 @@ FragmentProgramTest::runOne(MultiTestResult &r, Window &w)
 {
 	(void) w;
 	setup();
-	r.pass = true;
-	r.numPassed = r.numFailed = 0;
 
 #if DEVEL_MODE
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -964,8 +962,6 @@ FragmentProgramTest::runOne(MultiTestResult &r, Window &w)
 #endif
 		if (!testProgram(Programs[i])) {
 			r.numFailed++;
-			r.pass = false;
-			// continue with next test
 		}
 		else {
 			r.numPassed++;
@@ -976,6 +972,7 @@ FragmentProgramTest::runOne(MultiTestResult &r, Window &w)
 	glFinish();
 	sleep(100);
 #endif
+	r.pass = (r.numFailed == 0);
 }
 
 

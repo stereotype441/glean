@@ -1317,9 +1317,6 @@ PixelFormatsTest::runOne(MultiTestResult &r, Window &w)
 
 	const unsigned numEnvModes = haveCombine ? 2 : 1;
 
-	r.numPassed = 0;
-	r.numFailed = 0;
-
 	for (unsigned envMode = 0; envMode < numEnvModes; envMode++) {
 		if (envMode == 0) {
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -1390,10 +1387,7 @@ PixelFormatsTest::runOne(MultiTestResult &r, Window &w)
 		}
 	}
 
-	if (r.numFailed > 0)
-		r.pass = false;
-	else
-		r.pass = true;
+	r.pass = (r.numFailed == 0);
 }
 
 
