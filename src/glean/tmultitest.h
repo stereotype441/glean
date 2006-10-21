@@ -54,6 +54,8 @@ namespace GLEAN {
 class MultiTestResult: public BaseResult
 {
 public:
+        MultiTestResult();
+
 	bool pass;
 	int numPassed, numFailed;
 

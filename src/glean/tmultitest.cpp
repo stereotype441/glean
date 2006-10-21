@@ -31,6 +31,13 @@
 namespace GLEAN {
 
 
+MultiTestResult::MultiTestResult()
+{
+	numPassed = numFailed = 0;
+	pass = true;
+}
+
+
 void
 MultiTestResult::putresults(ostream &s) const
 {
