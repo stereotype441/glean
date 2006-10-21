@@ -28,16 +28,18 @@ descriptions.
 Added the following new tests:
 </P>
 <UL>
+<LI>texRect - tests GL_ARB_texture_rectangle. (Eric Anholt)
 <LI>pixelFormats - tests all the different combinations of format, type and
 internalFormat parameters for glTexImage2D (plus format/type for
-glDrawPixels).</LI>
-<LI>texture_srgb - tests the GL_EXT_texture_sRGBA extension.</LI>
-<LI>readpixPerf - measures performance of glReadPixels with a number of pixel formats, with and without Pixel Buffer Objects.</LI>
-<LI>fragProg1 - test basic ARB fragment program operation</LI>
-<LI>vertProg1 - test basic ARB vertex program operation</LI>
-<LI>depthStencil - test the GL_EXT_packed_depth_stencil extension</LI>
-<LI>pointAtten - test point size attenuation with GL_ARB_point_parameters</LI>
-<LI>vertAttrib - test aliasing/non-aliasing properties of per-vertex calls</LI>
+glDrawPixels). (Brian Paul)</LI>
+<LI>texture_srgb - tests the GL_EXT_texture_sRGBA extension. (Brian Paul)</LI>
+<LI>readpixPerf - measures performance of glReadPixels with a number of pixel formats, with and without Pixel Buffer Objects. (Brian Paul)</LI>
+<LI>fragProg1 - basic test of each ARB fragment program instruction (Brian Paul)</LI>
+<LI>vertProg1 - basic test of each ARB vertex program instruction (Brian Paul)</LI>
+<LI>depthStencil - test the GL_EXT_packed_depth_stencil extension (Brian Paul)</LI>
+<LI>fpexceptions - generates a number of floating point exceptions, shouldn't crash (Keith Whitwell and Brian Paul)</LI>
+<LI>pointAtten - test point size attenuation with GL_ARB_point_parameters (Brian Paul)</LI>
+<LI>vertAttrib - test aliasing/non-aliasing behaviour of per-vertex calls (Brian Paul)</LI>
 </UL>
 
 <H2>Changes from Version 1.0 to Version 1.1</H2>
