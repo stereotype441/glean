@@ -31,28 +31,23 @@
 #ifndef __tpixelformats_h__
 #define __tpixelformats_h__
 
-#include "tbase.h"
+#include "tmultitest.h"
 
 namespace GLEAN {
 
 #define windowSize 100
 
-class PixelFormatsResult: public BaseResult
+
+class PixelFormatsTest: public MultiTest
 {
 public:
-	bool pass;
-	int numPassed, numFailed;
+	PixelFormatsTest(const char* testName, const char* filter,
+					 const char *extensions, const char* description)
+		: MultiTest(testName, filter, extensions, description)
+	{
+	}
 
-	virtual void putresults(ostream& s) const;
-	virtual bool getresults(istream& s);
-};
-
-
-class PixelFormatsTest: public BaseTest<PixelFormatsResult>
-{
-public:
-	GLEAN_CLASS_WH(PixelFormatsTest, PixelFormatsResult,
-		       windowSize, windowSize);
+	virtual void runOne(MultiTestResult &r, Window &w);
 
 private:
 	int alphaBits;

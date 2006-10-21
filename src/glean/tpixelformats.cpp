@@ -1308,7 +1308,7 @@ PixelFormatsTest::setup(void)
 // Test all possible image formats, types and internal texture formats.
 // Result will indicate number of passes and failures.
 void
-PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
+PixelFormatsTest::runOne(MultiTestResult &r, Window &w)
 {
 	int testNum = 0;
 	(void) w;  // silence warning
@@ -1394,57 +1394,6 @@ PixelFormatsTest::runOne(PixelFormatsResult &r, Window &w)
 		r.pass = false;
 	else
 		r.pass = true;
-}
-
-
-void
-PixelFormatsTest::logOne(PixelFormatsResult &r)
-{
-	logPassFail(r);
-	logConcise(r);
-	env->log << "\t"
-			 << r.numPassed << " combinations passed, "
-			 << r.numFailed << " combinations failed.\n";
-}
-
-
-void
-PixelFormatsTest::compareOne(PixelFormatsResult &oldR,
-			    PixelFormatsResult &newR)
-{
-	if (oldR.pass && newR.pass) {
-		if (oldR.numPassed != newR.numPassed ||
-			oldR.numFailed != newR.numFailed) {
-			env->log << "Different results: passed: "
-					 << oldR.numPassed
-					 << " vs. "
-					 << newR.numPassed
-					 << "  failed: "
-					 << oldR.numFailed
-					 << " vs. "
-					 << newR.numFailed
-					 << "\n";
-		}
-	}
-}
-
-
-void
-PixelFormatsResult::putresults(ostream &s) const
-{
-	s << pass;
-	s << numPassed;
-	s << numFailed;
-}
-
-
-bool
-PixelFormatsResult::getresults(istream &s)
-{
-	s >> pass;
-	s >> numPassed;
-	s >> numFailed;
-	return s.good();
 }
 
 
