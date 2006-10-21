@@ -33,7 +33,7 @@
 #ifndef __tfpexceptions_h__
 #define __tfpexceptions_h__
 
-#include "tbasic.h"
+#include "tmultitest.h"
 
 namespace GLEAN {
 
@@ -41,16 +41,16 @@ namespace GLEAN {
 #define windowSize 100
 
 
-class FPExceptionsTest: public BasicTest
+class FPExceptionsTest: public MultiTest
 {
 public:
-	FPExceptionsTest(const char *testName,
-                         const char *filter,
-                         const char *extensions,
-                         const char *description);
+	FPExceptionsTest(const char* testName, const char* filter,
+                         const char *extensions, const char* description)
+		: MultiTest(testName, filter, extensions, description)
+	{
+	}
 
-	virtual void runOne(BasicResult& r, Window& w);
-	virtual void logOne(BasicResult& r);
+	virtual void runOne(MultiTestResult &r, Window &w);
 
 private:
         enum Mode {
@@ -68,7 +68,7 @@ private:
         bool testClipping(Mode m);
         bool testOverflow(void);
 
-        void reportPassFail(bool pass, const char *msg) const;
+        void reportPassFail(MultiTestResult &r, bool pass, const char *msg) const;
         void setup(void);
 };
 

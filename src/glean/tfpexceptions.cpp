@@ -521,107 +521,75 @@ FPExceptionsTest::setup(void)
 
 
 void
-FPExceptionsTest::reportPassFail(bool pass, const char *msg) const
+FPExceptionsTest::reportPassFail(MultiTestResult &r,
+				 bool pass, const char *msg) const
 {
-	if (pass)
-		env->log << "PASS: " << msg << " test\n";
-	else
-		env->log << "FAILURE: " << msg << " test\n";
+	if (pass) {
+		if (env->options.verbosity)
+			env->log << name << " PASS: " << msg << " test\n";
+		r.numPassed++;
+	}
+	else {
+		if (env->options.verbosity)
+			env->log << name << " FAILURE: " << msg << " test\n";
+		r.numFailed++;
+	}
 }
 
-
 void
-FPExceptionsTest::runOne(BasicResult &r, Window &w)
+FPExceptionsTest::runOne(MultiTestResult &r, Window &w)
 {
 	bool p;
 
 	(void) w;
-	r.pass = true;
 
 	p = testVertices(MODE_INFINITY);
-	reportPassFail(p, "Infinite value vertex");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Infinite value vertex");
 
 	p = testVertices(MODE_NAN);
-	reportPassFail(p, "NaN value vertex");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "NaN value vertex");
 
 	p = testVertices(MODE_DIVZERO);
-	reportPassFail(p, "Divide by zero vertex");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Divide by zero vertex");
 
 	p = testVertices(MODE_DENORM);
-	reportPassFail(p, "Denorm vertex");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Denorm vertex");
 
 
 	p = testTransformation(MODE_INFINITY);
-	reportPassFail(p, "Infinite matrix transform");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Infinite matrix transform");
 
 	p = testTransformation(MODE_NAN);
-	reportPassFail(p, "NaN matrix transform");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "NaN matrix transform");
 
 	p = testTransformation(MODE_DIVZERO);
-	reportPassFail(p, "Zero matrix transform");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Zero matrix transform");
 
 	p = testTransformation(MODE_DENORM);
-	reportPassFail(p, "Denorm matrix transform");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Denorm matrix transform");
 
 
 	p = testClipping(MODE_INFINITY);
-	reportPassFail(p, "Infinite clip plane");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Infinite clip plane");
 
 	p = testClipping(MODE_NAN);
-	reportPassFail(p, "NaN clip plane");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "NaN clip plane");
 
 	p = testClipping(MODE_DIVZERO);
-	reportPassFail(p, "Zero clip plane");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Zero clip plane");
 
 	p = testClipping(MODE_DENORM);
-	reportPassFail(p, "Denorm clip plane");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Denorm clip plane");
 
 	p = testClipping(MODE_OVERFLOW);
-	reportPassFail(p, "Overflow clip plane");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Overflow clip plane");
 
 
 	p = testOverflow();
-	reportPassFail(p, "Overflow");
-	r.pass = r.pass && p;
+	reportPassFail(r, p, "Overflow");
 
+	r.pass = (r.numFailed == 0);
 }
-
-
-void
-FPExceptionsTest::logOne(BasicResult &r)
-{
-	if (r.pass) {
-		logPassFail(r);
-		logConcise(r);
-	}
-}
-
-
-// constructor
-FPExceptionsTest::FPExceptionsTest(const char *testName,
-		       const char *filter,
-		       const char *extensions,
-		       const char *description)
-	: BasicTest(testName, filter, extensions, description)
-{
-	(void) print_float; // silence warning
-	fWidth  = windowSize;
-	fHeight = windowSize;
-}
-
 
 
 // The test object itself:
@@ -629,7 +597,6 @@ FPExceptionsTest FPExceptionsTest("fpexceptions", // test name
 	"window, rgb",  // surface/pixel format
 	"", // no extensions required
 	"Test for floating point exceptions caused by +/-infinity, Nan, divide by zero, etc in a number of circumstances.\n");
-
 
 
 } // namespace GLEAN
