@@ -32,7 +32,7 @@
 #ifndef __tvertprog_h__
 #define __tvertprog_h__
 
-#include "tbasic.h"
+#include "tmultitest.h"
 
 namespace GLEAN {
 
@@ -53,16 +53,17 @@ public:
 };
 
 
-class VertexProgramTest: public BasicTest
+
+class VertexProgramTest: public MultiTest
 {
 public:
-	VertexProgramTest(const char *testName,
-			     const char *filter,
-			     const char *extensions,
-			     const char *description);
+	VertexProgramTest(const char* testName, const char* filter,
+			  const char *extensions, const char* description):
+		MultiTest(testName, filter, extensions, description)
+	{
+	}
 
-	virtual void runOne(BasicResult& r, Window& w);
-	virtual void logOne(BasicResult& r);
+	virtual void runOne(MultiTestResult &r, Window &w);
 
 private:
 	GLfloat tolerance[5];
@@ -76,7 +77,7 @@ private:
                            const GLfloat actualColor[4] ) const;
 	void reportZFailure(const char *programName,
 			    GLfloat expectedZ, GLfloat actualZ) const;
-	void reportSuccess(int count) const;
+
 };
 
 } // namespace GLEAN

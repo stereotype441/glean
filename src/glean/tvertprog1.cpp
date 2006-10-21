@@ -914,12 +914,6 @@ VertexProgramTest::reportZFailure(const char *programName,
 	env->log << "  Observed Z: " << actualZ << "\n";
 }
 
-void
-VertexProgramTest::reportSuccess(int count) const
-{
-	env->log << "PASS: " << count;
-	env->log << " vertex programs tested.\n";
-}
 
 
 // Compare actual and expected colors
@@ -1020,51 +1014,29 @@ VertexProgramTest::testProgram(const VertexProgram &p)
 }
 
 void
-VertexProgramTest::runOne(BasicResult &r, Window &w)
+VertexProgramTest::runOne(MultiTestResult &r, Window &w)
 {
 	(void) w;
 	setup();
-	r.pass = true;
-	int i;
-	for (i = 0; Programs[i].name; i++) {
+	r.numPassed = r.numFailed = 0;
+
+	for (int i = 0; Programs[i].name; i++) {
 		if (!testProgram(Programs[i])) {
-			r.pass = false;
-			// continue with next test
+			r.numFailed++;
+		}
+		else {
+			r.numPassed++;
 		}
 	}
-	if (r.pass) {
-		reportSuccess(i);
-	}
+	r.pass = (r.numFailed == 0);
 }
-
-
-void
-VertexProgramTest::logOne(BasicResult &r)
-{
-	if (r.pass) {
-		logPassFail(r);
-		logConcise(r);
-	}
-}
-
-
-// constructor
-VertexProgramTest::VertexProgramTest(const char *testName,
-					   const char *filter,
-					   const char *extensions,
-					   const char *description)
-	: BasicTest(testName, filter, extensions, description)
-{
-	fWidth  = windowSize;
-	fHeight = windowSize;
-}
-
 
 
 // The test object itself:
 VertexProgramTest vertexProgramTest("vertProg1", "window, rgb, z",
 	"GL_ARB_vertex_program",
-	"Vertex Program test 1: test a specific set of vertex programs.\n");
+	"Vertex Program test 1: test a specific set of vertex programs.\n"
+	);
 
 
 
