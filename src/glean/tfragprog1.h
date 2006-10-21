@@ -32,13 +32,15 @@
 #ifndef __tfragprog_h__
 #define __tfragprog_h__
 
-#include "tbasic.h"
+#include "tmultitest.h"
 
 namespace GLEAN {
 
 // If DEVEL_MODE==1 we generate a tall window of color swatches, one per
 // fragment program, which can be eyeballed against a reference image.
 // Use this if glReadPixels functionality is not working yet.
+#undef windowWidth
+#undef windowHeight
 #define DEVEL_MODE 0
 #if DEVEL_MODE
 #define windowWidth 200
@@ -59,16 +61,16 @@ public:
 };
 
 
-class FragmentProgramTest: public BasicTest
+class FragmentProgramTest: public MultiTest
 {
 public:
-	FragmentProgramTest(const char *testName,
-			     const char *filter,
-			     const char *extensions,
-			     const char *description);
+	FragmentProgramTest(const char* testName, const char* filter,
+			    const char *extensions, const char* description)
+		: MultiTest(testName, filter, extensions, description)
+	{
+	}
 
-	virtual void runOne(BasicResult& r, Window& w);
-	virtual void logOne(BasicResult& r);
+	virtual void runOne(MultiTestResult &r, Window &w);
 
 private:
 	GLfloat tolerance[5];
@@ -81,7 +83,6 @@ private:
                            const GLfloat actualColor[4] ) const;
 	void reportZFailure(const char *programName,
 			    GLfloat expectedZ, GLfloat actualZ) const;
-	void reportSuccess(int count) const;
 };
 
 } // namespace GLEAN

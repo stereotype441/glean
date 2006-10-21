@@ -846,6 +846,7 @@ FragmentProgramTest::reportFailure(const char *programName,
 	env->log << actualColor[3] << "\n";
 }
 
+
 void
 FragmentProgramTest::reportZFailure(const char *programName,
 				    GLfloat expectedZ, GLfloat actualZ) const
@@ -854,13 +855,6 @@ FragmentProgramTest::reportZFailure(const char *programName,
 	env->log << "  Program: " << programName << "\n";
 	env->log << "  Expected Z: " << expectedZ << "\n";
 	env->log << "  Observed Z: " << actualZ << "\n";
-}
-
-void
-FragmentProgramTest::reportSuccess(int count) const
-{
-	env->log << "PASS: " << count;
-	env->log << " fragment programs tested.\n";
 }
 
 
@@ -954,22 +948,27 @@ FragmentProgramTest::testProgram(const FragmentProgram &p)
 }
 
 void
-FragmentProgramTest::runOne(BasicResult &r, Window &w)
+FragmentProgramTest::runOne(MultiTestResult &r, Window &w)
 {
 	(void) w;
 	setup();
 	r.pass = true;
-	int i;
+	r.numPassed = r.numFailed = 0;
+
 #if DEVEL_MODE
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-	for (i = 0; Programs[i].name; i++) {
+	for (int i = 0; Programs[i].name; i++) {
 #if DEVEL_MODE
 		glViewport(0, i * 20, windowWidth, 20);
 #endif
 		if (!testProgram(Programs[i])) {
+			r.numFailed++;
 			r.pass = false;
 			// continue with next test
+		}
+		else {
+			r.numPassed++;
 		}
 	}
 
@@ -977,34 +976,7 @@ FragmentProgramTest::runOne(BasicResult &r, Window &w)
 	glFinish();
 	sleep(100);
 #endif
-
-	if (r.pass) {
-		reportSuccess(i);
-	}
 }
-
-
-void
-FragmentProgramTest::logOne(BasicResult &r)
-{
-	if (r.pass) {
-		logPassFail(r);
-		logConcise(r);
-	}
-}
-
-
-// constructor
-FragmentProgramTest::FragmentProgramTest(const char *testName,
-					   const char *filter,
-					   const char *extensions,
-					   const char *description)
-	: BasicTest(testName, filter, extensions, description)
-{
-	fWidth  = windowWidth;
-	fHeight = windowHeight;
-}
-
 
 
 // The test object itself:
