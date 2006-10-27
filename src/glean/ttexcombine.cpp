@@ -1405,7 +1405,6 @@ TexCombineTest::RunCrossbarTest(glmachine &machine, BasicResult &r, Window& w) {
 		}
 
 		// 4. Compare rendered result to expected result
-		printf("------->test %d\n", test);
 		const GLfloat dr = fabs(expected[0] - renderedResult[0]);
 		const GLfloat dg = fabs(expected[1] - renderedResult[1]);
 		const GLfloat db = fabs(expected[2] - renderedResult[2]);
