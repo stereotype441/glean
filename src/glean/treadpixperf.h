@@ -50,6 +50,7 @@ public:
 		int work; // really bool
 		void sprint(char *s) const;
 		void print(Environment *env) const;
+		const char *readBuf; // "GL_FRONT" or "GL_BACK"
 	};	
 
 	bool pass;

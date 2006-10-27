@@ -142,10 +142,11 @@ isDepthStencilFormat(GLenum format)
 void
 ReadpixPerfResult::SubResult::sprint(char *s) const
 {
-	sprintf(s, "glReadPixels(%d x %d, %s), %s, %s",
+	sprintf(s, "glReadPixels(%d x %d, %s), %s, %s, GL_READ_BUFFER=%s",
 		width, height, Formats[formatNum].Name,
 		PBOmodeStrings[pboMode],
-		work ? "pixel sum" : "no pixel sum");
+		work ? "pixel sum" : "no pixel sum",
+		readBuf);
 }
 
 
@@ -353,16 +354,6 @@ ReadpixPerfTest::setup(void)
 					 GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, buffer);
 	}
 	delete buffer;
-
-	GLint readBuf;
-	glGetIntegerv(GL_READ_BUFFER, &readBuf);
-	env->log << "ReadBuffer = ";
-	if (readBuf == GL_FRONT)
-		env->log << "GL_FRONT\n";
-	else if (readBuf == GL_BACK)
-		env->log << "GL_BACK\n";
-	else
-		env->log << "other?\n";
 }
 
 
@@ -379,6 +370,15 @@ ReadpixPerfTest::runOne(ReadpixPerfResult &r, Window &w)
 	r.pass = true;
 	res.width = windowSize;
 	res.height = windowSize;
+
+	{
+		GLint readBuf;
+		glGetIntegerv(GL_READ_BUFFER, &readBuf);
+		if (readBuf == GL_FRONT)
+			res.readBuf = "GL_FRONT";
+		else
+			res.readBuf = "GL_BACK";
+	}
 
 	for (res.formatNum = 0; Formats[res.formatNum].Name; res.formatNum++) {
 
