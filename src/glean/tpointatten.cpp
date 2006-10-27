@@ -76,16 +76,16 @@ PointAttenuationTest::reportFailure(GLfloat initSize,
 				    GLfloat eyeZ, GLboolean smooth,
 				    GLfloat expected, GLfloat actual) const
 {
-	env->log << "FAILURE:\n";
-	env->log << "Expected size: " << expected << "  Actual size: " << actual << "\n";
-	env->log << "Size: " << initSize << "\n";
-	env->log << "Min: " << min << "  Max: " << max << "\n";
-	env->log << "Attenuation: " << attenuation[0] << " " << attenuation[1] << " " << attenuation[2] << "\n";
-	env->log << "Eye Z: " << eyeZ << "\n";
+	env->log << "\tFAILURE:\n";
+	env->log << "\tExpected size: " << expected << "  Actual size: " << actual << "\n";
+	env->log << "\tSize: " << initSize << "\n";
+	env->log << "\tMin: " << min << "  Max: " << max << "\n";
+	env->log << "\tAttenuation: " << attenuation[0] << " " << attenuation[1] << " " << attenuation[2] << "\n";
+	env->log << "\tEye Z: " << eyeZ << "\n";
 	if (smooth)
-		env->log << "Smooth\n";
+		env->log << "\tSmooth/antialiased\n";
 	else
-		env->log << "Aliased\n";
+		env->log << "\tAliased\n";
 }
 
 
