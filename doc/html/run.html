@@ -26,6 +26,18 @@ previous runs (<I>compare mode</I>).  After using <I>glean</I> in
 either mode, you may also find it helpful to evaluate results with
 other tools in the suite.
 
+<P>
+To see a list of all available Glean tests:
+<PRE>
+    $GLEAN_ROOT/bin/glean --listtests
+</PRE>
+For a description of each test, run with <KBD>-v</KBD> (verbose):
+<PRE>
+    $GLEAN_ROOT/bin/glean -v --listtests
+</PRE>
+
+
+
 <H2>Generating test results</H2>
 
 <P>
@@ -71,16 +83,6 @@ option on the command line:
 <PRE>
     $GLEAN_ROOT/bin/glean -r mysubset -t "basic+getString"
     $GLEAN_ROOT/bin/glean -r mysubset -t "-blendFunc-texBindPerf"
-</PRE>
-
-<P>
-To see a list of all available Glean tests:
-<PRE>
-    $GLEAN_ROOT/bin/glean --listtests
-</PRE>
-For a description of each test, run with <KBD>-v</KBD> (verbose):
-<PRE>
-    $GLEAN_ROOT/bin/glean -v --listtests
 </PRE>
 
 
