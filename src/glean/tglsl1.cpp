@@ -81,7 +81,7 @@ static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 #define VERTCOLOR { 0.25, 0.75, 0.5, 0.25 }
 #define AMBIENT { 0.2, 0.4, 0.6, 0.8 }
 #define DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
-#define UNIFORM1 {0.0, 0.25, 0.75, 0.0 }
+#define UNIFORM1 {1.0, 0.25, 0.75, 0.0 }  // don't change x=1.0!
 static const GLfloat VertColor[4] = VERTCOLOR;
 static const GLfloat Ambient[4] = AMBIENT;
 static const GLfloat Diffuse[4] = DIFFUSE;
@@ -144,6 +144,31 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"Swizzle",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4(0.5,  0.25, 0.0, 1.0); \n"
+		"   gl_FragColor = a.yxxz; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Writemask",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(1.0); \n"
+		"   gl_FragColor.x = 0.5; \n"
+		"   gl_FragColor.z = 0.25; \n"
+		"} \n",
+		{ 0.5, 1.0, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"vec4, scalar arithmetic",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -152,6 +177,50 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = a * 2.0 - b; \n"
 		"} \n",
 		{ 0.75, 0.50, 0.4, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"integer, float arithmetic",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   int k = 100; \n"
+		"   gl_FragColor.x = k * 0.01; \n"
+		"   gl_FragColor.y = k * 0.005; \n"
+		"   gl_FragColor.z = k * 0.0025; \n"
+		"   gl_FragColor.w = k * 0.0; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.25, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"integer division",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   int i = 15, j = 6; \n"
+		"   int k = i / j; \n"
+		"   gl_FragColor = vec4(k * 0.1); \n"
+		"} \n",
+		{ 0.2, 0.2, 0.2, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"integer division with uniform var",
+		NO_VERTEX_SHADER,
+		"// as above, but prevent compile-time evaluation \n"
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   int i = int(15 * uniform1.x); \n"
+		"   int j = 6; \n"
+		"   int k = i / j; \n"
+		"   gl_FragColor = vec4(k * 0.1); \n"
+		"} \n",
+		{ 0.2, 0.2, 0.2, 0.2 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -220,7 +289,7 @@ static const ShaderProgram Programs[] = {
 		"simple if/else statement",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-		"   // ths should always be true \n"
+		"   // ths should always be false \n"
 		"   if (gl_FragCoord.x < 0.0) { \n"
 		"      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); \n"
                 "   } else { \n"
@@ -280,6 +349,71 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = avg(a, b); \n"
 		"} \n",
 		{ 0.5, 0.4, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"uniform variable (fragment shader)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   gl_FragColor = uniform1; \n"
+		"} \n",
+		UNIFORM1,
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"uniform variable (vertex shader)",
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   gl_FrontColor = uniform1; \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		UNIFORM1,
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"varying variable",
+		// vertex program:
+		"varying vec4 var1; \n"
+		"void main() { \n"
+		"   var1 = vec4(1.0, 0.5, 0.25, 0.0); \n"
+		"} \n",
+		// fragment program:
+		"varying vec4 var1; \n"
+		"void main() { \n"
+		"   gl_FragColor = var1; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.25, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"GL state variable reference (gl_FrontMaterial.ambient)",
+		NO_VERTEX_SHADER,
+		// fragment program:
+		"void main() { \n"
+		"   gl_FragColor = gl_FrontMaterial.ambient; \n"
+		"} \n",
+		AMBIENT,
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"GL state variable reference (gl_LightSource[0].diffuse)",
+		NO_VERTEX_SHADER,
+		// fragment program:
+		"void main() { \n"
+		"   gl_FragColor = gl_LightSource[0].diffuse; \n"
+		"} \n",
+		DIFFUSE,
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -562,7 +696,10 @@ GLSLTest::testProgram(const ShaderProgram &p)
 		vertShader = loadAndCompileShader(GL_VERTEX_SHADER,
 						  p.vertShaderString);
 	}
-	assert(fragShader || vertShader);
+	if (!fragShader && !vertShader) {
+		// must have had a compilation errror
+		return false;
+	}
 
 	program = glCreateProgram_func();
 	if (fragShader)
