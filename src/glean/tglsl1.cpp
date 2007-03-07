@@ -182,6 +182,19 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// Z-write ============================================================
+	{
+		"gl_FragDepth test",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"   gl_FragDepth = 0.25; \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		0.25,  // Z value
+		FLAG_NONE
+	},
+
 	// Basic arithmetic ===================================================
 	{
 		"Addition",
@@ -530,6 +543,32 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"discard statement (1)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(1.0); \n"
+		"   if (gl_TexCoord[0].x < 0.5) \n"
+		"      discard; \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },  // glClear color
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"discard statement (2)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(1.0); \n"
+		"   if (gl_TexCoord[0].x > 0.5) \n"
+		"      discard; \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },  // fragment color
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"conditional expression",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -735,6 +774,56 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = texture3D(tex3d, coord); \n"
 		"} \n",
 		{ 0.0, 0.0, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	// Preprocessor tests ================================================
+	{
+		"Preprocessor test (1)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"#if 0 \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"#else \n"
+		"   gl_FragColor = vec4(0.3); \n"
+		"#endif \n"
+		"} \n",
+		{ 0.3, 0.3, 0.3, 0.3 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"Preprocessor test (2)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"#if 1 \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"#else \n"
+		"   gl_FragColor = vec4(0.3); \n"
+		"#endif \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"Preprocessor test (3)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"#define SYMBOL 3 \n"
+		"#if SYMBOL == 3 \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"#else \n"
+		"   gl_FragColor = vec4(0.3); \n"
+		"#endif \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
 
@@ -1227,6 +1316,7 @@ GLSLTest::testProgram(const ShaderProgram &p)
 
 	if (p.expectedZ != DONT_CARE_Z) {
 		GLfloat z;
+		// read z at center of quad
 		glReadPixels(windowSize / 2, windowSize / 2, 1, 1,
 			     GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 		if (!equalDepth(z, p.expectedZ)) {
