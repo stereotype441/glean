@@ -450,6 +450,7 @@ static const ShaderProgram Programs[] = {
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
 		"   gl_FrontColor = uniform1; \n"
+		"   gl_Position = ftransform(); \n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
 		UNIFORM1,
@@ -463,6 +464,7 @@ static const ShaderProgram Programs[] = {
 		"varying vec4 var1; \n"
 		"void main() { \n"
 		"   var1 = vec4(1.0, 0.5, 0.25, 0.0); \n"
+		"   gl_Position = ftransform(); \n"
 		"} \n",
 		// fragment program:
 		"varying vec4 var1; \n"
