@@ -92,6 +92,7 @@ static const GLfloat Uniform1[4] = UNIFORM1;
 
 // Shader program test cases
 static const ShaderProgram Programs[] = {
+	// Simple tests =======================================================
 	{
 		"Directly set fragment color",  // name
 		NO_VERTEX_SHADER,  // vertex shader
@@ -132,19 +133,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
-	{
-		"Addition",
-		NO_VERTEX_SHADER,
-		"void main() { \n"
-		"   vec4 a = vec4(0.5,  0.25, 0.0, 0.0); \n"
-		"   vec4 b = vec4(0.25, 0.0,  0.2, 0.0); \n"
-		"   gl_FragColor = a + b; \n"
-		"} \n",
-		{ 0.75, 0.25, 0.2, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-	},
-
+	// Swizzle, writemask =================================================
 	{
 		"Swizzle",
 		NO_VERTEX_SHADER,
@@ -166,6 +155,43 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor.z = 0.25; \n"
 		"} \n",
 		{ 0.5, 1.0, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Swizzled writemask",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor.zwxy = vec4(1.0, 0.5, 0.25, 0.75); \n"
+		"} \n",
+		{ 0.25, 0.75, 1.0, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Swizzled writemask (2)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor.zy = vec2(1.0, 0.5); \n"
+		"   gl_FragColor.wx = vec2(0.25, 0.75); \n"
+		"} \n",
+		{ 0.75, 0.5, 1.0, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	// Basic arithmetic ===================================================
+	{
+		"Addition",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4(0.5,  0.25, 0.0, 0.0); \n"
+		"   vec4 b = vec4(0.25, 0.0,  0.2, 0.0); \n"
+		"   gl_FragColor = a + b; \n"
+		"} \n",
+		{ 0.75, 0.25, 0.2, 0.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -210,6 +236,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// built-in functions ================================================
 	{
 		"dot product",
 		NO_VERTEX_SHADER,
@@ -277,6 +304,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// Flow Control ======================================================
 	{
 		"while-loop",
 		NO_VERTEX_SHADER,
@@ -435,6 +463,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// Uniform & Varying vars ============================================
 	{
 		"uniform variable (fragment shader)",
 		NO_VERTEX_SHADER,
@@ -478,6 +507,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// GL state refs =====================================================
 	{
 		"GL state variable reference (gl_FrontMaterial.ambient)",
 		NO_VERTEX_SHADER,
@@ -500,6 +530,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// Texture functions ==================================================
 	{
 		"2D Texture lookup",
 		NO_VERTEX_SHADER,
