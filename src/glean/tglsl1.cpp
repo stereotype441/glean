@@ -80,15 +80,50 @@ static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 #define NO_VERTEX_SHADER NULL
 #define NO_FRAGMENT_SHADER NULL
 
-#define VERTCOLOR { 0.25, 0.75, 0.5, 0.25 }
+#define PRIMARY_R 0.25
+#define PRIMARY_G 0.75
+#define PRIMARY_B 0.5
+#define PRIMARY_A 0.25
+#define SECONDARY_R 0.0
+#define SECONDARY_G 0.25
+#define SECONDARY_B 0.25
+#define SECONDARY_A 1.0
+
 #define AMBIENT { 0.2, 0.4, 0.6, 0.8 }
-#define DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
+#define LIGHT_DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
+#define MAT_DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
+#define DIFFUSE_PRODUCT { 0.01, 0.09, 0.25, 0.7 } // note alpha!
+
 #define UNIFORM1 {1.0, 0.25, 0.75, 0.0 }  // don't change!
-static const GLfloat VertColor[4] = VERTCOLOR;
+
+#define PSIZE 3.0
+#define PSIZE_MIN 2.0
+#define PSIZE_MAX 8.0
+#define PSIZE_THRESH 1.5
+#define PSIZE_ATTEN0 4.0
+#define PSIZE_ATTEN1 5.0
+#define PSIZE_ATTEN2 6.0
+
+#define FOG_START 100.0
+#define FOG_END   200.0
+#define FOG_R 1.0
+#define FOG_G 0.5
+#define FOG_B 1.0
+#define FOG_A 0.0
+
+static const GLfloat PrimaryColor[4] = { PRIMARY_R, PRIMARY_G,
+					 PRIMARY_B, PRIMARY_A };
+static const GLfloat SecondaryColor[4] = { SECONDARY_R, SECONDARY_G,
+					   SECONDARY_B, SECONDARY_A };
+
 static const GLfloat Ambient[4] = AMBIENT;
-static const GLfloat Diffuse[4] = DIFFUSE;
+static const GLfloat MatDiffuse[4] = MAT_DIFFUSE;
+static const GLfloat LightDiffuse[4] = LIGHT_DIFFUSE;
+
 static const GLfloat Uniform1[4] = UNIFORM1;
 
+static const GLfloat PointAtten[3] = { PSIZE_ATTEN0, PSIZE_ATTEN1, PSIZE_ATTEN2 };
+static const GLfloat FogColor[4] = { FOG_R, FOG_G, FOG_B, FOG_A };
 
 // Shader program test cases
 static const ShaderProgram Programs[] = {
@@ -129,6 +164,25 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = gl_Color; \n"
 		"} \n",
 		{ 0.25, 1.0, 0.75, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Primary plus secondary color",
+		// vert shader:
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   gl_FrontColor = gl_Color + gl_SecondaryColor; \n"
+		"} \n",
+		// frag shader:
+		"void main() { \n"
+		"   gl_FragColor = gl_Color; \n"
+		"} \n",
+		{ PRIMARY_R + SECONDARY_R,
+		  PRIMARY_G + SECONDARY_G,
+		  PRIMARY_B + SECONDARY_B,
+		  PRIMARY_A + SECONDARY_A },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -785,14 +839,78 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-
 	{
 		"GL state variable reference (gl_LightSource[0].diffuse)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   gl_FragColor = gl_LightSource[0].diffuse; \n"
 		"} \n",
-		DIFFUSE,
+		LIGHT_DIFFUSE,
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"GL state variable reference (diffuse product)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = gl_FrontLightProduct[0].diffuse; \n"
+		"} \n",
+		DIFFUSE_PRODUCT,
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"GL state variable reference (point size)",
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   gl_FrontColor.x = gl_Point.size * 0.1; \n"
+		"   gl_FrontColor.y = gl_Point.sizeMin * 0.1; \n"
+		"   gl_FrontColor.z = gl_Point.sizeMax * 0.1; \n"
+		"   gl_FrontColor.w = 0.0; \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ PSIZE * 0.1, PSIZE_MIN * 0.1, PSIZE_MAX * 0.1, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"GL state variable reference (point attenuation)",
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   gl_FrontColor.x = gl_Point.distanceConstantAttenuation * 0.1; \n"
+		"   gl_FrontColor.y = gl_Point.distanceLinearAttenuation * 0.1; \n"
+		"   gl_FrontColor.z = gl_Point.distanceQuadraticAttenuation * 0.1; \n"
+		"   gl_FrontColor.w = 0.0; \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ PSIZE_ATTEN0 * 0.1, PSIZE_ATTEN1 * 0.1,
+		  PSIZE_ATTEN2 * 0.1, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"linear fog test",
+		// vertex prog:
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   gl_FogFragCoord = 125.0; \n"
+		"   gl_FrontColor = gl_Color; \n"
+		"} \n",
+		// fragment prog:
+		"void main() { \n"
+		"   float bf = (gl_FogFragCoord - gl_Fog.start) * gl_Fog.scale; \n"
+		"   gl_FragColor = mix(gl_Color, gl_Fog.color, bf); \n"
+		"} \n",
+#define BF (125.0 - FOG_START) / (FOG_END - FOG_START)  // Blend Factor
+		{ PRIMARY_R + BF * (FOG_R - PRIMARY_R),
+		  PRIMARY_G + BF * (FOG_G - PRIMARY_G),
+		  PRIMARY_B + BF * (FOG_B - PRIMARY_B),
+		  PRIMARY_A + BF * (FOG_A - PRIMARY_A) },
+#undef BF
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1354,12 +1472,21 @@ GLSLTest::setup(void)
 	setupTextures();
 
 	// load program inputs
-	glColor4fv(VertColor);
+	glColor4fv(PrimaryColor);
+	glSecondaryColor3fv(SecondaryColor);
 
 	// other GL state
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, VertColor);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, MatDiffuse);
+	glPointSize(PSIZE);
+	glPointParameterf(GL_POINT_SIZE_MIN, PSIZE_MIN);
+	glPointParameterf(GL_POINT_SIZE_MAX, PSIZE_MAX);
+	glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, PSIZE_THRESH);
+	glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, PointAtten);
+	glFogf(GL_FOG_START, FOG_START);
+	glFogf(GL_FOG_END, FOG_END);
+	glFogfv(GL_FOG_COLOR, FogColor);
 
 	GLenum err = glGetError();
 	assert(!err);  // should be OK
