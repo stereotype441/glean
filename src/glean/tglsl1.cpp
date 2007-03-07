@@ -29,6 +29,8 @@
 // tglsl1.h:  Test OpenGL shading language
 // Brian Paul  6 March 2007
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "tglsl1.h"
 #include <cassert>
 #include <math.h>
@@ -479,7 +481,6 @@ static const ShaderProgram Programs[] = {
 	{
 		"GL state variable reference (gl_FrontMaterial.ambient)",
 		NO_VERTEX_SHADER,
-		// fragment program:
 		"void main() { \n"
 		"   gl_FragColor = gl_FrontMaterial.ambient; \n"
 		"} \n",
@@ -491,13 +492,125 @@ static const ShaderProgram Programs[] = {
 	{
 		"GL state variable reference (gl_LightSource[0].diffuse)",
 		NO_VERTEX_SHADER,
-		// fragment program:
 		"void main() { \n"
 		"   gl_FragColor = gl_LightSource[0].diffuse; \n"
 		"} \n",
 		DIFFUSE,
 		DONT_CARE_Z,
 		FLAG_NONE
+	},
+
+	{
+		"2D Texture lookup",
+		NO_VERTEX_SHADER,
+		"uniform sampler2D tex2d; \n"
+		"void main() { \n"
+		"   gl_FragColor = texture2D(tex2d, gl_TexCoord[0].xy);\n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"2D Texture lookup, computed coordinate",
+		NO_VERTEX_SHADER,
+		"uniform sampler2D tex2d; \n"
+		"void main() { \n"
+		"   vec2 coord = gl_TexCoord[0].xy + vec2(0.5); \n"
+		"   gl_FragColor = texture2D(tex2d, coord, 0.0); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },  // upper-right tex color
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"2D Texture lookup with bias",
+		NO_VERTEX_SHADER,
+		"uniform sampler2D tex2d; \n"
+		"void main() { \n"
+		"   gl_FragColor = texture2D(tex2d, gl_TexCoord[0].xy, 1.0);\n"
+		"} \n",
+		{ 0.5, 0.0, 0.0, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+#if 0 // XXX not enabled yet
+	{
+		"2D Texture lookup with explicit lod (Vertex shader)",
+		"uniform sampler2D tex2d; \n"
+		"void main() { \n"
+		"   //gl_FrontColor = texture2DLod(tex2d, gl_TexCoord[0].xy, 2.0);\n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ 0.25, 0.0, 0.0, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+#endif
+
+	{
+		"2D Texture lookup with projection",
+		NO_VERTEX_SHADER,
+		"uniform sampler2D tex2d; \n"
+		"void main() { \n"
+		"   vec4 coord = gl_TexCoord[0] * vec4(2.25); \n"
+		"   // 'proj' will divide components by w (=2.25) \n"
+		"   gl_FragColor = texture2DProj(tex2d, coord);\n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"1D Texture lookup",
+		NO_VERTEX_SHADER,
+		"uniform sampler1D tex1d; \n"
+		"void main() { \n"
+		"   gl_FragColor = texture1D(tex1d, gl_TexCoord[0].x);\n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"3D Texture lookup",
+		NO_VERTEX_SHADER,
+		"uniform sampler3D tex3d; \n"
+		"void main() { \n"
+		"   gl_FragColor = texture3D(tex3d, gl_TexCoord[0].xyz);\n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
+	},
+
+	{
+		"3D Texture lookup, computed coord",
+		NO_VERTEX_SHADER,
+		"uniform sampler3D tex3d; \n"
+		"void main() { \n"
+		"   vec3 coord = gl_TexCoord[0].xyz; \n"
+		"   coord.y = 0.75; \n"
+		"   coord.z = 0.75; \n"
+		"   gl_FragColor = texture3D(tex3d, coord); \n"
+		"} \n",
+		{ 0.0, 0.0, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+
 	},
 
 	{ NULL, NULL, NULL, {0,0,0,0}, 0, FLAG_NONE } // end of list sentinal
@@ -613,6 +726,132 @@ GLSLTest::getFunctions(void)
 }
 
 
+void
+GLSLTest::setupTextures(void)
+{
+	GLubyte teximage0[16][16][4];
+	GLubyte teximage1[8][8][4];
+	GLubyte teximage2[4][4][4];
+	GLubyte teximage3D[16][16][16][4];
+	GLint i, j, k;
+
+	//  +-------+-------+
+	//  | blue  | white |
+	//  +-------+-------+
+	//  | red   | green |
+	//  +-------+-------+
+	for (i = 0; i < 16; i++) {
+		for (j = 0; j < 16; j++) {
+			if (i < 8) {
+				// bottom half
+				if (j < 8) {
+					// red
+					teximage0[i][j][0] = 255;
+					teximage0[i][j][1] = 0;
+					teximage0[i][j][2] = 0;
+					teximage0[i][j][3] = 255;
+				}
+				else {
+					// green
+					teximage0[i][j][0] = 0;
+					teximage0[i][j][1] = 255;
+					teximage0[i][j][2] = 0;
+					teximage0[i][j][3] = 255;
+				}
+			}
+			else {
+				// top half
+				if (j < 8) {
+					// blue
+					teximage0[i][j][0] = 0;
+					teximage0[i][j][1] = 0;
+					teximage0[i][j][2] = 255;
+					teximage0[i][j][3] = 255;
+				}
+				else {
+					// white
+					teximage0[i][j][0] = 255;
+					teximage0[i][j][1] = 255;
+					teximage0[i][j][2] = 255;
+					teximage0[i][j][3] = 255;
+				}
+			}
+		}
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage0);
+
+	// level 1: same colors, half intensity
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			teximage1[i][j][0] = teximage0[i*2][j*2][0] / 2;
+			teximage1[i][j][1] = teximage0[i*2][j*2][1] / 2;
+			teximage1[i][j][2] = teximage0[i*2][j*2][2] / 2;
+			teximage1[i][j][3] = teximage0[i*2][j*2][3] / 2;
+		}
+	}
+	glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 8, 8, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage1);
+
+	// level 2: 1/4 intensity
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			teximage2[i][j][0] = teximage0[i*4][j*4][0] / 4;
+			teximage2[i][j][1] = teximage0[i*4][j*4][1] / 4;
+			teximage2[i][j][2] = teximage0[i*4][j*4][2] / 4;
+			teximage2[i][j][3] = teximage0[i*4][j*4][3] / 4;
+		}
+	}
+	glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, 4, 4, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage2);
+
+	// level 3, 4: don't care
+	glTexImage2D(GL_TEXTURE_2D, 3, GL_RGBA, 2, 2, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage0);
+	glTexImage2D(GL_TEXTURE_2D, 4, GL_RGBA, 1, 1, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage0);
+
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+	// 1D texture: just bottom row of the 2D texture
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 16, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage0);
+
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// 3D texture: 2D texture, depth = 1
+	for (i = 0; i < 16; i++) {
+		for (j = 0; j < 16; j++) {
+			for (k = 0; k < 16; k++) {
+				if (i < 8) {
+					teximage3D[i][j][k][0] = teximage0[j][k][0];
+					teximage3D[i][j][k][1] = teximage0[j][k][1];
+					teximage3D[i][j][k][2] = teximage0[j][k][2];
+					teximage3D[i][j][k][3] = teximage0[j][k][3];
+				}
+				else {
+					// back half: half intensity
+					teximage3D[i][j][k][0] = teximage0[j][k][0] / 2;
+					teximage3D[i][j][k][1] = teximage0[j][k][1] / 2;
+					teximage3D[i][j][k][2] = teximage0[j][k][2] / 2;
+					teximage3D[i][j][k][3] = teximage0[j][k][3] / 2;
+				}
+			}
+		}
+	}
+
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 16, 16, 16, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, teximage3D);
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+
 bool
 GLSLTest::setup(void)
 {
@@ -627,6 +866,8 @@ GLSLTest::setup(void)
 		env->log << "Unable to get pointer to an OpenGL 2.0 API function\n";
 		return false;
 	}
+
+	setupTextures();
 
 	// load program inputs
 	glColor4fv(VertColor);
@@ -766,9 +1007,9 @@ GLSLTest::loadAndCompileShader(GLenum target, const char *str)
 bool
 GLSLTest::testProgram(const ShaderProgram &p)
 {
-	const GLfloat r = 0.25;
+	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
 	GLuint fragShader = 0, vertShader = 0, program;
-	GLint u1;
+	GLint u1, utex1d, utex2d, utex3d;
 
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
@@ -798,7 +1039,9 @@ GLSLTest::testProgram(const ShaderProgram &p)
 			GLchar log[1000];
 			GLsizei len;
 			glGetProgramInfoLog_func(program, 1000, &len, log);
-			env->log << "Shader Link error: ";
+			env->log << "FAILURE:\n";
+			env->log << "  Shader test: " << p.name << "\n";
+			env->log << "  Link error: ";
 			env->log << log;
 			return false;
 		}
@@ -810,6 +1053,19 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	u1 = glGetUniformLocation_func(program, "uniform1");
 	if (u1 >= 0)
 		glUniform4fv_func(u1, 1, Uniform1);
+
+	utex1d = glGetUniformLocation_func(program, "tex1d");
+	if (utex1d >= 0)
+		glUniform1i_func(utex1d, 0);  // bind to tex unit 0
+
+	utex2d = glGetUniformLocation_func(program, "tex2d");
+	if (utex2d >= 0)
+		glUniform1i_func(utex2d, 0);  // bind to tex unit 0
+
+	utex3d = glGetUniformLocation_func(program, "tex3d");
+	if (utex3d >= 0)
+		glUniform1i_func(utex3d, 0);  // bind to tex unit 0
+
 
 	// to avoid potential issue with undefined result.depth.z
 	if (p.expectedZ == DONT_CARE_Z)
@@ -825,10 +1081,10 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	glTexCoord2f(0, 1);  glVertex2f(-r,  r);
 	glEnd();
 
+	// read a pixel from lower-left corder of rendered quad
 	GLfloat pixel[4];
-	glReadPixels(windowSize / 2, windowSize / 2, 1, 1,
+	glReadPixels(windowSize / 2 - 2, windowSize / 2 - 2, 1, 1,
 		     GL_RGBA, GL_FLOAT, pixel);
-
 	if (0) // debug
            printf("%s: Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
                   p.name,

@@ -70,6 +70,7 @@ private:
 	GLfloat tolerance[5];
 	GLfloat looseTolerance[5];
         bool getFunctions(void);
+        void setupTextures(void);
 	bool setup(void);
 	bool equalColors(const GLfloat a[4], const GLfloat b[4], int flags) const;
 	bool equalDepth(GLfloat z0, GLfloat z1) const;
