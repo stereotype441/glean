@@ -83,7 +83,7 @@ static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 #define VERTCOLOR { 0.25, 0.75, 0.5, 0.25 }
 #define AMBIENT { 0.2, 0.4, 0.6, 0.8 }
 #define DIFFUSE { 0.1, 0.3, 0.5, 0.7 }
-#define UNIFORM1 {1.0, 0.25, 0.75, 0.0 }  // don't change x=1.0!
+#define UNIFORM1 {1.0, 0.25, 0.75, 0.0 }  // don't change!
 static const GLfloat VertColor[4] = VERTCOLOR;
 static const GLfloat Ambient[4] = AMBIENT;
 static const GLfloat Diffuse[4] = DIFFUSE;
@@ -236,6 +236,105 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"integer division",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   int i = 15, j = 6; \n"
+		"   int k = i / j; \n"
+		"   gl_FragColor = vec4(k * 0.1); \n"
+		"} \n",
+		{ 0.2, 0.2, 0.2, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"integer division with uniform var",
+		NO_VERTEX_SHADER,
+		"// as above, but prevent compile-time evaluation \n"
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   int i = int(15 * uniform1.x); \n"
+		"   int j = 6; \n"
+		"   int k = i / j; \n"
+		"   gl_FragColor = vec4(k * 0.1); \n"
+		"} \n",
+		{ 0.2, 0.2, 0.2, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"assignment operators",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(0.0, 0.25, 0.5, 0.75); \n"
+		"   v *= 2.0; \n"
+		"   v -= vec4(-0.5, 0.0, 0.25, 1.0); \n"
+		"   gl_FragColor = v; \n"
+		"} \n",
+		{ 0.5, 0.5, 0.75, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"post increment (x++)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float x = uniform1.y; // should be 0.25 \n"
+		"   float y = x++; // y should be 0.25 \n"
+		"   gl_FragColor = vec4(y); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"pre increment (++x)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float x = uniform1.y; // should be 0.25 \n"
+		"   float y = ++x; // y should be 1.25 \n"
+		"   gl_FragColor = vec4(y); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"post decrement (x--)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float x = uniform1.y; // should be 0.25 \n"
+		"   float y = x--; // y should be 0.25 \n"
+		"   gl_FragColor = vec4(y); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"pre decrement (--x)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float x = uniform1.y; // should be 0.25 \n"
+		"   float y = --x; // y should be -0.75 \n"
+		"   gl_FragColor = vec4(-y); // negate \n"
+		"} \n",
+		{ 0.75, 0.75, 0.75, 0.75 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// built-in functions ================================================
 	{
 		"dot product",
@@ -276,30 +375,27 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"integer division",
+		"clamp() function",
 		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
 		"void main() { \n"
-		"   int i = 15, j = 6; \n"
-		"   int k = i / j; \n"
-		"   gl_FragColor = vec4(k * 0.1); \n"
+		"   vec4 u = uniform1 * vec4(3.0); \n"
+		"   gl_FragColor = clamp(u, 0.0, 1.0); \n"
 		"} \n",
-		{ 0.2, 0.2, 0.2, 0.2 },
+		{ 1.0, 0.75, 1.0, 0.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
 
 	{
-		"integer division with uniform var",
+		"clamp() function, vec4",
 		NO_VERTEX_SHADER,
-		"// as above, but prevent compile-time evaluation \n"
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
-		"   int i = int(15 * uniform1.x); \n"
-		"   int j = 6; \n"
-		"   int k = i / j; \n"
-		"   gl_FragColor = vec4(k * 0.1); \n"
+		"   vec4 u = uniform1; \n"
+		"   gl_FragColor = clamp(u, vec4(0.2), vec4(0.8)); \n"
 		"} \n",
-		{ 0.2, 0.2, 0.2, 0.2 },
+		{ 0.8, 0.25, 0.75, 0.2 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
