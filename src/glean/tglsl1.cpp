@@ -223,6 +223,19 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"chained assignment",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float x, y, z; \n"
+		"   x = y = z = 0.25; \n"
+		"   gl_FragColor = vec4(x + y + z); \n"
+		"} \n",
+		{ 0.75, 0.75, 0.75, 0.75 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"integer, float arithmetic",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -526,23 +539,6 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"simple subroutine",
-		NO_VERTEX_SHADER,
-		"vec4 avg(const in vec4 a, const in vec4 b) { \n"
-		"   return (a + b) * 0.5; \n"
-		"} \n"
-		"\n"
-		"void main() { \n"
-		"   vec4 a = vec4(1.0, 0.0, 0.5, 0.0); \n"
-		"   vec4 b = vec4(0.0, 0.8, 0.5, 0.0); \n"
-		"   gl_FragColor = avg(a, b); \n"
-		"} \n",
-		{ 0.5, 0.4, 0.5, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-	},
-
-	{
 		"discard statement (1)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -573,6 +569,19 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   gl_FragColor = gl_FragCoord.x < 0.0 ? vec4(0.0) : vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"sequence (comma) operator",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float x, y, z; \n"
+		"   x = 1.0, y = 0.5, z = x * y; \n"
+		"   gl_FragColor = vec4(z); \n"
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
@@ -900,6 +909,142 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 
+	},
+
+	// Function calls ====================================================
+	{
+		"simple function call",
+		NO_VERTEX_SHADER,
+		"vec4 avg(const in vec4 a, const in vec4 b) { \n"
+		"   return (a + b) * 0.5; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   vec4 a = vec4(1.0, 0.0, 0.5, 0.0); \n"
+		"   vec4 b = vec4(0.0, 0.8, 0.5, 0.0); \n"
+		"   gl_FragColor = avg(a, b); \n"
+		"} \n",
+		{ 0.5, 0.4, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"function call with inout params",
+		NO_VERTEX_SHADER,
+		"void swap(inout float x, inout float y) { \n"
+		"   float t = x; \n"
+		"   x = y; \n"
+		"   y = t; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.5, b = 0.25; \n"
+		"   swap(a, b); \n"
+		"   gl_FragColor.x = a; \n"
+		"   gl_FragColor.y = b; \n"
+		"   gl_FragColor.z = 0.0; \n"
+		"   gl_FragColor.w = 0.0; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"function call with in, out params",
+		NO_VERTEX_SHADER,
+		"void half(in float x, out float y) { \n"
+		"   y = 0.5 * x; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.5, b = 0.1; \n"
+		"   half(a, b); \n"
+		"   gl_FragColor = vec4(b); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"function with early return",
+		NO_VERTEX_SHADER,
+		"float minimum(in float x, in float y) { \n"
+		"   if (x < y) \n"
+		"      return x; \n"
+		"   return y; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.5; \n"
+		"   float z = minimum(a, 0.25); \n"
+		"   gl_FragColor = vec4(z); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"nested function calls (1)",
+		NO_VERTEX_SHADER,
+		"float half(const in float x) { \n"
+		"   return 0.5 * x; \n"
+		"} \n"
+		"\n"
+		"float square(const in float x) { \n"
+		"   return x * x; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.5; \n"
+		"   float b = square(half(1.0)); \n"
+		"   gl_FragColor = vec4(b); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"nested function calls (2)",
+		NO_VERTEX_SHADER,
+		"float half(const in float x) { \n"
+		"   return 0.5 * x; \n"
+		"} \n"
+		"\n"
+		"float square_half(const in float x) { \n"
+		"   float y = half(x); \n"
+		"   return y * y; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 1.0; \n"
+		"   float b = square_half(a); \n"
+		"   gl_FragColor = vec4(b); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"nested function calls (3)",
+		NO_VERTEX_SHADER,
+		"float half(const in float x) { \n"
+		"   return 0.5 * x; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.5; \n"
+		"   float b = half(half(a)); \n"
+		"   gl_FragColor = vec4(b); \n"
+		"} \n",
+		{ 0.125, 0.125, 0.125, 0.125 },
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 
 	// Preprocessor tests ================================================
