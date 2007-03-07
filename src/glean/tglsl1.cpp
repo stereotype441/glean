@@ -197,6 +197,56 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"unary negation",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(-1.0, -0.5, 0.5, -0.25); \n"
+		"   gl_FragColor = -v; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.0, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"dot product",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 u = vec4(-1.0, 0.5, 0.5, -0.25); \n"
+		"   vec4 v = vec4(0.5, 1.0, 0.5, 0.0); \n"
+		"   gl_FragColor = vec4(dot(u, v)); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"max() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 u = vec4(-1.0, 0.5, 0.5, -0.25); \n"
+		"   vec4 v = vec4(0.5, 1.0, 0.5, 0.0); \n"
+		"   gl_FragColor = max(u, v); \n"
+		"} \n",
+		{ 0.5, 1.0, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"length() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 u = vec3(0.25, 0.1, 0.2); \n"
+		"   gl_FragColor = vec4(length(u)); \n"
+		"} \n",
+		{ 0.335, 0.335, 0.335, 0.335 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"integer division",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -349,6 +399,36 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = avg(a, b); \n"
 		"} \n",
 		{ 0.5, 0.4, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"conditional expression",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = gl_FragCoord.x < 0.0 ? vec4(0.0) : vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"array with constant indexing",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float ar[4]; \n"
+		"   ar[0] = 0.5; \n"
+		"   ar[1] = 1.0; \n"
+		"   ar[2] = 0.25; \n"
+		"   ar[3] = 0.2; \n"
+		"   gl_FragColor.x = ar[0]; \n"
+		"   gl_FragColor.y = ar[1]; \n"
+		"   gl_FragColor.z = ar[2]; \n"
+		"   gl_FragColor.w = ar[3]; \n"
+		"} \n",
+		{ 0.5, 1.0, 0.25, 0.2 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
