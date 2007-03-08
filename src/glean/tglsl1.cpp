@@ -187,6 +187,45 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"Empty blocks ({}), nil (;) statements",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   {} \n"   // empty block
+		"   ; \n"    // nil statement
+		"   gl_FragColor = vec4(1.0, 0.5, 0.25, 0.0); \n"
+		"} \n",
+		{ 1.0, 0.5, 0.25, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Global vars and initializers",
+		NO_VERTEX_SHADER,
+		"vec4 c = vec4(1.0, 0.5, 0.25, 0.0); \n"
+		"void main() { \n"
+		"   gl_FragColor = c; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.25, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Global vars and initializers (2)",
+		NO_VERTEX_SHADER,
+		"vec4 c1 = vec4(0.4, 0.5, 0.25, 0.0); \n"
+		"vec4 c2 = vec4(0.3, 0.5, 0.5,  0.4); \n"
+		"vec4 c3 = c1 + c2; \n"
+		"void main() { \n"
+		"   gl_FragColor = c3; \n"
+		"} \n",
+		{ 0.7, 1.0, 0.75, 0.4 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Swizzle, writemask =================================================
 	{
 		"Swizzle",
@@ -238,7 +277,7 @@ static const ShaderProgram Programs[] = {
 
 	// Z-write ============================================================
 	{
-		"gl_FragDepth test",
+		"gl_FragDepth writing",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   gl_FragColor = vec4(0.5); \n"
@@ -430,19 +469,6 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"max() function",
-		NO_VERTEX_SHADER,
-		"void main() { \n"
-		"   vec4 u = vec4(-1.0, 0.5, 0.5, -0.25); \n"
-		"   vec4 v = vec4(0.5, 1.0, 0.5, 0.0); \n"
-		"   gl_FragColor = max(u, v); \n"
-		"} \n",
-		{ 0.5, 1.0, 0.5, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-	},
-
-	{
 		"length() function",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -569,6 +595,148 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
 		{ 0.0, 0.0, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"abs() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(-0.3, -0.7, 0.2, 0.0); \n"
+		"   gl_FragColor = abs(v); \n"
+		"} \n",
+		{ 0.3, 0.7, 0.2, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"sign() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(-0.3, 0.0, 0.2, 0.0); \n"
+		"   v = sign(v); \n"
+		"   gl_FragColor.x = v.x + 1.5; \n"
+		"   gl_FragColor.y = v.y + 0.5; \n"
+		"   gl_FragColor.z = v.z - 0.5; \n"
+		"   gl_FragColor.w = v.w + 0.5; \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"floor() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(1.3, -1.7, -0.2, 0.0); \n"
+		"   v = floor(v); \n"
+		"   gl_FragColor.x = v.x * 0.5; \n"
+		"   gl_FragColor.y = v.y + 2.5; \n"
+		"   gl_FragColor.z = v.z + 1.5; \n"
+		"   gl_FragColor.w = v.w + 0.5; \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"ceil() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(1.3, -1.7, -0.2, 0.0); \n"
+		"   v = ceil(v); \n"
+		"   gl_FragColor.x = v.x - 1.5; \n"
+		"   gl_FragColor.y = v.y + 1.5; \n"
+		"   gl_FragColor.z = v.z + 0.5; \n"
+		"   gl_FragColor.w = v.w + 0.5; \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"fract() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v = vec4(1.3, -1.7, -0.2, 1.0); \n"
+		"   gl_FragColor = fract(v); \n"
+		"} \n",
+		{ 0.3, 0.3, 0.8, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"mod() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 u = vec4(7.0, 5.2,  5.3, 0.5); \n"
+		"   vec4 v = vec4(4.0, 5.0, -5.0, 1.0); \n"
+		"   vec4 w = mod(u, v); \n"
+		"   gl_FragColor.x = w.x * 0.1; \n"
+		"   gl_FragColor.y = w.y; \n"
+		"   gl_FragColor.z = w.z * -0.1; \n"
+		"   gl_FragColor.w = w.w; \n"
+		"} \n",
+		{ 0.3, 0.2, 0.47, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"min() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 u = vec4(-1.0, 0.5, 0.5, -0.25); \n"
+		"   vec4 v = vec4(0.5, 1.0, 0.5, 0.0); \n"
+		"   gl_FragColor = min(u, v); \n"
+		"} \n",
+		{ 0.0, 0.5, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"max() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 u = vec4(-1.0, 0.5, 0.5, -0.25); \n"
+		"   vec4 v = vec4(0.5, 1.0, 0.5, 0.0); \n"
+		"   gl_FragColor = max(u, v); \n"
+		"} \n",
+		{ 0.5, 1.0, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"step() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 edge = vec4(1.0, -2.0, 0.5, -1.0); \n"
+		"   vec4 v = vec4(0.5, -1.0, 0.0, 0.0); \n"
+		"   gl_FragColor = step(edge, v); \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"smoothstep() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 edge0 = vec4(2.0); \n"
+		"   vec4 edge1 = vec4(4.0); \n"
+		"   vec4 v = vec4(1.0, 3.0, 4.0, 5.0); \n"
+		"   gl_FragColor = smoothstep(edge0, edge1, v); \n"
+		"} \n",
+		{ 0.0, 0.5, 1.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -786,7 +954,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"&& operator, short-circuit test",
+		"&& operator, short-circuit",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   float x = 0.75; \n"
@@ -832,7 +1000,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"|| operator, short-circuit test",
+		"|| operator, short-circuit",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   float x = 0.75; \n"
@@ -986,7 +1154,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"linear fog test",
+		"linear fog",
 		// vertex prog:
 		"void main() { \n"
 		"   gl_Position = ftransform(); \n"
@@ -1004,6 +1172,23 @@ static const ShaderProgram Programs[] = {
 		  PRIMARY_B + BF * (FOG_B - PRIMARY_B),
 		  PRIMARY_A + BF * (FOG_A - PRIMARY_A) },
 #undef BF
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"built-in constants",
+		// vertex shader:
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   // front color values should all be >= 1.0 \n"
+		"   gl_FrontColor = vec4(gl_MaxLights, gl_MaxClipPlanes,\n"
+                "                        gl_MaxTextureUnits, \n"
+                "                        gl_MaxTextureCoords); \n"
+		" ;\n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ 1.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1288,7 +1473,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   mat4 m = mat4(0.5); // scale by 0.5 \n"
-		"   vec4 color = m * gl_Color; \n"
+		"   vec4 color = gl_Color * m; \n"
 		"   gl_FragColor = color; \n"
 		"} \n",
 		{ 0.5 * PRIMARY_R, 0.5 * PRIMARY_G,
@@ -1317,6 +1502,99 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = color; \n"
 		"} \n",
 		{ 0.925, 0.925, 0.6999, .5750 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (1)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec2 a = vec2(-1.0, 2.0); \n"
+		"   vec2 b = vec2( 1.0, 2.0); \n"
+		"   vec2 c = vec2( 3.0, 2.0); \n"
+		"   bvec2 b1 = lessThan(a, b); \n"
+		"   bvec2 b2 = lessThanEqual(b, c); \n"
+		"   gl_FragColor.x = float(b1.x); \n"
+		"   gl_FragColor.y = float(b1.y); \n"
+		"   gl_FragColor.z = float(b2.x); \n"
+		"   gl_FragColor.w = float(b2.y); \n"
+		"} \n",
+		{ 1.0, 0.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (2)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec2 a = vec2(-1.0, 3.0); \n"
+		"   vec2 b = vec2( 1.0, 2.0); \n"
+		"   vec2 c = vec2( 3.0, 2.0); \n"
+		"   bvec2 b1 = greaterThan(a, b); \n"
+		"   bvec2 b2 = greaterThanEqual(b, c); \n"
+		"   gl_FragColor.x = float(b1.x); \n"
+		"   gl_FragColor.y = float(b1.y); \n"
+		"   gl_FragColor.z = float(b2.x); \n"
+		"   gl_FragColor.w = float(b2.y); \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (3)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec2 a = vec2(-1.0, 3.0); \n"
+		"   vec2 b = vec2(-1.0, 2.0); \n"
+		"   vec2 c = vec2( 3.0, 2.0); \n"
+		"   bvec2 b1 = equal(a, b); \n"
+		"   bvec2 b2 = notEqual(b, c); \n"
+		"   gl_FragColor.x = float(b1.x); \n"
+		"   gl_FragColor.y = float(b1.y); \n"
+		"   gl_FragColor.z = float(b2.x); \n"
+		"   gl_FragColor.w = float(b2.y); \n"
+		"} \n",
+		{ 1.0, 0.0, 1.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"any() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   bvec4 b1 = bvec4(false, false, true,  false); \n"
+		"   bvec4 b2 = bvec4(false, false, false, false); \n"
+		"   bool a1 = any(b1); \n"
+		"   bool a2 = any(b2); \n"
+		"   gl_FragColor.x = float(a1); \n"
+		"   gl_FragColor.y = float(a2); \n"
+		"   gl_FragColor.z = 0.0; \n"
+		"   gl_FragColor.w = 0.0; \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"all() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   bvec4 b1 = bvec4(false, true, true, false); \n"
+		"   bvec4 b2 = bvec4(true,  true, true, true ); \n"
+		"   bool a1 = all(b1); \n"
+		"   bool a2 = all(b2); \n"
+		"   gl_FragColor.x = float(a1); \n"
+		"   gl_FragColor.y = float(a2); \n"
+		"   gl_FragColor.z = 0.0; \n"
+		"   gl_FragColor.w = 0.0; \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
