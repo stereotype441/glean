@@ -1445,7 +1445,7 @@ static const ShaderProgram Programs[] = {
 
 	// Matrix tests ======================================================
 	{
-		"matrix column test 1",
+		"matrix column check (1)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   mat4 m = gl_TextureMatrix[1]; \n"
@@ -1457,7 +1457,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"matrix column test 2",
+		"matrix column check (2)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   mat4 m = gl_TextureMatrix[1]; \n"
@@ -1469,7 +1469,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"matrix multiply test 1",
+		"matrix, vector multiply (1)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   mat4 m = mat4(0.5); // scale by 0.5 \n"
@@ -1483,7 +1483,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"matrix multiply test 2",
+		"matrix, vector multiply (2)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec4 color = gl_TextureMatrix[1] * gl_Color; \n"
@@ -1495,7 +1495,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"matrix multiply test 3",
+		"matrix, vector multiply (3)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec4 color = gl_Color * gl_TextureMatrix[1]; \n"
