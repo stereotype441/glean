@@ -182,7 +182,7 @@ static const ShaderProgram Programs[] = {
 		{ PRIMARY_R + SECONDARY_R,
 		  PRIMARY_G + SECONDARY_G,
 		  PRIMARY_B + SECONDARY_B,
-		  PRIMARY_A + SECONDARY_A },
+		  1.0 /*PRIMARY_A + SECONDARY_A*/ },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -476,6 +476,99 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = clamp(u, vec4(0.2), vec4(0.8)); \n"
 		"} \n",
 		{ 0.8, 0.25, 0.75, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"sin(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 3.1415/2.0, 3.1415, -3.1415/2.0); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   u = sin(u); \n"
+		"   gl_FragColor = u * 0.5 + 0.5; // scale to [0,1] range \n"
+		"} \n",
+		{ 0.5, 1.0, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"cos(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 3.1415/2.0, 3.1415, -3.1415/2.0); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   u = cos(u); \n"
+		"   gl_FragColor = u * 0.5 + 0.5; // scale to [0,1] range \n"
+		"} \n",
+		{ 1.0, 0.5, 0.0, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"pow(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.5, 2.0, 0.3, 2.0); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   vec4 v = vec4(2.0, 0.5, 1.0, 0.0); \n"
+		"   gl_FragColor = pow(u, v) * 0.5; \n"
+		"} \n",
+		{ 0.25 * 0.5, 1.4142 * 0.5, 0.3 * 0.5, 1.0 * 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"length() functions",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec2 v2 = vec2(1.0, 3.0); \n"
+		"   vec3 v3 = vec3(0.5, -1.0, 2.0); \n"
+		"   vec4 v4 = vec4(0.5, -1.0, 2.0, 1.0); \n"
+		"   gl_FragColor.x = length(v2) * 0.1; \n"
+		"   gl_FragColor.y = length(v3) * 0.1; \n"
+		"   gl_FragColor.z = length(v4) * 0.1; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.3162, 0.2291, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"normalize(vec3) function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 v3 = vec3(0.5, -1.0, 2.0); \n"
+		"   v3 = normalize(v3); \n"
+		"   gl_FragColor.x = v3.x; \n"
+		"   gl_FragColor.y = v3.y; \n"
+		"   gl_FragColor.z = v3.z; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.2182, /*-0.4364*/0.0, 0.8729, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"cross() function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 u = vec3(0.5, 0.0, 0.0); \n"
+		"   vec3 v = vec3(0.0, 0.5, 0.0); \n"
+		"   vec3 w = cross(u, v); \n"
+		"   gl_FragColor.xyz = w; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.0, 0.0, 0.25, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1165,6 +1258,69 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	// Matrix tests ======================================================
+	{
+		"matrix column test 1",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   mat4 m = gl_TextureMatrix[1]; \n"
+		"   gl_FragColor = m[0]; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.6, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"matrix column test 2",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   mat4 m = gl_TextureMatrix[1]; \n"
+		"   gl_FragColor = m[3]; \n"
+		"} \n",
+		{ 0.1, 0.2, 0.3, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"matrix multiply test 1",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   mat4 m = mat4(0.5); // scale by 0.5 \n"
+		"   vec4 color = m * gl_Color; \n"
+		"   gl_FragColor = color; \n"
+		"} \n",
+		{ 0.5 * PRIMARY_R, 0.5 * PRIMARY_G,
+		  0.5 * PRIMARY_B, 0.5 * PRIMARY_A },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"matrix multiply test 2",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 color = gl_TextureMatrix[1] * gl_Color; \n"
+		"   gl_FragColor = color; \n"
+		"} \n",
+		{ 0.2745, 0.9255, 0.7294, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"matrix multiply test 3",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 color = gl_Color * gl_TextureMatrix[1]; \n"
+		"   gl_FragColor = color; \n"
+		"} \n",
+		{ 0.925, 0.925, 0.6999, .5750 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Preprocessor tests ================================================
 	{
 		"Preprocessor test (1)",
@@ -1454,6 +1610,24 @@ GLSLTest::setupTextures(void)
 }
 
 
+void
+GLSLTest::setupTextureMatrix1(void)
+{
+	// This matrix is used by some of the general matrix tests
+	static const GLfloat m[16] = {
+		1.0, 0.5, 0.6, 0.0,  // col 0
+		0.0, 1.0, 0.0, 0.7,  // col 1
+		0.0, 0.0, 1.0, 0.8,  // col 2
+		0.1, 0.2, 0.3, 1.0   // col 3
+	};
+	glMatrixMode(GL_TEXTURE);
+	glActiveTexture(GL_TEXTURE1);
+	glLoadMatrixf(m);
+	glActiveTexture(GL_TEXTURE0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+
 bool
 GLSLTest::setup(void)
 {
@@ -1470,6 +1644,7 @@ GLSLTest::setup(void)
 	}
 
 	setupTextures();
+	setupTextureMatrix1();
 
 	// load program inputs
 	glColor4fv(PrimaryColor);
