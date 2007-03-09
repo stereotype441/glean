@@ -38,9 +38,6 @@ namespace GLEAN {
 
 #define windowSize 100
 
-// to indicate a looser tolerance test is needed
-#define FLAG_NONE   0
-#define FLAG_LOOSE  1
 
 class ShaderProgram
 {

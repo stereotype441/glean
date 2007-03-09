@@ -74,8 +74,10 @@ static PFNGLVERTEXATTRIB3FPROC glVertexAttrib3f_func = NULL;
 static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 
 
+#define FLAG_NONE   0
+#define FLAG_LOOSE  1 // to indicate a looser tolerance test is needed
+
 #define DONT_CARE_Z -1.0
-#define DONT_CARE_COLOR -1.0
 
 #define NO_VERTEX_SHADER NULL
 #define NO_FRAGMENT_SHADER NULL
@@ -1507,6 +1509,31 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"uniform matrix",
+		NO_VERTEX_SHADER,
+		"uniform mat4 uniformMat4; \n"
+		"void main() { \n"
+		"   gl_FragColor = uniformMat4[3]; \n"
+		"} \n",
+		{ 0.6, 0.7, 0.8, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"uniform matrix, transposed",
+		NO_VERTEX_SHADER,
+		"uniform mat4 uniformMat4t; \n"
+		"void main() { \n"
+		"   gl_FragColor = uniformMat4t[2]; \n"
+		"} \n",
+		{ 0.2, 0.0, 1.0, 0.8 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	// Vectors, booleans =================================================
+	{
 		"vector relational (1)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -2022,10 +2049,10 @@ GLSLTest::equalColors(const GLfloat act[4], const GLfloat exp[4], int flags) con
                 tol = looseTolerance;
         else
                 tol = tolerance;
-	if ((fabsf(act[0] - exp[0]) > tol[0] && exp[0] != DONT_CARE_COLOR) ||
-	    (fabsf(act[1] - exp[1]) > tol[1] && exp[1] != DONT_CARE_COLOR) ||
-	    (fabsf(act[2] - exp[2]) > tol[2] && exp[2] != DONT_CARE_COLOR) ||
-	    (fabsf(act[3] - exp[3]) > tol[3] && exp[3] != DONT_CARE_COLOR))
+	if ((fabsf(act[0] - exp[0]) > tol[0]) ||
+	    (fabsf(act[1] - exp[1]) > tol[1]) ||
+	    (fabsf(act[2] - exp[2]) > tol[2]) ||
+	    (fabsf(act[3] - exp[3]) > tol[3]))
 		return false;
 	else
 		return true;
@@ -2071,9 +2098,15 @@ GLSLTest::loadAndCompileShader(GLenum target, const char *str)
 bool
 GLSLTest::testProgram(const ShaderProgram &p)
 {
+	static const GLfloat uniformMatrix[16] = {
+		1.0, 0.1, 0.2, 0.3,  // col 0
+		0.0, 1.0, 0.0, 0.4,  // col 1
+		0.0, 1.0, 1.0, 0.5,  // col 2
+		0.6, 0.7, 0.8, 1.0   // col 3
+	};
 	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
 	GLuint fragShader = 0, vertShader = 0, program;
-	GLint u1, utex1d, utex2d, utex3d;
+	GLint u1, utex1d, utex2d, utex3d, umat4, umat4t;
 
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
@@ -2129,6 +2162,14 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	utex3d = glGetUniformLocation_func(program, "tex3d");
 	if (utex3d >= 0)
 		glUniform1i_func(utex3d, 0);  // bind to tex unit 0
+
+	umat4 = glGetUniformLocation_func(program, "uniformMat4");
+	if (umat4 >= 0)
+		glUniformMatrix4fv_func(umat4, 1, GL_FALSE, uniformMatrix);
+
+	umat4t = glGetUniformLocation_func(program, "uniformMat4t");
+	if (umat4t >= 0)
+		glUniformMatrix4fv_func(umat4t, 1, GL_TRUE, uniformMatrix);
 
 
 	// to avoid potential issue with undefined result.depth.z
