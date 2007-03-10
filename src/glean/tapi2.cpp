@@ -59,11 +59,22 @@ static PFNGLISPROGRAMPROC glIsProgram_func = NULL;
 static PFNGLISSHADERPROC glIsShader_func = NULL;
 static PFNGLLINKPROGRAMPROC glLinkProgram_func = NULL;
 static PFNGLSHADERSOURCEPROC glShaderSource_func = NULL;
-static PFNGLUNIFORM1IPROC glUniform1i_func = NULL;
 static PFNGLUNIFORM1FVPROC glUniform1fv_func = NULL;
 static PFNGLUNIFORM2FVPROC glUniform2fv_func = NULL;
 static PFNGLUNIFORM3FVPROC glUniform3fv_func = NULL;
 static PFNGLUNIFORM4FVPROC glUniform4fv_func = NULL;
+static PFNGLUNIFORM1FPROC glUniform1f_func = NULL;
+static PFNGLUNIFORM2FPROC glUniform2f_func = NULL;
+static PFNGLUNIFORM3FPROC glUniform3f_func = NULL;
+static PFNGLUNIFORM4FPROC glUniform4f_func = NULL;
+static PFNGLUNIFORM1IPROC glUniform1i_func = NULL;
+static PFNGLUNIFORM2IPROC glUniform2i_func = NULL;
+static PFNGLUNIFORM3IPROC glUniform3i_func = NULL;
+static PFNGLUNIFORM4IPROC glUniform4i_func = NULL;
+static PFNGLUNIFORM1IVPROC glUniform1iv_func = NULL;
+static PFNGLUNIFORM2IVPROC glUniform2iv_func = NULL;
+static PFNGLUNIFORM3IVPROC glUniform3iv_func = NULL;
+static PFNGLUNIFORM4IVPROC glUniform4iv_func = NULL;
 static PFNGLUNIFORMMATRIX2FVPROC glUniformMatrix2fv_func = NULL;
 static PFNGLUNIFORMMATRIX3FVPROC glUniformMatrix3fv_func = NULL;
 static PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv_func = NULL;
@@ -165,8 +176,17 @@ API2Test::getFunctions_2_0(void)
 	glShaderSource_func = (PFNGLSHADERSOURCEPROC) GLUtils::getProcAddress("glShaderSource");
 	if (!glShaderSource_func)
 		return false;
-	glUniform1i_func = (PFNGLUNIFORM1IPROC) GLUtils::getProcAddress("glUniform1i");
-	if (!glUniform1i_func)
+	glUniform1f_func = (PFNGLUNIFORM1FPROC) GLUtils::getProcAddress("glUniform1f");
+	if (!glUniform1f_func)
+		return false;
+	glUniform2f_func = (PFNGLUNIFORM2FPROC) GLUtils::getProcAddress("glUniform2f");
+	if (!glUniform2f_func)
+		return false;
+	glUniform3f_func = (PFNGLUNIFORM3FPROC) GLUtils::getProcAddress("glUniform3f");
+	if (!glUniform3f_func)
+		return false;
+	glUniform4f_func = (PFNGLUNIFORM4FPROC) GLUtils::getProcAddress("glUniform4f");
+	if (!glUniform4f_func)
 		return false;
 	glUniform1fv_func = (PFNGLUNIFORM1FVPROC) GLUtils::getProcAddress("glUniform1fv");
 	if (!glUniform1fv_func)
@@ -179,6 +199,30 @@ API2Test::getFunctions_2_0(void)
 		return false;
 	glUniform4fv_func = (PFNGLUNIFORM3FVPROC) GLUtils::getProcAddress("glUniform4fv");
 	if (!glUniform4fv_func)
+		return false;
+	glUniform1i_func = (PFNGLUNIFORM1IPROC) GLUtils::getProcAddress("glUniform1i");
+	if (!glUniform1i_func)
+		return false;
+	glUniform2i_func = (PFNGLUNIFORM2IPROC) GLUtils::getProcAddress("glUniform2i");
+	if (!glUniform2i_func)
+		return false;
+	glUniform3i_func = (PFNGLUNIFORM3IPROC) GLUtils::getProcAddress("glUniform3i");
+	if (!glUniform3i_func)
+		return false;
+	glUniform4i_func = (PFNGLUNIFORM4IPROC) GLUtils::getProcAddress("glUniform4i");
+	if (!glUniform4i_func)
+		return false;
+	glUniform1iv_func = (PFNGLUNIFORM1IVPROC) GLUtils::getProcAddress("glUniform1iv");
+	if (!glUniform1iv_func)
+		return false;
+	glUniform2iv_func = (PFNGLUNIFORM2IVPROC) GLUtils::getProcAddress("glUniform2iv");
+	if (!glUniform2iv_func)
+		return false;
+	glUniform3iv_func = (PFNGLUNIFORM3IVPROC) GLUtils::getProcAddress("glUniform3iv");
+	if (!glUniform3iv_func)
+		return false;
+	glUniform4iv_func = (PFNGLUNIFORM4IVPROC) GLUtils::getProcAddress("glUniform4iv");
+	if (!glUniform4iv_func)
 		return false;
 	glUniformMatrix2fv_func = (PFNGLUNIFORMMATRIX2FVPROC) GLUtils::getProcAddress("glUniformMatrix2fv");
 	if (!glUniformMatrix2fv_func)
@@ -335,6 +379,26 @@ API2Test::equalDepth(GLfloat z0, GLfloat z1) const
 }
 
 
+// Render test quad w/ current shader program, return RGBA color of quad
+void
+API2Test::renderQuad(GLfloat *pixel) const
+{
+	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBegin(GL_POLYGON);
+	glTexCoord2f(0, 0);  glVertex2f(-r, -r);
+	glTexCoord2f(1, 0);  glVertex2f( r, -r);
+	glTexCoord2f(1, 1);  glVertex2f( r,  r);
+	glTexCoord2f(0, 1);  glVertex2f(-r,  r);
+	glEnd();
+
+	// read a pixel from lower-left corder of rendered quad
+	glReadPixels(windowSize / 2 - 2, windowSize / 2 - 2, 1, 1,
+		     GL_RGBA, GL_FLOAT, pixel);
+}
+
+
 GLuint
 API2Test::loadAndCompileShader(GLenum target, const char *text)
 {
@@ -452,6 +516,198 @@ API2Test::testShaderObjectFuncs(void)
 
 	return true;
 }
+
+
+bool
+API2Test::testUniformfFuncs(void)
+{
+	static const char *fragShaderText =
+		"uniform float uf1; \n"
+		"uniform vec2 uf2; \n"
+		"uniform vec3 uf3; \n"
+		"uniform vec4 uf4; \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(uf1, uf2.y, uf3.z, uf4.w); \n"
+		"} \n";
+	GLuint fragShader, program;
+	GLint uf1, uf2, uf3, uf4;
+
+	fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER, fragShaderText);
+	if (!fragShader) {
+		return false;
+	}
+	program = glCreateProgram_func();
+	if (!fragShader) {
+		reportFailure("glCreateProgram (uniform test) failed");
+		return false;
+	}
+	glAttachShader_func(program, fragShader);
+	glLinkProgram_func(program);
+	glUseProgram_func(program);
+
+	uf1 = glGetUniformLocation_func(program, "uf1");
+	if (uf1 < 0) {
+		reportFailure("glGetUniform \"uf1\" failed");
+		return false;
+	}
+	uf2 = glGetUniformLocation_func(program, "uf2");
+	if (uf2 < 0) {
+		reportFailure("glGetUniform \"uf2\" failed");
+		return false;
+	}
+	uf3 = glGetUniformLocation_func(program, "uf3");
+	if (uf3 < 0) {
+		reportFailure("glGetUniform \"uf3\" failed");
+		return false;
+	}
+	uf4 = glGetUniformLocation_func(program, "uf4");
+	if (uf4 < 0) {
+		reportFailure("glGetUniform \"uf4\" failed");
+		return false;
+	}
+
+	GLfloat pixel[4], expected[4];
+
+	// Test glUniform[1234]f()
+	expected[0] = 0.1;
+	expected[1] = 0.2;
+	expected[2] = 0.3;
+	expected[3] = 0.4;
+	glUniform1f(uf1, expected[0]);
+	glUniform2f(uf2, 0.0, expected[1]);
+	glUniform3f(uf3, 0.0, 0.0, expected[2]);
+	glUniform4f(uf4, 0.0, 0.0, 0.0, expected[3]);
+	renderQuad(pixel);
+	if (!equalColors(pixel, expected, 0)) {
+		reportFailure("glUniform[1234]f failed");
+		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
+		return false;
+	}
+
+	// Test glUniform[1234]fv()
+	GLfloat u[4];
+	expected[0] = 0.9;
+	expected[1] = 0.8;
+	expected[2] = 0.7;
+	expected[3] = 0.6;
+	u[0] = expected[0];
+	glUniform1fv(uf1, 1, u);
+	u[0] = 0.0;  u[1] = expected[1];
+	glUniform2fv(uf2, 1, u);
+	u[0] = 0.0;  u[1] = 0.0;  u[2] = expected[2];
+	glUniform3fv(uf3, 1, u);
+	u[0] = 0.0;  u[1] = 0.0;  u[2] = 0.0;  u[3] = expected[3];
+	glUniform4fv(uf4, 1, u);
+	renderQuad(pixel);
+	if (!equalColors(pixel, expected, 0)) {
+		reportFailure("glUniform[1234]f failed");
+		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
+		return false;
+	}
+
+	return true;
+}
+
+
+bool
+API2Test::testUniformiFuncs(void)
+{
+	static const char *fragShaderText =
+		"uniform int ui1; \n"
+		"uniform ivec2 ui2; \n"
+		"uniform ivec3 ui3; \n"
+		"uniform ivec4 ui4; \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(ui1, ui2.y, ui3.z, ui4.w) * 0.1; \n"
+		"} \n";
+	GLuint fragShader, program;
+	GLint ui1, ui2, ui3, ui4;
+
+	fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER, fragShaderText);
+	if (!fragShader) {
+		return false;
+	}
+	program = glCreateProgram_func();
+	if (!fragShader) {
+		reportFailure("glCreateProgram (uniform test) failed");
+		return false;
+	}
+	glAttachShader_func(program, fragShader);
+	glLinkProgram_func(program);
+	glUseProgram_func(program);
+
+	ui1 = glGetUniformLocation_func(program, "ui1");
+	if (ui1 < 0) {
+		reportFailure("glGetUniform \"ui1\" failed");
+		return false;
+	}
+	ui2 = glGetUniformLocation_func(program, "ui2");
+	if (ui2 < 0) {
+		reportFailure("glGetUniform \"ui2\" failed");
+		return false;
+	}
+	ui3 = glGetUniformLocation_func(program, "ui3");
+	if (ui3 < 0) {
+		reportFailure("glGetUniform \"ui3\" failed");
+		return false;
+	}
+	ui4 = glGetUniformLocation_func(program, "ui4");
+	if (ui4 < 0) {
+		reportFailure("glGetUniform \"ui4\" failed");
+		return false;
+	}
+
+	GLfloat pixel[4], expected[4];
+	GLint expectedInt[4];
+
+	// Test glUniform[1234]f()
+	expectedInt[0] = 1;
+	expectedInt[1] = 2;
+	expectedInt[2] = 3;
+	expectedInt[3] = 4;
+	expected[0] = 0.1;
+	expected[1] = 0.2;
+	expected[2] = 0.3;
+	expected[3] = 0.4;
+	glUniform1i(ui1, expectedInt[0]);
+	glUniform2i(ui2, 0, expectedInt[1]);
+	glUniform3i(ui3, 0, 0, expectedInt[2]);
+	glUniform4i(ui4, 0, 0, 0, expectedInt[3]);
+	renderQuad(pixel);
+	if (!equalColors(pixel, expected, 0)) {
+		reportFailure("glUniform[1234]i failed");
+		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
+		return false;
+	}
+
+	// Test glUniform[1234]fv()
+	GLint u[4];
+	expectedInt[0] = 9;
+	expectedInt[1] = 8;
+	expectedInt[2] = 7;
+	expectedInt[3] = 6;
+	expected[0] = 0.9;
+	expected[1] = 0.8;
+	expected[2] = 0.7;
+	expected[3] = 0.6;
+	u[0] = expectedInt[0];
+	glUniform1iv(ui1, 1, u);
+	u[0] = 0;  u[1] = expectedInt[1];
+	glUniform2iv(ui2, 1, u);
+	u[0] = 0;  u[1] = 0;  u[2] = expectedInt[2];
+	glUniform3iv(ui3, 1, u);
+	u[0] = 0;  u[1] = 0;  u[2] = 0;  u[3] = expectedInt[3];
+	glUniform4iv(ui4, 1, u);
+	renderQuad(pixel);
+	if (!equalColors(pixel, expected, 0)) {
+		reportFailure("glUniform[1234]i failed");
+		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
+		return false;
+	}
+
+	return true;
+}
+
 
 
 bool
@@ -605,6 +861,9 @@ API2Test::testDrawBuffers(void)
 	const int MAX = 8;
 	GLint maxBuf = -1, i, n, val;
 	GLenum buffers[MAX];
+	GLint initDrawBuffer;
+
+	glGetIntegerv(GL_DRAW_BUFFER, &initDrawBuffer);
 
 	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxBuf);
 	if (maxBuf < 1) {
@@ -627,6 +886,9 @@ API2Test::testDrawBuffers(void)
 		}
 	}
 
+	// restore
+	glDrawBuffer(initDrawBuffer);
+
 	return true;
 }
 
@@ -642,6 +904,8 @@ API2Test::runSubTests(MultiTestResult &r)
 		&GLEAN::API2Test::testBlendEquationSeparate,
 		&GLEAN::API2Test::testDrawBuffers,
 		&GLEAN::API2Test::testShaderObjectFuncs,
+		&GLEAN::API2Test::testUniformfFuncs,
+		&GLEAN::API2Test::testUniformiFuncs,
 		NULL
 	};
 
