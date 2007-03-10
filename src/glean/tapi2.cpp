@@ -431,7 +431,8 @@ API2Test::loadAndCompileShader(GLenum target, const char *text)
 		return 0;
 	}
 	glGetShaderiv_func(shader, GL_SHADER_SOURCE_LENGTH, &val);
-	if (val != (int) strlen(text)) {
+        // Note: some OpenGLs return a 1-char shorter length than strlen(text)
+	if (abs(val - (int) strlen(text)) > 1) {
 		reportFailure("glGetShaderiv(GL_SHADER_SOURCE_LENGTH) failed", target);
 		return 0;
 	}
@@ -514,6 +515,20 @@ API2Test::testShaderObjectFuncs(void)
 		return false;
 	}
 
+	glUseProgram_func(0);
+	glDeleteShader_func(vertShader);
+	glGetShaderiv(vertShader, GL_DELETE_STATUS, &stat);
+	if (stat != GL_TRUE) {
+		reportFailure("Incorrect shader delete status)");
+		return false;
+	}
+	glDeleteShader_func(fragShader);
+	glDeleteProgram_func(program);
+	if (glIsProgram(program)) {
+		reportFailure("glIsProgram(deleted program) failed");
+		return false;
+	}
+
 	return true;
 }
 
@@ -531,6 +546,7 @@ API2Test::testUniformfFuncs(void)
 		"} \n";
 	GLuint fragShader, program;
 	GLint uf1, uf2, uf3, uf4;
+	GLfloat value[4];
 
 	fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER, fragShaderText);
 	if (!fragShader) {
@@ -565,6 +581,7 @@ API2Test::testUniformfFuncs(void)
 		reportFailure("glGetUniform \"uf4\" failed");
 		return false;
 	}
+
 
 	GLfloat pixel[4], expected[4];
 
@@ -601,7 +618,17 @@ API2Test::testUniformfFuncs(void)
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected, 0)) {
 		reportFailure("glUniform[1234]f failed");
-		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
+		return false;
+	}
+
+	// Test glGetUniformfv
+	glUniform4fv(uf4, 1, expected);
+	glGetUniformfv(program, uf4, value);
+	if (value[0] != expected[0] ||
+	    value[1] != expected[1] ||
+	    value[2] != expected[2] ||
+	    value[3] != expected[3]) {
+		reportFailure("glGetUniformfv failed");
 		return false;
 	}
 
