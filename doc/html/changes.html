@@ -28,6 +28,8 @@ descriptions.
 Added the following new tests:
 </P>
 <UL>
+<LI>api2 - test the OpenGL 2.0 API functions, most of which are related to
+the OpenGL shading language. (Brian Paul)</LI>
 <LI>glsl1 - test the OpenGL shading language (the language itself and many
   built-in functions).  Requires OpenGL 2.0 or later.
   Over 100 sub-tests are performed. (Brian Paul)</LI>
@@ -40,7 +42,8 @@ glDrawPixels). (Brian Paul)</LI>
 <LI>fragProg1 - basic test of each ARB fragment program instruction (Brian Paul)</LI>
 <LI>vertProg1 - basic test of each ARB vertex program instruction (Brian Paul)</LI>
 <LI>depthStencil - test the GL_EXT_packed_depth_stencil extension (Brian Paul)</LI>
-<LI>fpexceptions - generates a number of floating point exceptions, shouldn't crash (Keith Whitwell and Brian Paul)</LI>
+<LI>fpexceptions - generates a number of floating point exceptions.
+These should not cause OpenGL to crash. (Keith Whitwell and Brian Paul)</LI>
 <LI>pointAtten - test point size attenuation with GL_ARB_point_parameters (Brian Paul)</LI>
 <LI>vertAttrib - test aliasing/non-aliasing behaviour of per-vertex calls (Brian Paul)</LI>
 </UL>
