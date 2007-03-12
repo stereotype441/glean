@@ -55,7 +55,7 @@ private:
 
 	GLfloat tolerance[5];
 	GLfloat looseTolerance[5];
-        bool getFunctions_2_0(void);
+        bool getFunctions_2_0(char **errorFunc);
 
         GLuint loadAndCompileShader(GLenum target, const char *str);
         GLuint createProgram(GLuint vertShader, GLuint fragShader);

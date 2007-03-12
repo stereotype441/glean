@@ -117,177 +117,79 @@ static const GLfloat Uniform1[4] = UNIFORM1;
 
 
 // Get ptrs to 2.0 API functions.
+// \param errorFunc  returns name of API function in case of error
+// \return true for success, false for error
 bool
-API2Test::getFunctions_2_0(void)
+API2Test::getFunctions_2_0(char **errorFunc)
 {
+#define GET(PTR, TYPE, STR)                          \
+	PTR  = (TYPE) GLUtils::getProcAddress(STR);  \
+	if (!PTR) {				     \
+		*errorFunc = STR;                    \
+		return false;                        \
+        }
+
 	// shading language
-	glAttachShader_func = (PFNGLATTACHSHADERPROC) GLUtils::getProcAddress("glAttachShader");
-	if (!glAttachShader_func)
-		return false;
-	glBindAttribLocation_func = (PFNGLBINDATTRIBLOCATIONPROC) GLUtils::getProcAddress("glBindAttribLocation");
-	if (!glBindAttribLocation_func)
-		return false;
-	glCompileShader_func = (PFNGLCOMPILESHADERPROC) GLUtils::getProcAddress("glCompileShader");
-	if (!glCompileShader_func)
-		return false;
-	glCreateProgram_func = (PFNGLCREATEPROGRAMPROC) GLUtils::getProcAddress("glCreateProgram");
-	if (!glCreateProgram_func)
-		return false;
-	glCreateShader_func = (PFNGLCREATESHADERPROC) GLUtils::getProcAddress("glCreateShader");
-	if (!glCreateShader_func)
-		return false;
-	glDeleteProgram_func = (PFNGLDELETEPROGRAMPROC) GLUtils::getProcAddress("glDeleteProgram");
-	if (!glDeleteProgram_func)
-		return false;
-	glDeleteShader_func = (PFNGLDELETESHADERPROC) GLUtils::getProcAddress("glDeleteShader");
-	if (!glDeleteShader_func)
-		return false;
-	glDisableVertexAttribArray_func = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) GLUtils::getProcAddress("glDisableVertexAttribArray");
-	if (!glDisableVertexAttribArray_func)
-		return false;
-	glEnableVertexAttribArray_func = (PFNGLENABLEVERTEXATTRIBARRAYPROC) GLUtils::getProcAddress("glEnableVertexAttribArray");
-	if (!glEnableVertexAttribArray_func)
-		return false;
-	glGetAttachedShaders_func = (PFNGLGETATTACHEDSHADERSPROC) GLUtils::getProcAddress("glGetAttachedShaders");
-	if (!glGetAttachedShaders_func)
-		return false;
-	glGetAttribLocation_func = (PFNGLGETATTRIBLOCATIONPROC) GLUtils::getProcAddress("glGetAttribLocation");
-	if (!glGetAttribLocation_func)
-		return false;
-	glGetProgramInfoLog_func = (PFNGLGETPROGRAMINFOLOGPROC) GLUtils::getProcAddress("glGetProgramInfoLog");
-	if (!glGetProgramInfoLog_func)
-		return false;
-	glGetShaderInfoLog_func = (PFNGLGETSHADERINFOLOGPROC) GLUtils::getProcAddress("glGetShaderInfoLog");
-	if (!glGetShaderInfoLog_func)
-		return false;
-	glGetProgramiv_func = (PFNGLGETPROGRAMIVPROC) GLUtils::getProcAddress("glGetProgramiv");
-	if (!glGetProgramiv_func)
-		return false;
-	glGetShaderiv_func = (PFNGLGETSHADERIVPROC) GLUtils::getProcAddress("glGetShaderiv");
-	if (!glGetShaderiv_func)
-		return false;
-	glGetShaderSource_func = (PFNGLGETSHADERSOURCEPROC) GLUtils::getProcAddress("glGetShaderSource");
-	if (!glGetShaderSource_func)
-		return false;
-	glGetUniformLocation_func = (PFNGLGETUNIFORMLOCATIONPROC) GLUtils::getProcAddress("glGetUniformLocation");
-	if (!glGetUniformLocation_func)
-		return false;
-	glGetUniformfv_func = (PFNGLGETUNIFORMFVPROC) GLUtils::getProcAddress("glGetUniformfv");
-	if (!glGetUniformfv_func)
-		return false;
-	glIsProgram_func = (PFNGLISPROGRAMPROC) GLUtils::getProcAddress("glIsProgram");
-	if (!glIsProgram_func)
-		return false;
-	glIsShader_func = (PFNGLISSHADERPROC) GLUtils::getProcAddress("glIsShader");
-	if (!glIsShader_func)
-		return false;
-	glLinkProgram_func = (PFNGLLINKPROGRAMPROC) GLUtils::getProcAddress("glLinkProgram");
-	if (!glLinkProgram_func)
-		return false;
-	glShaderSource_func = (PFNGLSHADERSOURCEPROC) GLUtils::getProcAddress("glShaderSource");
-	if (!glShaderSource_func)
-		return false;
-	glUniform1f_func = (PFNGLUNIFORM1FPROC) GLUtils::getProcAddress("glUniform1f");
-	if (!glUniform1f_func)
-		return false;
-	glUniform2f_func = (PFNGLUNIFORM2FPROC) GLUtils::getProcAddress("glUniform2f");
-	if (!glUniform2f_func)
-		return false;
-	glUniform3f_func = (PFNGLUNIFORM3FPROC) GLUtils::getProcAddress("glUniform3f");
-	if (!glUniform3f_func)
-		return false;
-	glUniform4f_func = (PFNGLUNIFORM4FPROC) GLUtils::getProcAddress("glUniform4f");
-	if (!glUniform4f_func)
-		return false;
-	glUniform1fv_func = (PFNGLUNIFORM1FVPROC) GLUtils::getProcAddress("glUniform1fv");
-	if (!glUniform1fv_func)
-		return false;
-	glUniform2fv_func = (PFNGLUNIFORM2FVPROC) GLUtils::getProcAddress("glUniform2fv");
-	if (!glUniform2fv_func)
-		return false;
-	glUniform3fv_func = (PFNGLUNIFORM3FVPROC) GLUtils::getProcAddress("glUniform3fv");
-	if (!glUniform3fv_func)
-		return false;
-	glUniform4fv_func = (PFNGLUNIFORM3FVPROC) GLUtils::getProcAddress("glUniform4fv");
-	if (!glUniform4fv_func)
-		return false;
-	glUniform1i_func = (PFNGLUNIFORM1IPROC) GLUtils::getProcAddress("glUniform1i");
-	if (!glUniform1i_func)
-		return false;
-	glUniform2i_func = (PFNGLUNIFORM2IPROC) GLUtils::getProcAddress("glUniform2i");
-	if (!glUniform2i_func)
-		return false;
-	glUniform3i_func = (PFNGLUNIFORM3IPROC) GLUtils::getProcAddress("glUniform3i");
-	if (!glUniform3i_func)
-		return false;
-	glUniform4i_func = (PFNGLUNIFORM4IPROC) GLUtils::getProcAddress("glUniform4i");
-	if (!glUniform4i_func)
-		return false;
-	glUniform1iv_func = (PFNGLUNIFORM1IVPROC) GLUtils::getProcAddress("glUniform1iv");
-	if (!glUniform1iv_func)
-		return false;
-	glUniform2iv_func = (PFNGLUNIFORM2IVPROC) GLUtils::getProcAddress("glUniform2iv");
-	if (!glUniform2iv_func)
-		return false;
-	glUniform3iv_func = (PFNGLUNIFORM3IVPROC) GLUtils::getProcAddress("glUniform3iv");
-	if (!glUniform3iv_func)
-		return false;
-	glUniform4iv_func = (PFNGLUNIFORM4IVPROC) GLUtils::getProcAddress("glUniform4iv");
-	if (!glUniform4iv_func)
-		return false;
-	glUniformMatrix2fv_func = (PFNGLUNIFORMMATRIX2FVPROC) GLUtils::getProcAddress("glUniformMatrix2fv");
-	if (!glUniformMatrix2fv_func)
-		return false;
-	glUniformMatrix3fv_func = (PFNGLUNIFORMMATRIX3FVPROC) GLUtils::getProcAddress("glUniformMatrix3fv");
-	if (!glUniformMatrix3fv_func)
-		return false;
-	glUniformMatrix4fv_func = (PFNGLUNIFORMMATRIX4FVPROC) GLUtils::getProcAddress("glUniformMatrix4fv");
-	if (!glUniformMatrix4fv_func)
-		return false;
-	glUseProgram_func = (PFNGLUSEPROGRAMPROC) GLUtils::getProcAddress("glUseProgram");
-	if (!glUseProgram_func)
-		return false;
-	glValidateProgram_func = (PFNGLVALIDATEPROGRAMPROC) GLUtils::getProcAddress("glValidateProgram");
-	if (!glValidateProgram_func)
-		return false;
-
-	glVertexAttrib1f_func = (PFNGLVERTEXATTRIB1FPROC) GLUtils::getProcAddress("glVertexAttrib1f");
-	if (!glVertexAttrib1f_func)
-		return false;
-	glVertexAttrib2f_func = (PFNGLVERTEXATTRIB2FPROC) GLUtils::getProcAddress("glVertexAttrib2f");
-	if (!glVertexAttrib2f_func)
-		return false;
-	glVertexAttrib3f_func = (PFNGLVERTEXATTRIB3FPROC) GLUtils::getProcAddress("glVertexAttrib3f");
-	if (!glVertexAttrib3f_func)
-		return false;
-	glVertexAttrib4f_func = (PFNGLVERTEXATTRIB4FPROC) GLUtils::getProcAddress("glVertexAttrib4f");
-	if (!glVertexAttrib4f_func)
-		return false;
-
-	glVertexAttribPointer_func = (PFNGLVERTEXATTRIBPOINTERPROC) GLUtils::getProcAddress("glVertexAttribPointer");
-	if (!glVertexAttribPointer_func)
-		return false;
+	GET(glAttachShader_func, PFNGLATTACHSHADERPROC, "glAttachShader");
+	GET(glBindAttribLocation_func, PFNGLBINDATTRIBLOCATIONPROC, "glBindAttribLocation");
+	GET(glCompileShader_func, PFNGLCOMPILESHADERPROC, "glCompileShader");
+	GET(glCreateProgram_func, PFNGLCREATEPROGRAMPROC, "glCreateProgram");
+	GET(glCreateShader_func, PFNGLCREATESHADERPROC, "glCreateShader");
+	GET(glDeleteProgram_func, PFNGLDELETEPROGRAMPROC, "glDeleteProgram");
+	GET(glDeleteShader_func, PFNGLDELETESHADERPROC, "glDeleteShader");
+	GET(glDisableVertexAttribArray_func, PFNGLDISABLEVERTEXATTRIBARRAYPROC, "glDisableVertexAttribArray");
+	GET(glEnableVertexAttribArray_func, PFNGLENABLEVERTEXATTRIBARRAYPROC, "glEnableVertexAttribArray");
+	GET(glGetAttachedShaders_func, PFNGLGETATTACHEDSHADERSPROC, "glGetAttachedShaders");
+	GET(glGetAttribLocation_func, PFNGLGETATTRIBLOCATIONPROC, "glGetAttribLocation");
+	GET(glGetProgramInfoLog_func, PFNGLGETPROGRAMINFOLOGPROC, "glGetProgramInfoLog");
+	GET(glGetShaderInfoLog_func, PFNGLGETSHADERINFOLOGPROC, "glGetShaderInfoLog");
+	GET(glGetProgramiv_func, PFNGLGETPROGRAMIVPROC, "glGetProgramiv");
+	GET(glGetShaderiv_func, PFNGLGETSHADERIVPROC, "glGetShaderiv");
+	GET(glGetShaderSource_func, PFNGLGETSHADERSOURCEPROC, "glGetShaderSource");
+	GET(glGetUniformLocation_func, PFNGLGETUNIFORMLOCATIONPROC, "glGetUniformLocation");
+	GET(glGetUniformfv_func, PFNGLGETUNIFORMFVPROC, "glGetUniformfv");
+	GET(glIsProgram_func, PFNGLISPROGRAMPROC, "glIsProgram");
+	GET(glIsShader_func, PFNGLISSHADERPROC, "glIsShader");
+	GET(glLinkProgram_func, PFNGLLINKPROGRAMPROC, "glLinkProgram");
+	GET(glShaderSource_func, PFNGLSHADERSOURCEPROC, "glShaderSource");
+	GET(glUniform1f_func, PFNGLUNIFORM1FPROC, "glUniform1f");
+	GET(glUniform2f_func, PFNGLUNIFORM2FPROC, "glUniform2f");
+	GET(glUniform3f_func, PFNGLUNIFORM3FPROC, "glUniform3f");
+	GET(glUniform4f_func, PFNGLUNIFORM4FPROC, "glUniform4f");
+	GET(glUniform1fv_func, PFNGLUNIFORM1FVPROC, "glUniform1fv");
+	GET(glUniform2fv_func, PFNGLUNIFORM2FVPROC, "glUniform2fv");
+	GET(glUniform3fv_func, PFNGLUNIFORM3FVPROC, "glUniform3fv");
+	GET(glUniform4fv_func, PFNGLUNIFORM3FVPROC, "glUniform4fv");
+	GET(glUniform1i_func, PFNGLUNIFORM1IPROC, "glUniform1i");
+	GET(glUniform2i_func, PFNGLUNIFORM2IPROC, "glUniform2i");
+	GET(glUniform3i_func, PFNGLUNIFORM3IPROC, "glUniform3i");
+	GET(glUniform4i_func, PFNGLUNIFORM4IPROC, "glUniform4i");
+	GET(glUniform1iv_func, PFNGLUNIFORM1IVPROC, "glUniform1iv");
+	GET(glUniform2iv_func, PFNGLUNIFORM2IVPROC, "glUniform2iv");
+	GET(glUniform3iv_func, PFNGLUNIFORM3IVPROC, "glUniform3iv");
+	GET(glUniform4iv_func, PFNGLUNIFORM4IVPROC, "glUniform4iv");
+	GET(glUniformMatrix2fv_func, PFNGLUNIFORMMATRIX2FVPROC, "glUniformMatrix2fv");
+	GET(glUniformMatrix3fv_func, PFNGLUNIFORMMATRIX3FVPROC, "glUniformMatrix3fv");
+	GET(glUniformMatrix4fv_func, PFNGLUNIFORMMATRIX4FVPROC, "glUniformMatrix4fv");
+	GET(glUseProgram_func, PFNGLUSEPROGRAMPROC, "glUseProgram");
+	GET(glValidateProgram_func, PFNGLVALIDATEPROGRAMPROC, "glValidateProgram");
+	GET(glVertexAttrib1f_func, PFNGLVERTEXATTRIB1FPROC, "glVertexAttrib1f");
+	GET(glVertexAttrib2f_func, PFNGLVERTEXATTRIB2FPROC, "glVertexAttrib2f");
+	GET(glVertexAttrib3f_func, PFNGLVERTEXATTRIB3FPROC, "glVertexAttrib3f");
+	GET(glVertexAttrib4f_func, PFNGLVERTEXATTRIB4FPROC, "glVertexAttrib4f");
+	GET(glVertexAttribPointer_func, PFNGLVERTEXATTRIBPOINTERPROC, "glVertexAttribPointer");
 
 	// stencil
-	glStencilOpSeparate_func = (PFNGLSTENCILOPSEPARATEPROC) GLUtils::getProcAddress("glStencilOpSeparate");
-	if (!glStencilOpSeparate_func)
-		return false;
-	glStencilFuncSeparate_func = (PFNGLSTENCILFUNCSEPARATEPROC) GLUtils::getProcAddress("glStencilFuncSeparate");
-	if (!glStencilFuncSeparate_func)
-		return false;
-	glStencilMaskSeparate_func = (PFNGLSTENCILMASKSEPARATEPROC) GLUtils::getProcAddress("glStencilMaskSeparate");
-	if (!glStencilMaskSeparate_func)
-		return false;
+	GET(glStencilOpSeparate_func, PFNGLSTENCILOPSEPARATEPROC, "glStencilOpSeparate");
+	GET(glStencilFuncSeparate_func, PFNGLSTENCILFUNCSEPARATEPROC, "glStencilFuncSeparate");
+	GET(glStencilMaskSeparate_func, PFNGLSTENCILMASKSEPARATEPROC, "glStencilMaskSeparate");
 
-	glBlendEquationSeparate_func = (PFNGLBLENDEQUATIONSEPARATEPROC) GLUtils::getProcAddress("glBlendEquationSeparate");
-	if (!glBlendEquationSeparate_func)
-		return false;
-
-	glDrawBuffers_func = (PFNGLDRAWBUFFERSPROC) GLUtils::getProcAddress("glDrawBuffers");
-	if (!glDrawBuffers_func)
-		return false;
+	// misc
+	GET(glBlendEquationSeparate_func, PFNGLBLENDEQUATIONSEPARATEPROC, "glBlendEquationSeparate");
+	GET(glDrawBuffers_func, PFNGLDRAWBUFFERSPROC, "glDrawBuffers");
 
 	return true;
+#undef GET
 }
 
 
@@ -301,8 +203,11 @@ API2Test::setup(void)
 		return false;
 	}
 
-	if (!getFunctions_2_0()) {
-		env->log << "Unable to get pointer to an OpenGL 2.0 API function\n";
+	char *errorFunc;
+	if (!getFunctions_2_0(&errorFunc)) {
+		env->log << "Unable to get pointer to OpenGL 2.0 function '"
+			 << errorFunc
+			 << "'\n";
 		return false;
 	}
 
