@@ -54,7 +54,6 @@ private:
         typedef bool (API2Test::*TestFunc)(void);
 
 	GLfloat tolerance[5];
-	GLfloat looseTolerance[5];
         bool getFunctions_2_0(char **errorFunc);
 
         GLuint loadAndCompileShader(GLenum target, const char *str);
@@ -77,8 +76,7 @@ private:
         void runSubTests(MultiTestResult &r);
 
 	bool setup(void);
-	bool equalColors(const GLfloat a[4], const GLfloat b[4], int flags) const;
-	bool equalDepth(GLfloat z0, GLfloat z1) const;
+	bool equalColors(const GLfloat a[4], const GLfloat b[4]) const;
 
 	void reportFailure(const char *msg) const;
 	void reportFailure(const char *msg, GLenum target) const;

@@ -97,24 +97,6 @@ static PFNGLBLENDEQUATIONSEPARATEPROC glBlendEquationSeparate_func = NULL;
 static PFNGLDRAWBUFFERSPROC glDrawBuffers_func = NULL;
 
 
-#define FLAG_LOOSE 0x1
-#define DONT_CARE_COLOR -1.0
-
-#define PRIMARY_R 0.25
-#define PRIMARY_G 0.75
-#define PRIMARY_B 0.5
-#define PRIMARY_A 0.25
-
-#define UNIFORM1 {1.0, 0.25, 0.75, 0.0 }  // don't change!
-
-
-static const GLfloat PrimaryColor[4] = { PRIMARY_R, PRIMARY_G,
-					 PRIMARY_B, PRIMARY_A };
-
-static const GLfloat Uniform1[4] = UNIFORM1;
-
-
-
 
 // Get ptrs to 2.0 API functions.
 // \param errorFunc  returns name of API function in case of error
@@ -211,9 +193,6 @@ API2Test::setup(void)
 		return false;
 	}
 
-	// load program inputs
-	glColor4fv(PrimaryColor);
-
 	GLenum err = glGetError();
 	assert(!err);  // should be OK
 
@@ -246,11 +225,6 @@ API2Test::setup(void)
 	else
 		tolerance[4] = 1.0;
 
-        // Some tests request a looser tolerance:
-        // XXX a factor of 4 may be too much...
-        for (int i = 0; i < 5; i++)
-                looseTolerance[i] = 4.0 * tolerance[i];
-
 	return true;
 }
 
@@ -260,6 +234,7 @@ API2Test::reportFailure(const char *msg) const
 {
 	env->log << "FAILURE: " << msg << "\n";
 }
+
 
 void
 API2Test::reportFailure(const char *msg, GLenum target) const
@@ -273,30 +248,14 @@ API2Test::reportFailure(const char *msg, GLenum target) const
 }
 
 
-
 // Compare actual and expected colors
 bool
-API2Test::equalColors(const GLfloat act[4], const GLfloat exp[4], int flags) const
+API2Test::equalColors(const GLfloat act[4], const GLfloat exp[4]) const
 {
-        const GLfloat *tol;
-        if (flags & FLAG_LOOSE)
-                tol = looseTolerance;
-        else
-                tol = tolerance;
-	if ((fabsf(act[0] - exp[0]) > tol[0] && exp[0] != DONT_CARE_COLOR) ||
-	    (fabsf(act[1] - exp[1]) > tol[1] && exp[1] != DONT_CARE_COLOR) ||
-	    (fabsf(act[2] - exp[2]) > tol[2] && exp[2] != DONT_CARE_COLOR) ||
-	    (fabsf(act[3] - exp[3]) > tol[3] && exp[3] != DONT_CARE_COLOR))
-		return false;
-	else
-		return true;
-}
-
-
-bool
-API2Test::equalDepth(GLfloat z0, GLfloat z1) const
-{
-	if (fabsf(z0 - z1) > tolerance[4])
+	if ((fabsf(act[0] - exp[0]) > tolerance[0]) ||
+            (fabsf(act[1] - exp[1]) > tolerance[1]) ||
+            (fabsf(act[2] - exp[2]) > tolerance[2]) ||
+            (fabsf(act[3] - exp[3]) > tolerance[3]))
 		return false;
 	else
 		return true;
@@ -572,7 +531,7 @@ API2Test::testUniformfFuncs(void)
 	glUniform3f(uf3, 0.0, 0.0, expected[2]);
 	glUniform4f(uf4, 0.0, 0.0, 0.0, expected[3]);
 	renderQuad(pixel);
-	if (!equalColors(pixel, expected, 0)) {
+	if (!equalColors(pixel, expected)) {
 		reportFailure("glUniform[1234]f failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
@@ -593,7 +552,7 @@ API2Test::testUniformfFuncs(void)
 	u[0] = 0.0;  u[1] = 0.0;  u[2] = 0.0;  u[3] = expected[3];
 	glUniform4fv(uf4, 1, u);
 	renderQuad(pixel);
-	if (!equalColors(pixel, expected, 0)) {
+	if (!equalColors(pixel, expected)) {
 		reportFailure("glUniform[1234]f failed");
 		return false;
 	}
@@ -676,7 +635,7 @@ API2Test::testUniformiFuncs(void)
 	glUniform3i(ui3, 0, 0, expectedInt[2]);
 	glUniform4i(ui4, 0, 0, 0, expectedInt[3]);
 	renderQuad(pixel);
-	if (!equalColors(pixel, expected, 0)) {
+	if (!equalColors(pixel, expected)) {
 		reportFailure("glUniform[1234]i failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
@@ -701,7 +660,7 @@ API2Test::testUniformiFuncs(void)
 	u[0] = 0;  u[1] = 0;  u[2] = 0;  u[3] = expectedInt[3];
 	glUniform4iv(ui4, 1, u);
 	renderQuad(pixel);
-	if (!equalColors(pixel, expected, 0)) {
+	if (!equalColors(pixel, expected)) {
 		reportFailure("glUniform[1234]i failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
@@ -748,7 +707,7 @@ API2Test::testShaderAttribs(void)
 	for (int i = 0; i < 3; i++) {
 		GLfloat pixel[4];
 		renderQuadWithArrays(attr, testColors[i], pixel);
-		if (!equalColors(pixel, testColors[i], 0)) {
+		if (!equalColors(pixel, testColors[i])) {
 			reportFailure("Vertex array test failed");
 			return false;
 		}
@@ -766,7 +725,7 @@ API2Test::testShaderAttribs(void)
 	for (int i = 0; i < 3; i++) {
 		GLfloat pixel[4];
 		renderQuadWithArrays(bindAttr, testColors[i], pixel);
-		if (!equalColors(pixel, testColors[i], 0)) {
+		if (!equalColors(pixel, testColors[i])) {
 			reportFailure("Vertex array test failed (2)");
 			return false;
 		}
