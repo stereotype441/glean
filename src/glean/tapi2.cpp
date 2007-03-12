@@ -828,22 +828,41 @@ API2Test::testShaderAttribs(void)
 	}
 	glUseProgram_func(program);
 
-	const GLint attr = glGetAttribLocation(program, "generic");
-	if (attr < 0) {
-		reportFailure("glGetAttribLocation failed");
-		return false;
-	}
-
 	static const GLfloat testColors[3][4] = {
 		{ 1.0, 0.5, 0.25, 0.0 },
 		{ 0.0, 0.1, 0.2,  0.3 },
 		{ 0.5, 0.6, 0.7,  0.8 },
 	};
+
+	// let compiler allocate the attribute location
+	const GLint attr = glGetAttribLocation_func(program, "generic");
+	if (attr < 0) {
+		reportFailure("glGetAttribLocation failed");
+		return false;
+	}
 	for (int i = 0; i < 3; i++) {
 		GLfloat pixel[4];
 		renderQuadWithArrays(attr, testColors[i], pixel);
 		if (!equalColors(pixel, testColors[i], 0)) {
-			reportFailure("Vertex array test  failed");
+			reportFailure("Vertex array test failed");
+			return false;
+		}
+	}
+
+	// Test explicit attribute binding.
+	const GLint bindAttr = 6;  // XXX a non-colliding alias
+	glBindAttribLocation_func(program, bindAttr, "generic");
+	glLinkProgram_func(program);
+	GLint loc = glGetAttribLocation_func(program, "generic");
+	if (loc != bindAttr) {
+		reportFailure("glBindAttribLocation failed");
+		return false;
+	}
+	for (int i = 0; i < 3; i++) {
+		GLfloat pixel[4];
+		renderQuadWithArrays(bindAttr, testColors[i], pixel);
+		if (!equalColors(pixel, testColors[i], 0)) {
+			reportFailure("Vertex array test failed (2)");
 			return false;
 		}
 	}
