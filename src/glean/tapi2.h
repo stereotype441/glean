@@ -58,7 +58,11 @@ private:
         bool getFunctions_2_0(void);
 
         GLuint loadAndCompileShader(GLenum target, const char *str);
+        GLuint createProgram(GLuint vertShader, GLuint fragShader);
+
         void renderQuad(GLfloat *pixel) const;
+        void renderQuadWithArrays(GLint attr, const GLfloat value[4],
+                                  GLfloat *pixel) const;
 
         bool testStencilFuncSeparate(void);
         bool testStencilOpSeparate(void);
@@ -68,6 +72,7 @@ private:
         bool testShaderObjectFuncs(void);
         bool testUniformfFuncs(void);
         bool testUniformiFuncs(void);
+        bool testShaderAttribs(void);
 
         void runSubTests(MultiTestResult &r);
 

@@ -46,6 +46,8 @@ static PFNGLCREATEPROGRAMPROC glCreateProgram_func = NULL;
 static PFNGLCREATESHADERPROC glCreateShader_func = NULL;
 static PFNGLDELETEPROGRAMPROC glDeleteProgram_func = NULL;
 static PFNGLDELETESHADERPROC glDeleteShader_func = NULL;
+static PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray_func = NULL;
+static PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray_func = NULL;
 static PFNGLGETATTACHEDSHADERSPROC glGetAttachedShaders_func = NULL;
 static PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation_func = NULL;
 static PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog_func = NULL;
@@ -79,10 +81,13 @@ static PFNGLUNIFORMMATRIX2FVPROC glUniformMatrix2fv_func = NULL;
 static PFNGLUNIFORMMATRIX3FVPROC glUniformMatrix3fv_func = NULL;
 static PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv_func = NULL;
 static PFNGLUSEPROGRAMPROC glUseProgram_func = NULL;
+static PFNGLVALIDATEPROGRAMPROC glValidateProgram_func = NULL;
+
 static PFNGLVERTEXATTRIB1FPROC glVertexAttrib1f_func = NULL;
 static PFNGLVERTEXATTRIB2FPROC glVertexAttrib2f_func = NULL;
 static PFNGLVERTEXATTRIB3FPROC glVertexAttrib3f_func = NULL;
 static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
+static PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer_func = NULL;
 
 static PFNGLSTENCILOPSEPARATEPROC glStencilOpSeparate_func = NULL;
 static PFNGLSTENCILFUNCSEPARATEPROC glStencilFuncSeparate_func = NULL;
@@ -136,6 +141,12 @@ API2Test::getFunctions_2_0(void)
 		return false;
 	glDeleteShader_func = (PFNGLDELETESHADERPROC) GLUtils::getProcAddress("glDeleteShader");
 	if (!glDeleteShader_func)
+		return false;
+	glDisableVertexAttribArray_func = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) GLUtils::getProcAddress("glDisableVertexAttribArray");
+	if (!glDisableVertexAttribArray_func)
+		return false;
+	glEnableVertexAttribArray_func = (PFNGLENABLEVERTEXATTRIBARRAYPROC) GLUtils::getProcAddress("glEnableVertexAttribArray");
+	if (!glEnableVertexAttribArray_func)
 		return false;
 	glGetAttachedShaders_func = (PFNGLGETATTACHEDSHADERSPROC) GLUtils::getProcAddress("glGetAttachedShaders");
 	if (!glGetAttachedShaders_func)
@@ -236,6 +247,10 @@ API2Test::getFunctions_2_0(void)
 	glUseProgram_func = (PFNGLUSEPROGRAMPROC) GLUtils::getProcAddress("glUseProgram");
 	if (!glUseProgram_func)
 		return false;
+	glValidateProgram_func = (PFNGLVALIDATEPROGRAMPROC) GLUtils::getProcAddress("glValidateProgram");
+	if (!glValidateProgram_func)
+		return false;
+
 	glVertexAttrib1f_func = (PFNGLVERTEXATTRIB1FPROC) GLUtils::getProcAddress("glVertexAttrib1f");
 	if (!glVertexAttrib1f_func)
 		return false;
@@ -247,6 +262,10 @@ API2Test::getFunctions_2_0(void)
 		return false;
 	glVertexAttrib4f_func = (PFNGLVERTEXATTRIB4FPROC) GLUtils::getProcAddress("glVertexAttrib4f");
 	if (!glVertexAttrib4f_func)
+		return false;
+
+	glVertexAttribPointer_func = (PFNGLVERTEXATTRIBPOINTERPROC) GLUtils::getProcAddress("glVertexAttribPointer");
+	if (!glVertexAttribPointer_func)
 		return false;
 
 	// stencil
@@ -399,6 +418,44 @@ API2Test::renderQuad(GLfloat *pixel) const
 }
 
 
+// As above, but use vertex arrays
+// \param attr  which vertex attribute array to put colors into
+// \param value  4-component valut to put into the attribute array
+// \param pixel  returns the rendered color obtained with glReadPixels
+void
+API2Test::renderQuadWithArrays(GLint attr, const GLfloat value[4],
+			       GLfloat *pixel) const
+{
+	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
+	static const GLfloat vertcoords[4][3] = {
+		{ -r, -r, 0 }, {  r, -r, 0 }, {  r,  r, 0 }, { -r,  r, 0 }
+	};
+	GLfloat values[4][4];
+	GLint i;
+	for (i = 0; i < 4; i++) {
+		values[i][0] = value[0];
+		values[i][1] = value[1];
+		values[i][2] = value[2];
+		values[i][3] = value[3];
+	};
+
+	glVertexPointer(3, GL_FLOAT, 0, vertcoords);
+	glEnable(GL_VERTEX_ARRAY);
+	glVertexAttribPointer_func(attr, 4, GL_FLOAT, GL_FALSE, 0, values);
+	glEnableVertexAttribArray_func(attr);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_POLYGON, 0, 4);
+
+	glDisable(GL_VERTEX_ARRAY);
+	glDisableVertexAttribArray_func(attr);
+
+	// read a pixel from lower-left corder of rendered quad
+	glReadPixels(windowSize / 2 - 2, windowSize / 2 - 2, 1, 1,
+		     GL_RGBA, GL_FLOAT, pixel);
+}
+
+
 GLuint
 API2Test::loadAndCompileShader(GLenum target, const char *text)
 {
@@ -440,6 +497,19 @@ API2Test::loadAndCompileShader(GLenum target, const char *text)
 }
 
 
+GLuint
+API2Test::createProgram(GLuint vertShader, GLuint fragShader)
+{
+	GLuint program = glCreateProgram_func();
+	if (vertShader)
+		glAttachShader_func(program, vertShader);
+	if (fragShader)
+		glAttachShader_func(program, fragShader);
+	glLinkProgram_func(program);
+	return program;
+}
+
+
 bool
 API2Test::testShaderObjectFuncs(void)
 {
@@ -462,14 +532,11 @@ API2Test::testShaderObjectFuncs(void)
 		return false;
 
 
-	program = glCreateProgram_func();
-	if (!fragShader) {
+	program = createProgram(vertShader, fragShader);
+	if (!program) {
 		reportFailure("glCreateProgram failed");
 		return false;
 	}
-	glAttachShader_func(program, fragShader);
-	glAttachShader_func(program, vertShader);
-	glLinkProgram_func(program);
 	glGetProgramiv_func(program, GL_LINK_STATUS, &stat);
 	if (!stat) {
 		reportFailure("glLinkProgram failed");
@@ -515,11 +582,18 @@ API2Test::testShaderObjectFuncs(void)
 		return false;
 	}
 
+	glValidateProgram_func(program);
+	glGetProgramiv_func(program, GL_VALIDATE_STATUS, &stat);
+	if (!stat) {
+		reportFailure("glValidateProgram failed");
+		return false;
+	}
+
 	glUseProgram_func(0);
 	glDeleteShader_func(vertShader);
 	glGetShaderiv(vertShader, GL_DELETE_STATUS, &stat);
 	if (stat != GL_TRUE) {
-		reportFailure("Incorrect shader delete status)");
+		reportFailure("Incorrect shader delete status");
 		return false;
 	}
 	glDeleteShader_func(fragShader);
@@ -552,13 +626,11 @@ API2Test::testUniformfFuncs(void)
 	if (!fragShader) {
 		return false;
 	}
-	program = glCreateProgram_func();
-	if (!fragShader) {
+	program = createProgram(0, fragShader);
+	if (!program) {
 		reportFailure("glCreateProgram (uniform test) failed");
 		return false;
 	}
-	glAttachShader_func(program, fragShader);
-	glLinkProgram_func(program);
 	glUseProgram_func(program);
 
 	uf1 = glGetUniformLocation_func(program, "uf1");
@@ -654,13 +726,11 @@ API2Test::testUniformiFuncs(void)
 	if (!fragShader) {
 		return false;
 	}
-	program = glCreateProgram_func();
-	if (!fragShader) {
+	program = createProgram(0, fragShader);
+	if (!program) {
 		reportFailure("glCreateProgram (uniform test) failed");
 		return false;
 	}
-	glAttachShader_func(program, fragShader);
-	glLinkProgram_func(program);
 	glUseProgram_func(program);
 
 	ui1 = glGetUniformLocation_func(program, "ui1");
@@ -735,6 +805,51 @@ API2Test::testUniformiFuncs(void)
 	return true;
 }
 
+
+bool
+API2Test::testShaderAttribs(void)
+{
+	static const char *vertShaderText =
+		"attribute vec4 generic; \n"
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   gl_FrontColor = generic; \n"
+		"} \n";
+	GLuint vertShader, program;
+
+	vertShader = loadAndCompileShader(GL_VERTEX_SHADER, vertShaderText);
+	if (!vertShader) {
+		return false;
+	}
+	program = createProgram(vertShader, 0);
+	if (!program) {
+		reportFailure("glCreateProgram (uniform test) failed");
+		return false;
+	}
+	glUseProgram_func(program);
+
+	const GLint attr = glGetAttribLocation(program, "generic");
+	if (attr < 0) {
+		reportFailure("glGetAttribLocation failed");
+		return false;
+	}
+
+	static const GLfloat testColors[3][4] = {
+		{ 1.0, 0.5, 0.25, 0.0 },
+		{ 0.0, 0.1, 0.2,  0.3 },
+		{ 0.5, 0.6, 0.7,  0.8 },
+	};
+	for (int i = 0; i < 3; i++) {
+		GLfloat pixel[4];
+		renderQuadWithArrays(attr, testColors[i], pixel);
+		if (!equalColors(pixel, testColors[i], 0)) {
+			reportFailure("Vertex array test  failed");
+			return false;
+		}
+	}
+
+	return true;
+}
 
 
 bool
@@ -885,9 +1000,9 @@ API2Test::testBlendEquationSeparate(void)
 bool
 API2Test::testDrawBuffers(void)
 {
-	const int MAX = 8;
+	const int MAX = 2;
 	GLint maxBuf = -1, i, n, val;
-	GLenum buffers[MAX];
+	GLenum buffers[MAX], err;
 	GLint initDrawBuffer;
 
 	glGetIntegerv(GL_DRAW_BUFFER, &initDrawBuffer);
@@ -916,6 +1031,12 @@ API2Test::testDrawBuffers(void)
 	// restore
 	glDrawBuffer(initDrawBuffer);
 
+	err = glGetError();
+	if (err) {
+		reportFailure("glDrawBuffers generrated an OpenGL error");
+		return false;
+	}
+
 	return true;
 }
 
@@ -933,6 +1054,7 @@ API2Test::runSubTests(MultiTestResult &r)
 		&GLEAN::API2Test::testShaderObjectFuncs,
 		&GLEAN::API2Test::testUniformfFuncs,
 		&GLEAN::API2Test::testUniformiFuncs,
+		&GLEAN::API2Test::testShaderAttribs,
 		NULL
 	};
 
