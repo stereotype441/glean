@@ -242,6 +242,30 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"Swizzle (rgba)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4(0.5,  0.25, 0.0, 1.0); \n"
+		"   gl_FragColor = a.grrb; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Swizzle (stpq)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4(0.5,  0.25, 0.0, 1.0); \n"
+		"   gl_FragColor = a.tssp; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"Writemask",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -271,6 +295,30 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   gl_FragColor.zy = vec2(1.0, 0.5); \n"
 		"   gl_FragColor.wx = vec2(0.25, 0.75); \n"
+		"} \n",
+		{ 0.75, 0.5, 1.0, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Swizzled writemask (rgba)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor.bg = vec2(1.0, 0.5); \n"
+		"   gl_FragColor.ar = vec2(0.25, 0.75); \n"
+		"} \n",
+		{ 0.75, 0.5, 1.0, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Swizzled writemask (stpq)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor.pt = vec2(1.0, 0.5); \n"
+		"   gl_FragColor.qs = vec2(0.25, 0.75); \n"
 		"} \n",
 		{ 0.75, 0.5, 1.0, 0.25 },
 		DONT_CARE_Z,
