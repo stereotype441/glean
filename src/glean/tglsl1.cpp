@@ -503,6 +503,118 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
+        {
+		"equality (float)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float v = uniform1.x; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.x == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"inequality (float)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float v = uniform1.x; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.y != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"equality (vec2)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.xy; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.xy == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"inequality (vec2)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.yx; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.xy != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"equality (vec3)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec3 v = uniform1.xyz; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.xyz == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"inequality (vec3)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec3 v = uniform1.zyx; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1.xyz != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"equality (vec4)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 v = uniform1; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1 == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+        {
+		"inequality (vec4)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 v = uniform1.zyxw; \n"
+		"   gl_FragColor = vec4(1, 0, 0, 0); // red \n"
+		"   if (uniform1 != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
 
 	// built-in functions ================================================
 	{
