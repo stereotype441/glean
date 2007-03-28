@@ -74,8 +74,9 @@ static PFNGLVERTEXATTRIB3FPROC glVertexAttrib3f_func = NULL;
 static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 
 
-#define FLAG_NONE   0
-#define FLAG_LOOSE  1 // to indicate a looser tolerance test is needed
+#define FLAG_NONE   0x0
+#define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
+#define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
 
 #define DONT_CARE_Z -1.0
 
@@ -1910,7 +1911,6 @@ static const ShaderProgram Programs[] = {
 		{ 0.3, 0.3, 0.3, 0.3 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1926,7 +1926,6 @@ static const ShaderProgram Programs[] = {
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1943,8 +1942,119 @@ static const ShaderProgram Programs[] = {
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
+
+	// Illegal shaders ==================================================
+	{
+		"undefined variable",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 v = u; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"if (boolean/scalar) check",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 v; \n"
+		"   if (v) { \n"
+		"   } \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"break with no loop",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   break; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"continue with no loop",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   continue; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"illegal assignment",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float x = main; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"syntax error check (1)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float x = ; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"syntax error check (2)",
+		NO_VERTEX_SHADER,
+		"main() { \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+	{
+		"syntax error check (3)",
+		NO_VERTEX_SHADER,
+		"main() { \n"
+		"   float x = 1.0 2.0; \n"
+		"   gl_FragColor = vec4(0.5); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
+#if 0
+	// todo: link-time test:
+	{
+		"gl_Position not written check",
+		"void main() { \n"
+		"   gl_FrontColor = vec4(0.3); \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+#endif
 
 	{ NULL, NULL, NULL, {0,0,0,0}, 0, FLAG_NONE } // end of list sentinal
 };
@@ -2303,11 +2413,10 @@ GLSLTest::reportZFailure(const char *programName,
 				  GLfloat expectedZ, GLfloat actualZ) const
 {
 	env->log << "FAILURE:\n";
-	env->log << "  Program: " << programName << "\n";
+	env->log << "  Shader test: " << programName << "\n";
 	env->log << "  Expected Z: " << expectedZ << "\n";
 	env->log << "  Observed Z: " << actualZ << "\n";
 }
-
 
 
 // Compare actual and expected colors
@@ -2342,26 +2451,50 @@ GLSLTest::equalDepth(GLfloat z0, GLfloat z1) const
 GLuint
 GLSLTest::loadAndCompileShader(GLenum target, const char *str)
 {
-	GLint stat;
 	GLuint shader;
-
 	shader = glCreateShader_func(target);
 	glShaderSource_func(shader, 1,
 			    (const GLchar **) &str, NULL);
 	glCompileShader_func(shader);
+	return shader;
+}
+
+
+// Check the compile status of the just compiled shader.
+// If the outcome is unexpected, report an error.
+bool
+GLSLTest::checkCompileStatus(GLenum target, GLuint shader,
+			     const ShaderProgram &p)
+{
+	GLint stat;
+	GLchar infoLog[1000];
+	GLsizei len;
+
 	glGetShaderiv_func(shader, GL_COMPILE_STATUS, &stat);
 	if (!stat) {
-		GLchar log[1000];
-		GLsizei len;
-		glGetShaderInfoLog_func(shader, 1000, &len, log);
-		if (target == GL_FRAGMENT_SHADER)
-			env->log << "Fragment Shader error: ";
-		else
-			env->log << "Vertex Shader error: ";
-		env->log << log;
-		return 0;
+		glGetShaderInfoLog_func(shader, 1000, &len, infoLog);
+		// env->log << infoLog << "\n";
 	}
-	return shader;
+
+	if (!stat && (p.flags & FLAG_ILLEGAL_SHADER) == 0) {
+		// this _should_ have compiled
+		env->log << "FAILURE:\n";
+		env->log << "  Shader test: " << p.name << "\n";
+		if (target == GL_FRAGMENT_SHADER)
+			env->log << "Fragment shader did not compile:\n";
+		else
+			env->log << "Vertex shader did not compile:\n";
+		env->log << infoLog;
+		return false;
+	}
+	else if (stat && (p.flags & FLAG_ILLEGAL_SHADER)) {
+		// this should _not_ have compiled!
+		env->log << "FAILURE:\n";
+		env->log << "  Shader test: " << p.name << "\n";
+		env->log << "  Shader should not have compiled, but it did.\n";
+		return false;
+	}
+	return true;
 }
 
 
@@ -2381,14 +2514,23 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
 						  p.fragShaderString);
+		if (!checkCompileStatus(GL_FRAGMENT_SHADER, fragShader, p))
+			return false;
 	}
 	if (p.vertShaderString) {
 		vertShader = loadAndCompileShader(GL_VERTEX_SHADER,
 						  p.vertShaderString);
+		if (!checkCompileStatus(GL_VERTEX_SHADER, vertShader, p))
+			return false;
 	}
 	if (!fragShader && !vertShader) {
 		// must have had a compilation errror
 		return false;
+	}
+
+	if (p.flags & FLAG_ILLEGAL_SHADER) {
+		// don't render/test
+		return true;
 	}
 
 	program = glCreateProgram_func();

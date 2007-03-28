@@ -73,6 +73,8 @@ private:
 	bool equalColors(const GLfloat a[4], const GLfloat b[4], int flags) const;
 	bool equalDepth(GLfloat z0, GLfloat z1) const;
         GLuint loadAndCompileShader(GLenum target, const char *str);
+        bool checkCompileStatus(GLenum target, GLuint shader,
+                                const ShaderProgram &p);
 	bool testProgram(const ShaderProgram &p);
 	void reportFailure(const char *programName,
                            const GLfloat expectedColor[4],
