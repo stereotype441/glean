@@ -503,211 +503,6 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-        {
-		"equality (float, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   float v = uniform1.x; \n"
-		"   if (uniform1.x == v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (float, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   if (uniform1.x == 99.0) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (float, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   float v = uniform1.x; \n"
-		"   if (uniform1.y != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (float, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   float v = uniform1.x; \n"
-		"   if (uniform1.x != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec2, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec2 v = uniform1.xy; \n"
-		"   if (uniform1.xy == v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec2, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec2 v = uniform1.xy; \n"
-		"   if (v == vec2(99.0)) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec2, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec2 v = uniform1.yx; \n"
-		"   if (uniform1.xy != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec2, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec2 v = uniform1.xy; \n"
-		"   if (uniform1.xy != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec3, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec3 v = uniform1.xyz; \n"
-		"   if (uniform1.xyz == v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec3, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   if (uniform1.xyz == vec3(99.0)) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec3, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec3 v = uniform1.zyx; \n"
-		"   if (uniform1.xyz != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec3, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec3 v = uniform1.xyz; \n"
-		"   if (uniform1.xyz != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec4, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec4 v = uniform1; \n"
-		"   if (uniform1 == v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"equality (vec4, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   if (uniform1 == vec4(99.0)) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec4, pass)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec4 v = uniform1.zyxw; \n"
-		"   if (uniform1 != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 1.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
-        {
-		"inequality (vec4, fail)",
-		NO_VERTEX_SHADER,
-		"uniform vec4 uniform1; \n"
-		"void main() { \n"
-		"   vec4 v = uniform1.xyzw; \n"
-		"   if (uniform1 != v) \n"
-		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
-		"} \n",
-		{ 0.0, 0.0, 0.0, 0.0 },
-		DONT_CARE_Z,
-		FLAG_NONE
-        },
 
 	// built-in functions ================================================
 	{
@@ -1012,6 +807,20 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"simple if statement (scalar test)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   float x = 1.0; \n"
+		"   if (x) { \n"
+		"      gl_FragColor = vec4(0.5, 0.0, 0.5, 0.0); \n"
+		"   } \n"
+		"} \n",
+		{ 0.5, 0.0, 0.5, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"simple if/else statement",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
@@ -1173,6 +982,214 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor.w = ar[3]; \n"
 		"} \n",
 		{ 0.5, 1.0, 0.25, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	// Equality/inequality tests==========================================
+	{
+		"equality (float, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float v = uniform1.x; \n"
+		"   if (uniform1.x == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (float, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   if (uniform1.x == 99.0) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (float, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float v = uniform1.x; \n"
+		"   if (uniform1.y != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (float, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float v = uniform1.x; \n"
+		"   if (uniform1.x != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (vec2, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.xy; \n"
+		"   if (uniform1.xy == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (vec2, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.xy; \n"
+		"   if (v == vec2(99.0)) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec2, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.yx; \n"
+		"   if (uniform1.xy != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec2, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 v = uniform1.xy; \n"
+		"   if (uniform1.xy != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (vec3, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec3 v = uniform1.xyz; \n"
+		"   if (uniform1.xyz == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (vec3, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   if (uniform1.xyz == vec3(99.0)) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec3, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec3 v = uniform1.zyx; \n"
+		"   if (uniform1.xyz != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec3, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec3 v = uniform1.xyz; \n"
+		"   if (uniform1.xyz != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"equality (vec4, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 v = uniform1; \n"
+		"   if (uniform1 == v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"equality (vec4, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   if (uniform1 == vec4(99.0)) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec4, pass)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 v = uniform1.zyxw; \n"
+		"   if (uniform1 != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"inequality (vec4, fail)",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 v = uniform1.xyzw; \n"
+		"   if (uniform1 != v) \n"
+		"      gl_FragColor = vec4(0, 1, 0, 0); // green \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
