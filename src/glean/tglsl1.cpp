@@ -1318,6 +1318,57 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"! (not) operator (1, pass)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   bool b = gl_FragCoord.x < 0.0; \n"
+		"   if (!b) { \n"
+		"      gl_FragColor = vec4(0.5); \n"
+		"   } \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"! (not) operator (1, fail)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   bool b = gl_FragCoord.x > 0.0; \n"
+		"   if (!b) { \n"
+		"      gl_FragColor = vec4(0.5); \n"
+		"   } \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"! (not) operator (2, pass)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   if (!(gl_FragCoord.x < 0.0)) { \n"
+		"      gl_FragColor = vec4(0.5); \n"
+		"   } \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+	{
+		"! (not) operator (2, fail)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   if (!(gl_FragCoord.x > 0.0)) { \n"
+		"      gl_FragColor = vec4(0.5); \n"
+		"   } \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Uniform & Varying vars ============================================
 	{
 		"uniform variable (fragment shader)",
