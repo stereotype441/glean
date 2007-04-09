@@ -73,10 +73,14 @@ static PFNGLVERTEXATTRIB2FPROC glVertexAttrib2f_func = NULL;
 static PFNGLVERTEXATTRIB3FPROC glVertexAttrib3f_func = NULL;
 static PFNGLVERTEXATTRIB4FPROC glVertexAttrib4f_func = NULL;
 
+static PFNGLUNIFORMMATRIX2X4FVPROC glUniformMatrix2x4fv_func = NULL;
+static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
+
 
 #define FLAG_NONE   0x0
 #define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
 #define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
+#define FLAG_VERSION_2_1    0x4  // OpenGL 2.1 test
 
 #define DONT_CARE_Z -1.0
 
@@ -1854,6 +1858,56 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"uniform matrix 2x4",
+		NO_VERTEX_SHADER,
+		"uniform mat2x4 uniformMat2x4; \n"
+		"void main() { \n"
+		"   gl_FragColor = uniformMat2x4[0]; \n"
+		"} \n",
+		{ 0.0, 0.1, 0.2, 0.3 },  // first column of 2x4 matrix
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
+	{
+		"uniform matrix 2x4, transposed",
+		NO_VERTEX_SHADER,
+		"uniform mat2x4 uniformMat2x4t; \n"
+		"void main() { \n"
+		"   gl_FragColor = uniformMat2x4t[0]; \n"
+		"} \n",
+		{ 0.0, 0.2, 0.4, 0.6 },  // first row of 4x2 matrix
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
+	{
+		"uniform matrix 4x3",
+		NO_VERTEX_SHADER,
+		"uniform mat4x3 uniformMat4x3; \n"
+		"void main() { \n"
+		"   gl_FragColor.xyz = uniformMat4x3[1]; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.3, 0.4, 0.5, 1.0 },  // second column of 4x3 matrix
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
+	{
+		"uniform matrix 4x3, transposed",
+		NO_VERTEX_SHADER,
+		"uniform mat4x3 uniformMat4x3t; \n"
+		"void main() { \n"
+		"   gl_FragColor.xyz = uniformMat4x3t[1]; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.1, 0.5, 0.9, 0.5 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
 	// Vectors, booleans =================================================
 	{
 		"vector relational (1)",
@@ -2216,6 +2270,14 @@ GLSLTest::getFunctions(void)
 	if (!glVertexAttrib4f_func)
 		return false;
 
+        /* 2.1 */
+	glUniformMatrix2x4fv_func = (PFNGLUNIFORMMATRIX2X4FVPROC) GLUtils::getProcAddress("glUniformMatrix2x4fv");
+	if (!glUniformMatrix2x4fv_func)
+		return false;
+	glUniformMatrix4x3fv_func = (PFNGLUNIFORMMATRIX4X3FVPROC) GLUtils::getProcAddress("glUniformMatrix4x3fv");
+	if (!glUniformMatrix4x3fv_func)
+		return false;
+
 	return true;
 }
 
@@ -2368,11 +2430,15 @@ bool
 GLSLTest::setup(void)
 {
 	// check that we have OpenGL 2.0
-	const char *version = (const char *) glGetString(GL_VERSION);
-	if (version[0] != '2' || version[1] != '.') {
-		env->log << "OpenGL 2.0 not supported\n";
+	const char *verString = (const char *) glGetString(GL_VERSION);
+	if (verString[0] != '2' || verString[1] != '.') {
+		env->log << "OpenGL 2.x not supported\n";
 		return false;
 	}
+	if (verString[2] >= '1')
+		version21 = GL_TRUE;  // update when needed
+	else
+		version21 = GL_FALSE;  // play it safe
 
 	if (!getFunctions()) {
 		env->log << "Unable to get pointer to an OpenGL 2.0 API function\n";
@@ -2558,9 +2624,20 @@ GLSLTest::testProgram(const ShaderProgram &p)
 		0.0, 1.0, 1.0, 0.5,  // col 2
 		0.6, 0.7, 0.8, 1.0   // col 3
 	};
+	static const GLfloat uniformMatrix2x4[8] = {
+		0.0, 0.1, 0.2, 0.3,  // col 0
+		0.4, 0.5, 0.6, 0.7   // col 1
+	};
+	static const GLfloat uniformMatrix4x3[12] = {
+		0.0, 0.1, 0.2,  // col 0
+		0.3, 0.4, 0.5,  // col 1
+		0.6, 0.7, 0.8,  // col 2
+		0.9, 1.0, 0.0   // col 3
+	};
 	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
 	GLuint fragShader = 0, vertShader = 0, program;
 	GLint u1, utex1d, utex2d, utex3d, umat4, umat4t;
+	GLint umat2x4, umat2x4t, umat4x3, umat4x3t;
 
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
@@ -2634,6 +2711,22 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	if (umat4t >= 0)
 		glUniformMatrix4fv_func(umat4t, 1, GL_TRUE, uniformMatrix);
 
+	umat2x4 = glGetUniformLocation_func(program, "uniformMat2x4");
+	if (umat2x4 >= 0)
+		glUniformMatrix2x4fv_func(umat2x4, 1, GL_FALSE, uniformMatrix2x4);
+
+	umat2x4t = glGetUniformLocation_func(program, "uniformMat2x4t");
+	if (umat2x4t >= 0)
+		glUniformMatrix2x4fv_func(umat2x4t, 1, GL_TRUE, uniformMatrix2x4);
+
+	umat4x3 = glGetUniformLocation_func(program, "uniformMat4x3");
+	if (umat4x3 >= 0)
+		glUniformMatrix4x3fv_func(umat4x3, 1, GL_FALSE, uniformMatrix4x3);
+
+	umat4x3t = glGetUniformLocation_func(program, "uniformMat4x3t");
+	if (umat4x3t >= 0)
+		glUniformMatrix4x3fv_func(umat4x3t, 1, GL_TRUE, uniformMatrix4x3);
+
 
 	// to avoid potential issue with undefined result.depth.z
 	if (p.expectedZ == DONT_CARE_Z)
@@ -2702,6 +2795,8 @@ GLSLTest::runOne(MultiTestResult &r, Window &w)
 	}
 
 	for (int i = 0; Programs[i].name; i++) {
+		if ((Programs[i].flags & FLAG_VERSION_2_1) && !version21)
+			continue; // skip non-applicable tests
 		if (!testProgram(Programs[i])) {
 			r.numFailed++;
 		}
