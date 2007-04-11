@@ -80,7 +80,7 @@ static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 #define FLAG_NONE   0x0
 #define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
 #define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
-#define FLAG_VERSION_2_1    0x4  // OpenGL 2.1 test
+#define FLAG_VERSION_2_1    0x4  // OpenGL 2.1 test (or GLSL 1.20)
 
 #define DONT_CARE_Z -1.0
 
@@ -815,7 +815,7 @@ static const ShaderProgram Programs[] = {
 		"simple if statement (scalar test)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   float x = 1.0; \n"
+		"   float x = 1.0; \n"
 		"   if (x) { \n"
 		"      gl_FragColor = vec4(0.5, 0.0, 0.5, 0.0); \n"
 		"   } \n"
@@ -832,7 +832,7 @@ static const ShaderProgram Programs[] = {
 		"   // this should always be false \n"
 		"   if (gl_FragCoord.x < 0.0) { \n"
 		"      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); \n"
-                "   } else { \n"
+		"   } else { \n"
 		"      gl_FragColor = vec4(0.5, 0.25, 0.5, 0.0); \n"
 		"   } \n"
 		"} \n",
@@ -1511,8 +1511,8 @@ static const ShaderProgram Programs[] = {
 		"   gl_Position = ftransform(); \n"
 		"   // front color values should all be >= 1.0 \n"
 		"   gl_FrontColor = vec4(gl_MaxLights, gl_MaxClipPlanes,\n"
-                "                        gl_MaxTextureUnits, \n"
-                "                        gl_MaxTextureCoords); \n"
+		"                        gl_MaxTextureUnits, \n"
+		"                        gl_MaxTextureCoords); \n"
 		" ;\n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
@@ -2149,14 +2149,14 @@ static const ShaderProgram Programs[] = {
 		FLAG_ILLEGAL_SHADER
 	},
 
-        // GLSL 1.20 tests ======================================================
+	// GLSL 1.20 tests ======================================================
 	{
 		"mat2x4 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat2x4 m = mat2x4(0.1, 0.2, 0.3, 0.4, \n"
-                "                     0.5, 0.6, 0.7, 0.8); \n"
+		"   mat2x4 m = mat2x4(0.1, 0.2, 0.3, 0.4, \n"
+		"                     0.5, 0.6, 0.7, 0.8); \n"
 		"   gl_FragColor = m[1]; \n"
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
@@ -2166,12 +2166,12 @@ static const ShaderProgram Programs[] = {
 	{
 		"mat4x2 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat4x2 m = mat4x2(0.1, 0.2, \n"
-                "                     0.3, 0.4, \n"
-                "                     0.5, 0.6, \n"
-                "                     0.7, 0.8); \n"
+		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
+		"                     0.3, 0.4, \n"
+		"                     0.5, 0.6, \n"
+		"                     0.7, 0.8); \n"
 		"   gl_FragColor.xy = m[1]; \n"
 		"   gl_FragColor.zw = m[2]; \n"
 		"} \n",
@@ -2182,10 +2182,10 @@ static const ShaderProgram Programs[] = {
 	{
 		"mat2x3 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat2x3 m = mat2x3(0.1, 0.2, 0.3, \n"
-                "                     0.4, 0.5, 0.6); \n"
+		"   mat2x3 m = mat2x3(0.1, 0.2, 0.3, \n"
+		"                     0.4, 0.5, 0.6); \n"
 		"   gl_FragColor.xyz = m[1]; \n"
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
@@ -2196,11 +2196,11 @@ static const ShaderProgram Programs[] = {
 	{
 		"mat3x2 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat3x2 m = mat3x2(0.1, 0.2, \n"
-                "                     0.3, 0.4, \n"
-                "                     0.5, 0.6); \n"
+		"   mat3x2 m = mat3x2(0.1, 0.2, \n"
+		"                     0.3, 0.4, \n"
+		"                     0.5, 0.6); \n"
 		"   gl_FragColor.xy = m[1]; \n"
 		"   gl_FragColor.zw = m[2]; \n"
 		"} \n",
@@ -2211,12 +2211,12 @@ static const ShaderProgram Programs[] = {
 	{
 		"mat4x3 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
-                "                     0.4, 0.5, 0.6, \n"
-                "                     0.7, 0.8, 0.9, \n"
-                "                     1.0, 0.0, 1.0); \n"
+		"   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
+		"                     0.4, 0.5, 0.6, \n"
+		"                     0.7, 0.8, 0.9, \n"
+		"                     1.0, 0.0, 1.0); \n"
 		"   gl_FragColor.xyz = m[1]; \n"
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
@@ -2227,11 +2227,11 @@ static const ShaderProgram Programs[] = {
 	{
 		"mat3x4 construct",
 		NO_VERTEX_SHADER,
-                "#version 120\n"
+		"#version 120\n"
 		"void main() { \n"
-                "   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
-                "                     0.5, 0.6, 0.7, 0.8, \n"
-                "                     0.9, 1.0, 0.0, 1.0);\n"
+		"   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
+		"                     0.5, 0.6, 0.7, 0.8, \n"
+		"                     0.9, 1.0, 0.0, 1.0);\n"
 		"   gl_FragColor = m[1]; \n"
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
@@ -2242,57 +2242,57 @@ static const ShaderProgram Programs[] = {
 	{
 		"vec4 * mat3x4 multiply",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"void main() { \n"
-                "   vec4 v = vec4(0.2, -0.2, 0.4, 0.1); \n"
-                "   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
-                "                     0.5, 0.6, 0.7, 0.8, \n"
-                "                     0.9, 1.0, 0.0, 1.0);\n"
+		"   vec4 v = vec4(0.2, -0.2, 0.4, 0.1); \n"
+		"   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
+		"                     0.5, 0.6, 0.7, 0.8, \n"
+		"                     0.9, 1.0, 0.0, 1.0);\n"
 		"   gl_FragColor.xyz = v * m; \n"
-                "   gl_FragColor.w = 1.0; \n"
+		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
 		{ 0.2 * 0.1 + -0.2 * 0.2 + 0.4 * 0.3 + 0.1 * 0.4,
-                  0.2 * 0.5 + -0.2 * 0.6 + 0.4 * 0.7 + 0.1 * 0.8,
-                  0.2 * 0.9 + -0.2 * 1.0 + 0.4 * 0.0 + 0.1 * 1.0,
-                  1.0 },
+		  0.2 * 0.5 + -0.2 * 0.6 + 0.4 * 0.7 + 0.1 * 0.8,
+		  0.2 * 0.9 + -0.2 * 1.0 + 0.4 * 0.0 + 0.1 * 1.0,
+		  1.0 },
 		DONT_CARE_Z,
 		FLAG_VERSION_2_1
 	},
 	{
 		"vec2 * mat4x2 multiply",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"void main() { \n"
-                "   vec2 v = vec2(0.2, 0.5); \n"
-                "   mat4x2 m = mat4x2(0.1, 0.2, \n"
-                "                     0.3, 0.4, \n"
-                "                     0.5, 0.6, \n"
-                "                     0.7, 0.8); \n"
+		"   vec2 v = vec2(0.2, 0.5); \n"
+		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
+		"                     0.3, 0.4, \n"
+		"                     0.5, 0.6, \n"
+		"                     0.7, 0.8); \n"
 		"   gl_FragColor = v * m; \n"
 		"} \n",
 		{ 0.2 * 0.1 + 0.5 * 0.2,
-                  0.2 * 0.3 + 0.5 * 0.4,
-                  0.2 * 0.5 + 0.5 * 0.6,
-                  0.2 * 0.7 + 0.5 * 0.8 },
+		  0.2 * 0.3 + 0.5 * 0.4,
+		  0.2 * 0.5 + 0.5 * 0.6,
+		  0.2 * 0.7 + 0.5 * 0.8 },
 		DONT_CARE_Z,
 		FLAG_VERSION_2_1
 	},
 	{
 		"vec3 * mat4x3 multiply",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"void main() { \n"
-                "   vec3 v = vec3(0.2, 0.5, 0.1); \n"
-                "   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
-                "                     0.4, 0.5, 0.6, \n"
-                "                     0.7, 0.8, 0.9, \n"
-                "                     1.0, 0.1, 0.2); \n"
+		"   vec3 v = vec3(0.2, 0.5, 0.1); \n"
+		"   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
+		"                     0.4, 0.5, 0.6, \n"
+		"                     0.7, 0.8, 0.9, \n"
+		"                     1.0, 0.1, 0.2); \n"
 		"   gl_FragColor = v * m; \n"
 		"} \n",
 		{ 0.2 * 0.1 + 0.5 * 0.2 + 0.1 * 0.3,
-                  0.2 * 0.4 + 0.5 * 0.5 + 0.1 * 0.6,
-                  0.2 * 0.7 + 0.5 * 0.8 + 0.1 * 0.9,
-                  0.2 * 1.0 + 0.5 * 0.1 + 0.1 * 0.2 },
+		  0.2 * 0.4 + 0.5 * 0.5 + 0.1 * 0.6,
+		  0.2 * 0.7 + 0.5 * 0.8 + 0.1 * 0.9,
+		  0.2 * 1.0 + 0.5 * 0.1 + 0.1 * 0.2 },
 		DONT_CARE_Z,
 		FLAG_VERSION_2_1
 	},
@@ -2300,7 +2300,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"uniform matrix 2x4",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"uniform mat2x4 uniformMat2x4; \n"
 		"void main() { \n"
 		"   gl_FragColor = uniformMat2x4[0]; \n"
@@ -2312,7 +2312,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"uniform matrix 2x4, transposed",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"uniform mat2x4 uniformMat2x4t; \n"
 		"void main() { \n"
 		"   gl_FragColor = uniformMat2x4t[0]; \n"
@@ -2324,7 +2324,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"uniform matrix 4x3",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"uniform mat4x3 uniformMat4x3; \n"
 		"void main() { \n"
 		"   gl_FragColor.xyz = uniformMat4x3[1]; \n"
@@ -2337,7 +2337,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"uniform matrix 4x3, transposed",
 		NO_VERTEX_SHADER,
-                "#version 120 \n"
+		"#version 120 \n"
 		"uniform mat4x3 uniformMat4x3t; \n"
 		"void main() { \n"
 		"   gl_FragColor.xyz = uniformMat4x3t[1]; \n"
@@ -2470,7 +2470,7 @@ GLSLTest::getFunctions(void)
 	if (!glVertexAttrib4f_func)
 		return false;
 
-        /* 2.1 */
+	/* 2.1 */
 	glUniformMatrix2x4fv_func = (PFNGLUNIFORMMATRIX2X4FVPROC) GLUtils::getProcAddress("glUniformMatrix2x4fv");
 	if (!glUniformMatrix2x4fv_func)
 		return false;
@@ -2736,10 +2736,10 @@ GLSLTest::setup(void)
 	else
 		tolerance[4] = 1.0;
 
-        // Some tests request a looser tolerance:
-        // XXX a factor of 4 may be too much...
-        for (int i = 0; i < 5; i++)
-                looseTolerance[i] = 4.0 * tolerance[i];
+	// Some tests request a looser tolerance:
+	// XXX a factor of 4 may be too much...
+	for (int i = 0; i < 5; i++)
+		looseTolerance[i] = 4.0 * tolerance[i];
 
 	return true;
 }
@@ -2779,11 +2779,11 @@ GLSLTest::reportZFailure(const char *programName,
 bool
 GLSLTest::equalColors(const GLfloat act[4], const GLfloat exp[4], int flags) const
 {
-        const GLfloat *tol;
-        if (flags & FLAG_LOOSE)
-                tol = looseTolerance;
-        else
-                tol = tolerance;
+	const GLfloat *tol;
+	if (flags & FLAG_LOOSE)
+		tol = looseTolerance;
+	else
+		tol = tolerance;
 	if ((fabsf(act[0] - exp[0]) > tol[0]) ||
 	    (fabsf(act[1] - exp[1]) > tol[1]) ||
 	    (fabsf(act[2] - exp[2]) > tol[2]) ||
@@ -2990,11 +2990,11 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	glReadPixels(windowSize / 2 - 2, windowSize / 2 - 2, 1, 1,
 		     GL_RGBA, GL_FLOAT, pixel);
 	if (0) // debug
-           printf("%s: Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
-                  p.name,
-                  p.expectedColor[0], p.expectedColor[1],
-                  p.expectedColor[2], p.expectedColor[3], 
-                  pixel[0], pixel[1], pixel[2], pixel[3]);
+		printf("%s: Expect: %.3f %.3f %.3f %.3f  found: %.3f %.3f %.3f %.3f\n",
+		       p.name,
+		       p.expectedColor[0], p.expectedColor[1],
+		       p.expectedColor[2], p.expectedColor[3], 
+		       pixel[0], pixel[1], pixel[2], pixel[3]);
 
 	if (!equalColors(pixel, p.expectedColor, p.flags)) {
 		reportFailure(p.name, p.expectedColor, pixel);
