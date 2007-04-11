@@ -1523,7 +1523,7 @@ static const ShaderProgram Programs[] = {
 
 	// Texture functions ==================================================
 	{
-		"2D Texture lookup",
+		"texture2D()",
 		NO_VERTEX_SHADER,
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
@@ -1536,7 +1536,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"2D Texture lookup, computed coordinate",
+		"texture2D(), computed coordinate",
 		NO_VERTEX_SHADER,
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
@@ -1550,7 +1550,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"2D Texture lookup with bias",
+		"texture2D(), with bias",
 		NO_VERTEX_SHADER,
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
@@ -1579,7 +1579,7 @@ static const ShaderProgram Programs[] = {
 #endif
 
 	{
-		"2D Texture lookup with projection",
+		"texture2DProj()",
 		NO_VERTEX_SHADER,
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
@@ -1594,7 +1594,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"1D Texture lookup",
+		"texture1D()",
 		NO_VERTEX_SHADER,
 		"uniform sampler1D tex1d; \n"
 		"void main() { \n"
@@ -1607,7 +1607,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"3D Texture lookup",
+		"texture3D()",
 		NO_VERTEX_SHADER,
 		"uniform sampler3D tex3d; \n"
 		"void main() { \n"
@@ -1620,7 +1620,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"3D Texture lookup, computed coord",
+		"texture3D(), computed coord",
 		NO_VERTEX_SHADER,
 		"uniform sampler3D tex3d; \n"
 		"void main() { \n"
@@ -2942,14 +2942,27 @@ GLSLTest::runOne(MultiTestResult &r, Window &w)
 		return;
 	}
 
+	// If you just want to run a single sub-test, assign the name to singleTest.
+	const char *singleTest = NULL;
+	if (singleTest) {
+		for (int i = 0; Programs[i].name; i++) {
+			if (strcmp(Programs[i].name, singleTest) == 0) {
+				r.numPassed = testProgram(Programs[i]);
+				r.numFailed = 1 - r.numPassed;
+				return;
+			}
+		}
+		return;
+	}
+
 	for (int i = 0; Programs[i].name; i++) {
 		if ((Programs[i].flags & FLAG_VERSION_2_1) && !version21)
 			continue; // skip non-applicable tests
-		if (!testProgram(Programs[i])) {
-			r.numFailed++;
+		if (testProgram(Programs[i])) {
+			r.numPassed++;
 		}
 		else {
-			r.numPassed++;
+			r.numFailed++;
 		}
 	}
 	r.pass = (r.numFailed == 0);
