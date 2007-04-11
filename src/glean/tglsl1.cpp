@@ -1532,7 +1532,6 @@ static const ShaderProgram Programs[] = {
 		{ 1.0, 0.0, 0.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1546,7 +1545,6 @@ static const ShaderProgram Programs[] = {
 		{ 1.0, 1.0, 1.0, 1.0 },  // upper-right tex color
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1559,7 +1557,6 @@ static const ShaderProgram Programs[] = {
 		{ 0.5, 0.0, 0.0, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 #if 0 // XXX not enabled yet
@@ -1574,7 +1571,6 @@ static const ShaderProgram Programs[] = {
 		{ 0.25, 0.0, 0.0, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 #endif
 
@@ -1590,7 +1586,6 @@ static const ShaderProgram Programs[] = {
 		{ 1.0, 0.0, 0.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1603,7 +1598,6 @@ static const ShaderProgram Programs[] = {
 		{ 1.0, 0.0, 0.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1616,7 +1610,6 @@ static const ShaderProgram Programs[] = {
 		{ 1.0, 0.0, 0.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
-
 	},
 
 	{
@@ -1632,7 +1625,66 @@ static const ShaderProgram Programs[] = {
 		{ 0.0, 0.0, 0.5, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
+	},
 
+	{
+		"shadow2D(): 1",
+		NO_VERTEX_SHADER,
+		"uniform sampler2DShadow texZ; \n"
+		"void main() { \n"
+		"   vec3 coord = vec3(0.1, 0.1, 0.5); \n"
+		"   // shadow map value should be 0.25 \n"
+		"   gl_FragColor = shadow2D(texZ, coord) + vec4(0.25); \n"
+		"   // 0.5 <= 0.25 ? color = 1 : 0\n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"shadow2D(): 2",
+		NO_VERTEX_SHADER,
+		"uniform sampler2DShadow texZ; \n"
+		"void main() { \n"
+		"   vec3 coord = vec3(0.1, 0.1, 0.2); \n"
+		"   // shadow map value should be 0.25 \n"
+		"   gl_FragColor = shadow2D(texZ, coord); \n"
+		"   // 0.2 <= 0.25 ? color = 1 : 0\n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"shadow2D(): 3",
+		NO_VERTEX_SHADER,
+		"uniform sampler2DShadow texZ; \n"
+		"void main() { \n"
+		"   vec3 coord = vec3(0.9, 0.9, 0.95); \n"
+		"   // shadow map value should be 0.75 \n"
+		"   gl_FragColor = shadow2D(texZ, coord) + vec4(0.25); \n"
+		"   // 0.95 <= 0.75 ? color = 1 : 0\n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"shadow2D(): 4",
+		NO_VERTEX_SHADER,
+		"uniform sampler2DShadow texZ; \n"
+		"void main() { \n"
+		"   vec3 coord = vec3(0.9, 0.9, 0.65); \n"
+		"   // shadow map value should be 0.75 \n"
+		"   gl_FragColor = shadow2D(texZ, coord); \n"
+		"   // 0.65 <= 0.75 ? color = 1 : 0\n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
 	},
 
 	// Function calls ====================================================
@@ -2437,8 +2489,21 @@ GLSLTest::setupTextures(void)
 	GLubyte teximage1[8][8][4];
 	GLubyte teximage2[4][4][4];
 	GLubyte teximage3D[16][16][16][4];
+	GLfloat teximageZ[16][16];
 	GLint i, j, k;
+	GLuint obj1D, obj2D, obj3D, objZ;
 
+	glGenTextures(1, &obj1D);
+	glGenTextures(1, &obj2D);
+	glGenTextures(1, &obj3D);
+	glGenTextures(1, &objZ);
+
+	glActiveTexture(GL_TEXTURE0);
+
+	//
+	// 2D texture, w/ mipmap
+	//
+	glBindTexture(GL_TEXTURE_2D, obj2D);
 	//  +-------+-------+
 	//  | blue  | white |
 	//  +-------+-------+
@@ -2519,15 +2584,19 @@ GLSLTest::setupTextures(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-
+	//
 	// 1D texture: just bottom row of the 2D texture
+	//
+	glBindTexture(GL_TEXTURE_1D, obj1D);
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, 16, 0,
 		     GL_RGBA, GL_UNSIGNED_BYTE, teximage0);
 
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	//
 	// 3D texture: 2D texture, depth = 1
+	//
 	for (i = 0; i < 16; i++) {
 		for (j = 0; j < 16; j++) {
 			for (k = 0; k < 16; k++) {
@@ -2547,12 +2616,34 @@ GLSLTest::setupTextures(void)
 			}
 		}
 	}
-
+	glBindTexture(GL_TEXTURE_3D, obj3D);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 16, 16, 16, 0,
 		     GL_RGBA, GL_UNSIGNED_BYTE, teximage3D);
 
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	//
+	// 2D GL_DEPTH_COMPONENT texture (for shadow sampler tests)
+	//
+	for (i = 0; i < 16; i++) {
+		for (j = 0; j < 16; j++) {
+			if (j < 8)
+				teximageZ[i][j] = 0.25;
+			else
+				teximageZ[i][j] = 0.75;
+		}
+	}
+	glActiveTexture(GL_TEXTURE1); // NOTE: Unit 1
+	glBindTexture(GL_TEXTURE_2D, objZ);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 16, 16, 0,
+		     GL_DEPTH_COMPONENT, GL_FLOAT, teximageZ);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_ARB,
+					GL_COMPARE_R_TO_TEXTURE_ARB);
+	
+	glActiveTexture(GL_TEXTURE0);
 }
 
 
@@ -2784,7 +2875,7 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	};
 	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
 	GLuint fragShader = 0, vertShader = 0, program;
-	GLint u1, utex1d, utex2d, utex3d, umat4, umat4t;
+	GLint u1, utex1d, utex2d, utex3d, utexZ, umat4, umat4t;
 	GLint umat2x4, umat2x4t, umat4x3, umat4x3t;
 
 	if (p.fragShaderString) {
@@ -2850,6 +2941,10 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	utex3d = glGetUniformLocation_func(program, "tex3d");
 	if (utex3d >= 0)
 		glUniform1i_func(utex3d, 0);  // bind to tex unit 0
+
+	utexZ = glGetUniformLocation_func(program, "texZ");
+	if (utexZ >= 0)
+		glUniform1i_func(utexZ, 1);  // bind to tex unit 1
 
 	umat4 = glGetUniformLocation_func(program, "uniformMat4");
 	if (umat4 >= 0)
