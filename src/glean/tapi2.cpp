@@ -230,22 +230,27 @@ API2Test::setup(void)
 
 
 void
-API2Test::reportFailure(const char *msg) const
+API2Test::reportFailure(const char *msg, int line) const
 {
-	env->log << "FAILURE: " << msg << "\n";
+	env->log << "FAILURE: " << msg << " (at tapi2.cpp:" << line << ")\n";
 }
 
 
 void
-API2Test::reportFailure(const char *msg, GLenum target) const
+API2Test::reportFailure(const char *msg, GLenum target, int line) const
 {
 	env->log << "FAILURE: " << msg;
 	if (target == GL_FRAGMENT_SHADER)
 		env->log << " (fragment)";
 	else
 		env->log << " (vertex)";
-	env->log << "\n";
+	env->log << " (at tapi2.cpp:" << line << ")\n";
 }
+
+
+
+#define REPORT_FAILURE(MSG) reportFailure(MSG, __LINE__)
+#define REPORT_FAILURE_T(MSG, TARGET) reportFailure(MSG, TARGET, __LINE__)
 
 
 // Compare actual and expected colors
@@ -326,7 +331,7 @@ API2Test::loadAndCompileShader(GLenum target, const char *text)
 	GLint stat, val;
 	GLuint shader = glCreateShader_func(target);
 	if (!shader) {
-		reportFailure("glCreateShader failed (fragment)");
+		REPORT_FAILURE("glCreateShader failed (fragment)");
 		return 0;
 	}
 	glShaderSource_func(shader, 1,
@@ -334,27 +339,27 @@ API2Test::loadAndCompileShader(GLenum target, const char *text)
 	glCompileShader_func(shader);
 	glGetShaderiv_func(shader, GL_COMPILE_STATUS, &stat);
 	if (!stat) {
-		reportFailure("glShaderSource or glCompileShader failed", target);
+		REPORT_FAILURE_T("glShaderSource or glCompileShader failed", target);
 		return 0;
 	}
         if (!glIsShader_func(shader)) {
-		reportFailure("glIsShader failed (fragment)");
+		REPORT_FAILURE("glIsShader failed (fragment)");
 		return false;
 	}
 	glGetShaderiv_func(shader, GL_SHADER_TYPE, &val);
 	if (val != (GLint) target) {
-		reportFailure("glGetShaderiv(GL_SHADER_TYPE) failed", target);
+		REPORT_FAILURE_T("glGetShaderiv(GL_SHADER_TYPE) failed", target);
 		return 0;
 	}
 	glGetShaderiv_func(shader, GL_COMPILE_STATUS, &val);
 	if (val != GL_TRUE) {
-		reportFailure("glGetShaderiv(GL_COMPILE_STATUS) failed", target);
+		REPORT_FAILURE_T("glGetShaderiv(GL_COMPILE_STATUS) failed", target);
 		return 0;
 	}
 	glGetShaderiv_func(shader, GL_SHADER_SOURCE_LENGTH, &val);
         // Note: some OpenGLs return a 1-char shorter length than strlen(text)
 	if (abs(val - (int) strlen(text)) > 1) {
-		reportFailure("glGetShaderiv(GL_SHADER_SOURCE_LENGTH) failed", target);
+		REPORT_FAILURE_T("glGetShaderiv(GL_SHADER_SOURCE_LENGTH) failed", target);
 		return 0;
 	}
 	return shader;
@@ -386,7 +391,7 @@ API2Test::testShaderObjectFuncs(void)
 		"   gl_FragColor = vec4(1.0, 0.5, 0.25, 0.0); \n"
 		"} \n";
 	GLuint vertShader, fragShader, program;
-	GLint stat, val;
+	GLint stat, val, err;
 
 	vertShader = loadAndCompileShader(GL_VERTEX_SHADER, vertShaderText);
 	if (!vertShader)
@@ -398,30 +403,30 @@ API2Test::testShaderObjectFuncs(void)
 
 	program = createProgram(vertShader, fragShader);
 	if (!program) {
-		reportFailure("glCreateProgram failed");
+		REPORT_FAILURE("glCreateProgram failed");
 		return false;
 	}
 	glGetProgramiv_func(program, GL_LINK_STATUS, &stat);
 	if (!stat) {
-		reportFailure("glLinkProgram failed");
+		REPORT_FAILURE("glLinkProgram failed");
 		return false;
 	}
 	glUseProgram_func(program);
 
 	glGetIntegerv(GL_CURRENT_PROGRAM, &val);
 	if (val != (GLint) program) {
-		reportFailure("glGetInteger(GL_CURRENT_PROGRAM) failed");
+		REPORT_FAILURE("glGetInteger(GL_CURRENT_PROGRAM) failed");
 		return false;
 	}
 
-        stat = glGetError();
-        if (stat) {
-		reportFailure("OpenGL error detected in testShaderFuncs");
+        err = glGetError();
+        if (err) {
+		REPORT_FAILURE("OpenGL error detected in testShaderFuncs");
 		return false;
 	}
 
         if (!glIsProgram_func(program)) {
-		reportFailure("glIsProgram failed");
+		REPORT_FAILURE("glIsProgram failed");
 		return false;
 	}
 
@@ -429,41 +434,74 @@ API2Test::testShaderObjectFuncs(void)
 	GLsizei count;
 	glGetProgramiv_func(program, GL_ATTACHED_SHADERS, &val);
 	if (val != 2) {
-		reportFailure("glGetProgramiv(GL_ATTACHED_SHADERS) failed");
+		REPORT_FAILURE("glGetProgramiv(GL_ATTACHED_SHADERS) failed");
 		return false;
 	}
 	glGetAttachedShaders_func(program, 2, &count, objects);
 	if (count != 2) {
-		reportFailure("glGetAttachedShaders failed (wrong count)");
+		REPORT_FAILURE("glGetAttachedShaders failed (wrong count)");
 		return false;
 	}
 	if (objects[0] != vertShader && objects[1] != vertShader) {
-		reportFailure("glGetAttachedShaders failed (vertex shader missing)");
+		REPORT_FAILURE("glGetAttachedShaders failed (vertex shader missing)");
 		return false;
 	}
 	if (objects[0] != fragShader && objects[1] != fragShader) {
-		reportFailure("glGetAttachedShaders failed (fragment shader missing)");
+		REPORT_FAILURE("glGetAttachedShaders failed (fragment shader missing)");
 		return false;
 	}
 
 	glValidateProgram_func(program);
 	glGetProgramiv_func(program, GL_VALIDATE_STATUS, &stat);
 	if (!stat) {
-		reportFailure("glValidateProgram failed");
+		REPORT_FAILURE("glValidateProgram failed");
 		return false;
 	}
 
-	glUseProgram_func(0);
+	// Delete vertex shader
 	glDeleteShader_func(vertShader);
-	glGetShaderiv(vertShader, GL_DELETE_STATUS, &stat);
-	if (stat != GL_TRUE) {
-		reportFailure("Incorrect shader delete status");
+	if (!glIsShader(vertShader)) {
+		// the shader is still attached so the handle should be valid
+		REPORT_FAILURE("glIsShader(deleted shader) failed");
 		return false;
 	}
+	glGetShaderiv(vertShader, GL_DELETE_STATUS, &stat);
+	if (stat != GL_TRUE) {
+		REPORT_FAILURE("Incorrect shader delete status");
+		return false;
+	}
+
+	// Delete fragment shader
 	glDeleteShader_func(fragShader);
+
+	// Delete program object
 	glDeleteProgram_func(program);
-	if (glIsProgram(program)) {
-		reportFailure("glIsProgram(deleted program) failed");
+	if (!glIsProgram(program)) {
+		// the program is still in use so the handle should be valid
+		REPORT_FAILURE("glIsProgram(deleted program) failed");
+		return false;
+	}
+	glGetProgramiv(program, GL_DELETE_STATUS, &stat);
+	if (stat != GL_TRUE) {
+		REPORT_FAILURE("Incorrect program delete status");
+		return false;
+	}
+
+	// now unbind the program
+	glUseProgram_func(0);
+	stat = glIsProgram(program);
+	if (stat) {
+		// the program and handle should have really been deleted now
+		REPORT_FAILURE("glIsProgram(deleted program) failed");
+		return false;
+	}
+
+	glGetProgramiv(program, GL_DELETE_STATUS, &stat);
+	err = glGetError();
+	if (!err) {
+		// the program and handle should have been deleted now
+		// so glGetProgramiv() should have generated an error
+		REPORT_FAILURE("glGetProgramiv(deleted program) failed");
 		return false;
 	}
 
@@ -492,29 +530,29 @@ API2Test::testUniformfFuncs(void)
 	}
 	program = createProgram(0, fragShader);
 	if (!program) {
-		reportFailure("glCreateProgram (uniform test) failed");
+		REPORT_FAILURE("glCreateProgram (uniform test) failed");
 		return false;
 	}
 	glUseProgram_func(program);
 
 	uf1 = glGetUniformLocation_func(program, "uf1");
 	if (uf1 < 0) {
-		reportFailure("glGetUniform \"uf1\" failed");
+		REPORT_FAILURE("glGetUniform \"uf1\" failed");
 		return false;
 	}
 	uf2 = glGetUniformLocation_func(program, "uf2");
 	if (uf2 < 0) {
-		reportFailure("glGetUniform \"uf2\" failed");
+		REPORT_FAILURE("glGetUniform \"uf2\" failed");
 		return false;
 	}
 	uf3 = glGetUniformLocation_func(program, "uf3");
 	if (uf3 < 0) {
-		reportFailure("glGetUniform \"uf3\" failed");
+		REPORT_FAILURE("glGetUniform \"uf3\" failed");
 		return false;
 	}
 	uf4 = glGetUniformLocation_func(program, "uf4");
 	if (uf4 < 0) {
-		reportFailure("glGetUniform \"uf4\" failed");
+		REPORT_FAILURE("glGetUniform \"uf4\" failed");
 		return false;
 	}
 
@@ -532,7 +570,7 @@ API2Test::testUniformfFuncs(void)
 	glUniform4f(uf4, 0.0, 0.0, 0.0, expected[3]);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
-		reportFailure("glUniform[1234]f failed");
+		REPORT_FAILURE("glUniform[1234]f failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
 	}
@@ -553,7 +591,7 @@ API2Test::testUniformfFuncs(void)
 	glUniform4fv(uf4, 1, u);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
-		reportFailure("glUniform[1234]f failed");
+		REPORT_FAILURE("glUniform[1234]f failed");
 		return false;
 	}
 
@@ -564,7 +602,7 @@ API2Test::testUniformfFuncs(void)
 	    value[1] != expected[1] ||
 	    value[2] != expected[2] ||
 	    value[3] != expected[3]) {
-		reportFailure("glGetUniformfv failed");
+		REPORT_FAILURE("glGetUniformfv failed");
 		return false;
 	}
 
@@ -592,29 +630,29 @@ API2Test::testUniformiFuncs(void)
 	}
 	program = createProgram(0, fragShader);
 	if (!program) {
-		reportFailure("glCreateProgram (uniform test) failed");
+		REPORT_FAILURE("glCreateProgram (uniform test) failed");
 		return false;
 	}
 	glUseProgram_func(program);
 
 	ui1 = glGetUniformLocation_func(program, "ui1");
 	if (ui1 < 0) {
-		reportFailure("glGetUniform \"ui1\" failed");
+		REPORT_FAILURE("glGetUniform \"ui1\" failed");
 		return false;
 	}
 	ui2 = glGetUniformLocation_func(program, "ui2");
 	if (ui2 < 0) {
-		reportFailure("glGetUniform \"ui2\" failed");
+		REPORT_FAILURE("glGetUniform \"ui2\" failed");
 		return false;
 	}
 	ui3 = glGetUniformLocation_func(program, "ui3");
 	if (ui3 < 0) {
-		reportFailure("glGetUniform \"ui3\" failed");
+		REPORT_FAILURE("glGetUniform \"ui3\" failed");
 		return false;
 	}
 	ui4 = glGetUniformLocation_func(program, "ui4");
 	if (ui4 < 0) {
-		reportFailure("glGetUniform \"ui4\" failed");
+		REPORT_FAILURE("glGetUniform \"ui4\" failed");
 		return false;
 	}
 
@@ -636,7 +674,7 @@ API2Test::testUniformiFuncs(void)
 	glUniform4i(ui4, 0, 0, 0, expectedInt[3]);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
-		reportFailure("glUniform[1234]i failed");
+		REPORT_FAILURE("glUniform[1234]i failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
 	}
@@ -661,7 +699,7 @@ API2Test::testUniformiFuncs(void)
 	glUniform4iv(ui4, 1, u);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
-		reportFailure("glUniform[1234]i failed");
+		REPORT_FAILURE("glUniform[1234]i failed");
 		printf("%f %f %f %f\n", pixel[0], pixel[1], pixel[2], pixel[3]);
 		return false;
 	}
@@ -687,7 +725,7 @@ API2Test::testShaderAttribs(void)
 	}
 	program = createProgram(vertShader, 0);
 	if (!program) {
-		reportFailure("glCreateProgram (uniform test) failed");
+		REPORT_FAILURE("glCreateProgram (uniform test) failed");
 		return false;
 	}
 	glUseProgram_func(program);
@@ -701,14 +739,14 @@ API2Test::testShaderAttribs(void)
 	// let compiler allocate the attribute location
 	const GLint attr = glGetAttribLocation_func(program, "generic");
 	if (attr < 0) {
-		reportFailure("glGetAttribLocation failed");
+		REPORT_FAILURE("glGetAttribLocation failed");
 		return false;
 	}
 	for (int i = 0; i < 3; i++) {
 		GLfloat pixel[4];
 		renderQuadWithArrays(attr, testColors[i], pixel);
 		if (!equalColors(pixel, testColors[i])) {
-			reportFailure("Vertex array test failed");
+			REPORT_FAILURE("Vertex array test failed");
 			return false;
 		}
 	}
@@ -719,14 +757,14 @@ API2Test::testShaderAttribs(void)
 	glLinkProgram_func(program);
 	GLint loc = glGetAttribLocation_func(program, "generic");
 	if (loc != bindAttr) {
-		reportFailure("glBindAttribLocation failed");
+		REPORT_FAILURE("glBindAttribLocation failed");
 		return false;
 	}
 	for (int i = 0; i < 3; i++) {
 		GLfloat pixel[4];
 		renderQuadWithArrays(bindAttr, testColors[i], pixel);
 		if (!equalColors(pixel, testColors[i])) {
-			reportFailure("Vertex array test failed (2)");
+			REPORT_FAILURE("Vertex array test failed (2)");
 			return false;
 		}
 	}
@@ -745,37 +783,37 @@ API2Test::testStencilFuncSeparate(void)
 
 	glGetIntegerv(GL_STENCIL_BACK_FUNC, &val);
 	if (val != GL_GEQUAL) {
-		reportFailure("GL_STENCIL_BACK_FUNC query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_FUNC query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_FUNC, &val);
 	if (val != GL_LEQUAL) {
-		reportFailure("GL_STENCIL_FUNC (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_FUNC (front) query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_BACK_REF, &val);
 	if (val != 13) {
-		reportFailure("GL_STENCIL_BACK_REF query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_REF query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_REF, &val);
 	if (val != 12) {
-		reportFailure("GL_STENCIL_REF (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_REF (front) query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_BACK_VALUE_MASK, &val);
 	if (val != 0xe) {
-		reportFailure("GL_STENCIL_BACK_VALUE_MASK query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_VALUE_MASK query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_VALUE_MASK, &val);
 	if (val != 0xf) {
-		reportFailure("GL_STENCIL_VALUE_MASK (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_VALUE_MASK (front) query returned wrong value");
 		return false;
 	}
 
@@ -794,37 +832,37 @@ API2Test::testStencilOpSeparate(void)
 
 	glGetIntegerv(GL_STENCIL_BACK_FAIL, &val);
 	if (val != GL_INCR) {
-		reportFailure("GL_STENCIL_BACK_FAIL query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_FAIL query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_FAIL, &val);
 	if (val != GL_INVERT) {
-		reportFailure("GL_STENCIL_FAIL (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_FAIL (front) query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_FAIL, &val);
 	if (val != GL_KEEP) {
-		reportFailure("GL_STENCIL_BACK_PASS_DEPTH_FAIL query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_PASS_DEPTH_FAIL query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL, &val);
 	if (val != GL_ZERO) {
-		reportFailure("GL_STENCIL_PASS_DEPTH_FAIL (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_PASS_DEPTH_FAIL (front) query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_PASS, &val);
 	if (val != GL_REPLACE) {
-		reportFailure("GL_STENCIL_BACK_PASS_DEPTH_PASS query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_PASS_DEPTH_PASS query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS, &val);
 	if (val != GL_INCR) {
-		reportFailure("GL_STENCIL_PASS_DEPTH_PASS (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_PASS_DEPTH_PASS (front) query returned wrong value");
 		return false;
 	}
 
@@ -843,13 +881,13 @@ API2Test::testStencilMaskSeparate(void)
 
 	glGetIntegerv(GL_STENCIL_BACK_WRITEMASK, &val);
 	if (val != 0xa) {
-		reportFailure("GL_STENCIL_BACK_WRITEMASK query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_BACK_WRITEMASK query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_WRITEMASK, &val);
 	if (val != 0xb) {
-		reportFailure("GL_STENCIL_WRITEMASK (front) query returned wrong value");
+		REPORT_FAILURE("GL_STENCIL_WRITEMASK (front) query returned wrong value");
 		return false;
 	}
 
@@ -866,13 +904,13 @@ API2Test::testBlendEquationSeparate(void)
 
 	glGetIntegerv(GL_BLEND_EQUATION, &val);
 	if (val != GL_MAX) {
-		reportFailure("GL_BLEND_EQUATION (rgb) query returned wrong value");
+		REPORT_FAILURE("GL_BLEND_EQUATION (rgb) query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &val);
 	if (val != GL_FUNC_SUBTRACT) {
-		reportFailure("GL_BLEND_EQUATION (rgb) query returned wrong value");
+		REPORT_FAILURE("GL_BLEND_EQUATION (rgb) query returned wrong value");
 		return false;
 	}
 
@@ -892,7 +930,7 @@ API2Test::testDrawBuffers(void)
 
 	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxBuf);
 	if (maxBuf < 1) {
-		reportFailure("GL_MAX_DRAW_BUFFERS query failed");
+		REPORT_FAILURE("GL_MAX_DRAW_BUFFERS query failed");
 		return false;
 	}
 
@@ -906,7 +944,7 @@ API2Test::testDrawBuffers(void)
 	for (i = 0; i < n; i++) {
 		glGetIntegerv(GL_DRAW_BUFFER0 + i, &val);
 		if (val != (GLint) buffers[i]) {
-			reportFailure("glDrawBuffers failed");
+			REPORT_FAILURE("glDrawBuffers failed");
 			return false;
 		}
 	}
@@ -916,7 +954,7 @@ API2Test::testDrawBuffers(void)
 
 	err = glGetError();
 	if (err) {
-		reportFailure("glDrawBuffers generrated an OpenGL error");
+		REPORT_FAILURE("glDrawBuffers generrated an OpenGL error");
 		return false;
 	}
 
