@@ -2258,6 +2258,55 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_VERSION_2_1
 	},
+
+	{
+		"mat4x2 * vec4",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"void main() { \n"
+		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
+		"                     0.3, 0.4, \n"
+		"                     0.5, 0.6, \n"
+		"                     0.7, 0.8); \n"
+		"   vec4 v = vec4(0.9, 0.8, 0.7, 0.6); \n"
+		"   gl_FragColor.xy = (m * v) * 0.5; \n"
+		"   gl_FragColor.zw = vec2(0.0); \n"
+		"} \n",
+		{ (0.1 * 0.9 + 0.3 * 0.8 + 0.5 * 0.7 + 0.7 * 0.6) * 0.5,
+		  (0.2 * 0.9 + 0.4 * 0.8 + 0.6 * 0.7 + 0.8 * 0.6) * 0.5,
+		  0.0,
+		  0.0
+		},
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
+	{
+		"mat4x2 * mat2x4",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"void main() { \n"
+		"   mat4x2 m1 = mat4x2(0.1, 0.2, \n"
+		"                      0.3, 0.4, \n"
+		"                      0.5, 0.6, \n"
+		"                      0.7, 0.8); \n"
+		"   mat2x4 m2 = mat2x4(0.9, 0.8, 0.7, 0.6, \n"
+		"                      0.5, 0.4, 0.3, 0.2); \n"
+		"   mat2 m3 = m1 * m2; \n"
+		"   vec4 v4; \n"
+		"   v4.xy = m3[0]; \n"
+		"   v4.zw = m3[1]; \n"
+		"   gl_FragColor = v4 * 0.5; \n"
+		"} \n",
+		{ (0.1 * 0.9 + 0.3 * 0.8 + 0.5 * 0.7 + 0.7 * 0.6) * 0.5,
+		  (0.2 * 0.9 + 0.4 * 0.8 + 0.6 * 0.7 + 0.8 * 0.6) * 0.5,
+		  (0.1 * 0.5 + 0.3 * 0.4 + 0.5 * 0.3 + 0.7 * 0.2) * 0.5,
+		  (0.2 * 0.5 + 0.4 * 0.4 + 0.6 * 0.3 + 0.8 * 0.2) * 0.5
+		},
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
 	{
 		"vec2 * mat4x2 multiply",
 		NO_VERTEX_SHADER,
@@ -2874,30 +2923,37 @@ GLSLTest::testProgram(const ShaderProgram &p)
 		0.9, 1.0, 0.0   // col 3
 	};
 	const GLfloat r = 0.62; // XXX draw 16x16 pixel quad
-	GLuint fragShader = 0, vertShader = 0, program;
+	GLuint fragShader = 0, vertShader = 0, program = 0;
 	GLint u1, utex1d, utex2d, utex3d, utexZ, umat4, umat4t;
 	GLint umat2x4, umat2x4t, umat4x3, umat4x3t;
+	bool retVal = false;
 
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
 						  p.fragShaderString);
-		if (!checkCompileStatus(GL_FRAGMENT_SHADER, fragShader, p))
-			return false;
+		if (!checkCompileStatus(GL_FRAGMENT_SHADER, fragShader, p)) {
+			retVal = false;
+			goto cleanup;
+		}
 	}
 	if (p.vertShaderString) {
 		vertShader = loadAndCompileShader(GL_VERTEX_SHADER,
 						  p.vertShaderString);
-		if (!checkCompileStatus(GL_VERTEX_SHADER, vertShader, p))
-			return false;
+		if (!checkCompileStatus(GL_VERTEX_SHADER, vertShader, p)) {
+			retVal = false;
+			goto cleanup;
+		}
 	}
 	if (!fragShader && !vertShader) {
 		// must have had a compilation errror
-		return false;
+		retVal = false;
+		goto cleanup;
 	}
 
 	if (p.flags & FLAG_ILLEGAL_SHADER) {
 		// don't render/test
-		return true;
+		retVal = true;
+		goto cleanup;
 	}
 
 	program = glCreateProgram_func();
@@ -2919,7 +2975,8 @@ GLSLTest::testProgram(const ShaderProgram &p)
 			env->log << "  Shader test: " << p.name << "\n";
 			env->log << "  Link error: ";
 			env->log << log;
-			return false;
+			retVal = false;
+			goto cleanup;
 		}
 	}
 
@@ -2998,8 +3055,8 @@ GLSLTest::testProgram(const ShaderProgram &p)
 
 	if (!equalColors(pixel, p.expectedColor, p.flags)) {
 		reportFailure(p.name, p.expectedColor, pixel);
-		// XXX clean-up
-		return false;
+		retVal = false;
+		goto cleanup;
 	}
 
 	if (p.expectedZ != DONT_CARE_Z) {
@@ -3009,22 +3066,25 @@ GLSLTest::testProgram(const ShaderProgram &p)
 			     GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 		if (!equalDepth(z, p.expectedZ)) {
 			reportZFailure(p.name, p.expectedZ, z);
-			// XXX clean-up
-			return false;
+			retVal = false;
+			goto cleanup;
 		}
 	}
+
+	// passed!
+	retVal = true;
 
 	if (0) // debug
 	   printf("%s passed\n", p.name);
 
-	// clean-up
+ cleanup:
 	if (fragShader)
 		glDeleteShader_func(fragShader);
 	if (vertShader)
 		glDeleteShader_func(vertShader);
 	glDeleteProgram_func(program);
 
-	return true;
+	return retVal;
 }
 
 
