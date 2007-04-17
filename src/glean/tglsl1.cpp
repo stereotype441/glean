@@ -1559,20 +1559,18 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
-#if 0 // XXX not enabled yet
 	{
 		"2D Texture lookup with explicit lod (Vertex shader)",
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
-		"   //gl_FrontColor = texture2DLod(tex2d, gl_TexCoord[0].xy, 2.0);\n"
+		"   gl_FrontColor = texture2DLod(tex2d, gl_TexCoord[0].xy, 2.0);\n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
-		{ 0.25, 0.0, 0.0, 0.5 },
+		{ 0.25, 0.0, 0.0, 0.25 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-#endif
 
 	{
 		"texture2DProj()",
