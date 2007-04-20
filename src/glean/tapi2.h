@@ -78,8 +78,8 @@ private:
 	bool setup(void);
 	bool equalColors(const GLfloat a[4], const GLfloat b[4]) const;
 
-	void reportFailure(const char *msg) const;
-	void reportFailure(const char *msg, GLenum target) const;
+	void reportFailure(const char *msg, int line) const;
+	void reportFailure(const char *msg, GLenum target, int line) const;
 };
 
 } // namespace GLEAN
