@@ -80,7 +80,8 @@ static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 #define FLAG_NONE   0x0
 #define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
 #define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
-#define FLAG_VERSION_2_1    0x4  // OpenGL 2.1 test (or GLSL 1.20)
+#define FLAG_ILLEGAL_LINK   0x4  // the shaders should not link
+#define FLAG_VERSION_2_1    0x8  // OpenGL 2.1 test (or GLSL 1.20)
 
 #define DONT_CARE_Z -1.0
 
@@ -2415,8 +2416,7 @@ static const ShaderProgram Programs[] = {
 		FLAG_VERSION_2_1
 	},
 
-#if 0
-	// todo: link-time test:
+	// Illegal link test ===================================================
 	{
 		"gl_Position not written check",
 		"void main() { \n"
@@ -2425,9 +2425,27 @@ static const ShaderProgram Programs[] = {
 		NO_FRAGMENT_SHADER,
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
-		FLAG_ILLEGAL_SHADER
+		FLAG_ILLEGAL_LINK
 	},
-#endif
+
+	{
+		"varying var mismatch",
+		// vert shader:
+		"varying vec4 foo; \n"
+		"void main() { \n"
+		"   foo = gl_Color; \n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		// frag shader:
+		"varying vec4 bar; \n"
+		"void main() { \n"
+		"   gl_FragColor = bar; \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_LINK
+	},
+
 	{ NULL, NULL, NULL, {0,0,0,0}, 0, FLAG_NONE } // end of list sentinal
 };
 
@@ -2986,15 +3004,33 @@ GLSLTest::testProgram(const ShaderProgram &p)
 		GLint stat;
 		glGetProgramiv_func(program, GL_LINK_STATUS, &stat);
 		if (!stat) {
-			GLchar log[1000];
-			GLsizei len;
-			glGetProgramInfoLog_func(program, 1000, &len, log);
-			env->log << "FAILURE:\n";
-			env->log << "  Shader test: " << p.name << "\n";
-			env->log << "  Link error: ";
-			env->log << log;
-			retVal = false;
-			goto cleanup;
+			if (p.flags & FLAG_ILLEGAL_LINK) {
+				// this is the expected outcome
+				retVal = true;
+				goto cleanup;
+			}
+			else {
+				GLchar log[1000];
+				GLsizei len;
+				glGetProgramInfoLog_func(program, 1000, &len, log);
+				env->log << "FAILURE:\n";
+				env->log << "  Shader test: " << p.name << "\n";
+				env->log << "  Link error: ";
+				env->log << log;
+				retVal = false;
+				goto cleanup;
+			}
+		}
+		else {
+			// link successful
+			if (p.flags & FLAG_ILLEGAL_LINK) {
+				// the shaders should _not_ have linked
+				env->log << "FAILURE:\n";
+				env->log << "  Shader test: " << p.name << "\n";
+				env->log << "  Program linked, but shouldn't have.\n";
+				retVal = false;
+				goto cleanup;
+			}
 		}
 	}
 
