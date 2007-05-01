@@ -593,6 +593,36 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"asin(vec4) function",   // XXX THIS SHOULD BE IMPROVED
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 1.0, -1.0, 0.0); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   u = asin(u); \n"
+		"   gl_FragColor = u * 0.1 + 0.5; \n"
+		"} \n",
+		{ 0.5, 0.5 + 0.157, 0.5 - 0.157, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"acos(vec4) function",   // XXX THIS SHOULD BE IMPROVED
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 0.8, -0.8, 1.0); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   u = acos(u); \n"
+		"   gl_FragColor = u * 0.1; \n"
+		"} \n",
+		{ 0.157, 0.06435, 0.2498, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"pow(vec4) function",
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
@@ -793,6 +823,41 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = smoothstep(edge0, edge1, v); \n"
 		"} \n",
 		{ 0.0, 0.5, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"mix(vec4) function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 v0 = vec4(0.0, 1.0, -4.8, 0.0); \n"
+		"   vec4 v1 = vec4(1.0, 0.0, 15.2, 0.0); \n"
+		"   gl_FragColor = mix(v0, v1, 0.25); \n"
+		"} \n",
+		{ 0.25, 0.75, 0.2, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"mix(float) function",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   float v0 = 0.0; \n"
+		"   float v1 = 1.0; \n"
+		"   gl_FragColor.x = mix(v0, v1, 0.25); \n"
+                "   v0 = 1.0; \n"
+                "   v1 = 0.0; \n"
+		"   gl_FragColor.y = mix(v0, v1, 0.25); \n"
+                "   v0 = -4.8; \n"
+                "   v1 = 15.2; \n"
+		"   gl_FragColor.z = mix(v0, v1, 0.25); \n"
+                "   v0 = 0.0; \n"
+                "   v1 = 0.0; \n"
+		"   gl_FragColor.w = mix(v0, v1, 0.25); \n"
+		"} \n",
+		{ 0.25, 0.75, 0.2, 0.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
