@@ -593,7 +593,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"asin(vec4) function",   // XXX THIS SHOULD BE IMPROVED
+		"asin(vec4) function",
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
@@ -608,7 +608,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"acos(vec4) function",   // XXX THIS SHOULD BE IMPROVED
+		"acos(vec4) function",
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
@@ -617,7 +617,23 @@ static const ShaderProgram Programs[] = {
 		"   u = acos(u); \n"
 		"   gl_FragColor = u * 0.1; \n"
 		"} \n",
-		{ 0.157, 0.06435, 0.2498, 0.0 },
+		{ 0.157, 0.064, 0.249, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"atan(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 0.8, -0.6, 0.5); \n"
+		"   u = u * uniform1.x; // mul by one \n"
+		"   u = atan(u); \n"
+		"   gl_FragColor = u; \n"
+		"   gl_FragColor.z = -u.z; \n"
+		"} \n",
+		{ 0.0, 0.675, 0.540, 0.464 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
