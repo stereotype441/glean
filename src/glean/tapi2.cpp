@@ -460,7 +460,7 @@ API2Test::testShaderObjectFuncs(void)
 
 	// Delete vertex shader
 	glDeleteShader_func(vertShader);
-	if (!glIsShader(vertShader)) {
+	if (!glIsShader_func(vertShader)) {
 		// the shader is still attached so the handle should be valid
 		REPORT_FAILURE("glIsShader(deleted shader) failed");
 		return false;
