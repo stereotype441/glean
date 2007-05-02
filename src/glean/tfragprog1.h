@@ -32,10 +32,6 @@
 #ifndef __tfragprog_h__
 #define __tfragprog_h__
 
-#include "tmultitest.h"
-
-namespace GLEAN {
-
 // If DEVEL_MODE==1 we generate a tall window of color swatches, one per
 // fragment program, which can be eyeballed against a reference image.
 // Use this if glReadPixels functionality is not working yet.
@@ -49,6 +45,11 @@ namespace GLEAN {
 #define windowWidth 100
 #define windowHeight 100
 #endif
+
+
+#include "tmultitest.h"
+
+namespace GLEAN {
 
 
 class FragmentProgram
