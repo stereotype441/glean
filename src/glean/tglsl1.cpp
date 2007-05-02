@@ -2837,7 +2837,7 @@ GLSLTest::setup(void)
 	// check that we have OpenGL 2.0
 	const char *verString = (const char *) glGetString(GL_VERSION);
 	if (verString[0] != '2' || verString[1] != '.') {
-		env->log << "OpenGL 2.x not supported\n";
+		//env->log << "OpenGL 2.x not supported\n";
 		return false;
 	}
 	if (verString[2] >= '1')
