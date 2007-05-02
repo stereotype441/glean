@@ -465,7 +465,7 @@ API2Test::testShaderObjectFuncs(void)
 		REPORT_FAILURE("glIsShader(deleted shader) failed");
 		return false;
 	}
-	glGetShaderiv(vertShader, GL_DELETE_STATUS, &stat);
+	glGetShaderiv_func(vertShader, GL_DELETE_STATUS, &stat);
 	if (stat != GL_TRUE) {
 		REPORT_FAILURE("Incorrect shader delete status");
 		return false;
@@ -476,12 +476,12 @@ API2Test::testShaderObjectFuncs(void)
 
 	// Delete program object
 	glDeleteProgram_func(program);
-	if (!glIsProgram(program)) {
+	if (!glIsProgram_func(program)) {
 		// the program is still in use so the handle should be valid
 		REPORT_FAILURE("glIsProgram(deleted program) failed");
 		return false;
 	}
-	glGetProgramiv(program, GL_DELETE_STATUS, &stat);
+	glGetProgramiv_func(program, GL_DELETE_STATUS, &stat);
 	if (stat != GL_TRUE) {
 		REPORT_FAILURE("Incorrect program delete status");
 		return false;
@@ -489,14 +489,14 @@ API2Test::testShaderObjectFuncs(void)
 
 	// now unbind the program
 	glUseProgram_func(0);
-	stat = glIsProgram(program);
+	stat = glIsProgram_func(program);
 	if (stat) {
 		// the program and handle should have really been deleted now
 		REPORT_FAILURE("glIsProgram(deleted program) failed");
 		return false;
 	}
 
-	glGetProgramiv(program, GL_DELETE_STATUS, &stat);
+	glGetProgramiv_func(program, GL_DELETE_STATUS, &stat);
 	err = glGetError();
 	if (!err) {
 		// the program and handle should have been deleted now
@@ -564,10 +564,10 @@ API2Test::testUniformfFuncs(void)
 	expected[1] = 0.2;
 	expected[2] = 0.3;
 	expected[3] = 0.4;
-	glUniform1f(uf1, expected[0]);
-	glUniform2f(uf2, 0.0, expected[1]);
-	glUniform3f(uf3, 0.0, 0.0, expected[2]);
-	glUniform4f(uf4, 0.0, 0.0, 0.0, expected[3]);
+	glUniform1f_func(uf1, expected[0]);
+	glUniform2f_func(uf2, 0.0, expected[1]);
+	glUniform3f_func(uf3, 0.0, 0.0, expected[2]);
+	glUniform4f_func(uf4, 0.0, 0.0, 0.0, expected[3]);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
 		REPORT_FAILURE("glUniform[1234]f failed");
@@ -582,13 +582,13 @@ API2Test::testUniformfFuncs(void)
 	expected[2] = 0.7;
 	expected[3] = 0.6;
 	u[0] = expected[0];
-	glUniform1fv(uf1, 1, u);
+	glUniform1fv_func(uf1, 1, u);
 	u[0] = 0.0;  u[1] = expected[1];
-	glUniform2fv(uf2, 1, u);
+	glUniform2fv_func(uf2, 1, u);
 	u[0] = 0.0;  u[1] = 0.0;  u[2] = expected[2];
-	glUniform3fv(uf3, 1, u);
+	glUniform3fv_func(uf3, 1, u);
 	u[0] = 0.0;  u[1] = 0.0;  u[2] = 0.0;  u[3] = expected[3];
-	glUniform4fv(uf4, 1, u);
+	glUniform4fv_func(uf4, 1, u);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
 		REPORT_FAILURE("glUniform[1234]f failed");
@@ -596,8 +596,8 @@ API2Test::testUniformfFuncs(void)
 	}
 
 	// Test glGetUniformfv
-	glUniform4fv(uf4, 1, expected);
-	glGetUniformfv(program, uf4, value);
+	glUniform4fv_func(uf4, 1, expected);
+	glGetUniformfv_func(program, uf4, value);
 	if (value[0] != expected[0] ||
 	    value[1] != expected[1] ||
 	    value[2] != expected[2] ||
@@ -668,10 +668,10 @@ API2Test::testUniformiFuncs(void)
 	expected[1] = 0.2;
 	expected[2] = 0.3;
 	expected[3] = 0.4;
-	glUniform1i(ui1, expectedInt[0]);
-	glUniform2i(ui2, 0, expectedInt[1]);
-	glUniform3i(ui3, 0, 0, expectedInt[2]);
-	glUniform4i(ui4, 0, 0, 0, expectedInt[3]);
+	glUniform1i_func(ui1, expectedInt[0]);
+	glUniform2i_func(ui2, 0, expectedInt[1]);
+	glUniform3i_func(ui3, 0, 0, expectedInt[2]);
+	glUniform4i_func(ui4, 0, 0, 0, expectedInt[3]);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
 		REPORT_FAILURE("glUniform[1234]i failed");
@@ -690,13 +690,13 @@ API2Test::testUniformiFuncs(void)
 	expected[2] = 0.7;
 	expected[3] = 0.6;
 	u[0] = expectedInt[0];
-	glUniform1iv(ui1, 1, u);
+	glUniform1iv_func(ui1, 1, u);
 	u[0] = 0;  u[1] = expectedInt[1];
-	glUniform2iv(ui2, 1, u);
+	glUniform2iv_func(ui2, 1, u);
 	u[0] = 0;  u[1] = 0;  u[2] = expectedInt[2];
-	glUniform3iv(ui3, 1, u);
+	glUniform3iv_func(ui3, 1, u);
 	u[0] = 0;  u[1] = 0;  u[2] = 0;  u[3] = expectedInt[3];
-	glUniform4iv(ui4, 1, u);
+	glUniform4iv_func(ui4, 1, u);
 	renderQuad(pixel);
 	if (!equalColors(pixel, expected)) {
 		REPORT_FAILURE("glUniform[1234]i failed");
