@@ -654,6 +654,19 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"exp(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(1.0, 0.5, -0.5, 2.0); \n"
+		"   gl_FragColor = exp(u) * 0.1; \n"
+		"} \n",
+		{ 0.2718, 0.1649, 0.0606, 0.7389 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"length() functions",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
