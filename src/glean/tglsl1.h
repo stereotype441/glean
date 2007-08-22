@@ -45,8 +45,8 @@ public:
 	const char *name;
 	const char *vertShaderString;
 	const char *fragShaderString;
-	const GLfloat expectedColor[4];
-	const GLfloat expectedZ;
+	GLfloat expectedColor[4];
+	GLfloat expectedZ;
 	int flags;
 };
 
