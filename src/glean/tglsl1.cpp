@@ -941,7 +941,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   float sum = 0.0; \n"
-		"   while (sum < 0.5) { \n"
+		"   while (sum < 0.499999) { \n"
 		"      sum += 0.1; \n"
 		"   } \n"
 		"   gl_FragColor = vec4(sum); \n"
@@ -958,7 +958,7 @@ static const ShaderProgram Programs[] = {
 		"   float sum = 0.0; \n"
 		"   do { \n"
 		"      sum += 0.1; \n"
-		"   } while (sum < 0.5); \n"
+		"   } while (sum < 0.499999); \n"
 		"   gl_FragColor = vec4(sum); \n"
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
@@ -989,7 +989,7 @@ static const ShaderProgram Programs[] = {
 		"   float sum = 0.0; \n"
 		"   do { \n"
 		"      sum += 0.1; \n"
-		"      if (sum >= 0.5) \n"
+		"      if (sum >= 0.499999) \n"
 		"         break; \n"
 		"   } while (1); \n"
 		"   gl_FragColor = vec4(sum); \n"
@@ -1006,7 +1006,7 @@ static const ShaderProgram Programs[] = {
 		"   float sum = 0.0; \n"
 		"   do { \n"
 		"      sum += 0.1; \n"
-		"      if (sum < 0.5) \n"
+		"      if (sum < 0.499999) \n"
 		"         continue; \n"
 		"      break; \n"
 		"   } while (1); \n"
