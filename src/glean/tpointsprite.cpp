@@ -54,12 +54,12 @@ static GLfloat   bgColor[4] = {0.0, 0.0, 0.0, 0.0};
 //has different colors
 //for 1x1 texture, only lower part is used
 static GLfloat   texColor[6][2][4] = {
-          {{1.0, 0.0, 0.0, 1.0}, {0.0, 1.0, 0.0, 1.0}},
-          {{0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},
-          {{1.0, 0.0, 1.0, 1.0}, {0.0, 1.0, 1.0, 1.0}},
-          {{1.0, 1.0, 1.0, 1.0}, {1.0, 0.0, 0.0, 1.0}},
-          {{0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},
-          {{1.0, 1.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}},
+          {{1.0, 0.0, 0.0, 1.0}, {0.0, 1.0, 0.0, 1.0}},  // 32x32
+          {{0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},  // 16x16
+          {{1.0, 0.0, 1.0, 1.0}, {0.0, 1.0, 1.0, 1.0}},  // 8x8
+          {{1.0, 1.0, 1.0, 1.0}, {1.0, 0.0, 0.0, 1.0}},  // 4x4
+          {{0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0, 1.0}},  // 2x2
+          {{1.0, 1.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}},  // 1x1
 };
 
 //generate mipmap
@@ -175,12 +175,15 @@ PointSpriteTest::CheckDefaultState(MultiTestResult &r)
 }
 
 GLboolean
-PointSpriteTest::OutOfPoint(int x, int y, int pSize)
+PointSpriteTest::OutOfPoint(int x, int y, int pSize, int x0, int y0)
 {
-	return  (x < (WINSIZE / 2 - pSize) / 2 ||
-			x >= (WINSIZE / 2 + pSize) / 2) || 
-		(y < (WINSIZE / 2 - pSize) / 2 ||
-			y >= (WINSIZE / 2 + pSize) / 2);
+	if ((x < x0) ||
+	    (y < y0) ||
+	    (x >= x0 + pSize) ||
+	    (y >= y0 + pSize))
+		return GL_TRUE;
+	else
+		return GL_FALSE;
 }
 
 GLfloat *
@@ -236,6 +239,27 @@ PointSpriteTest::CompareColor(GLfloat *actual, GLfloat *expected)
 		fabs(actual[2] - expected[2]) <= mTolerance[2] );
 }
 
+
+static void
+FindNonBlack(const GLfloat *buf, GLint w, GLint h, GLint *x0, GLint *y0)
+{
+	GLint i, j;
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+			int k = (i * w + j) * 3;
+			if (buf[k+0] != bgColor[0] ||
+				buf[k+1] != bgColor[1] ||
+				buf[k+2] != bgColor[2]) {
+				*x0 = j;
+				*y0 = i;
+				return;
+			}
+		}
+	}
+	abort();
+}
+
+
 /**
  * compare pixels located at (0,0) to (WINSIZE/2, WINSIZE/2).
  * @param buf: pixels' RGB value
@@ -247,15 +271,21 @@ PointSpriteTest::ComparePixels(GLfloat *buf, int pSize, int coordOrigin)
 {
 	GLfloat *lowerColor,  *upperColor, *expectedColor;
 	GLint  i, j;
+	GLint x0, y0;
 
 	lowerColor = GetTexColor(pSize, coordOrigin ? 0 : 1);
 	upperColor = GetTexColor(pSize, coordOrigin ? 1 : 0);
+
+	// Find first (lower-left) pixel that's not black.
+	// The pixels hit by sprite rasterization may vary from one GL to
+	// another so try to compensate for that.
+	FindNonBlack(buf, WINSIZE/2, WINSIZE/2, &x0, &y0);
 
 	for (i = 0; i < WINSIZE / 2; i++)
 	{
 		for (j = 0; j < WINSIZE / 2; j++)
 		{
-			if (OutOfPoint(i, j, pSize))
+			if (OutOfPoint(i, j, pSize, x0, y0))
 			{ //pixel (i, j) is out of point
 			  //its color should bebackground
 				if (!CompareColor(buf, bgColor))
@@ -267,7 +297,11 @@ PointSpriteTest::ComparePixels(GLfloat *buf, int pSize, int coordOrigin)
 					return GL_FALSE;
 				}
 			} else { //inside point
-				expectedColor = (i < WINSIZE / 4) ? lowerColor : upperColor;
+				if (i - x0 < pSize/2)
+					expectedColor = lowerColor;
+				else
+					expectedColor = upperColor;
+
 				if (!CompareColor(buf, expectedColor))
 				{
 					env->log << "Incorrect pixel at (" << i << ", " << j << "):\n"
@@ -302,6 +336,9 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 
 	CheckDefaultState(r);
 	
+	glDrawBuffer(GL_FRONT);
+	glReadBuffer(GL_FRONT);
+
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
 
         glViewport(0, 0, WINSIZE, WINSIZE);
@@ -329,7 +366,8 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	{
 		for (coordOrigin = 0; coordOrigin < 2; coordOrigin++)
 		{
-			if (!coordOrigin)
+
+			if (coordOrigin)
 				glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT);
 			else
 				glPointParameterf(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);

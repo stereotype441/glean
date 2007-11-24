@@ -58,7 +58,7 @@ private:
 	void SetupMipmap(GLuint *texID);
 	void CheckDefaultState(MultiTestResult &r);
 	void CalculateTolerance();
-	GLboolean OutOfPoint(int x, int y, int pSize);
+	GLboolean OutOfPoint(int x, int y, int pSize, int x0, int y0);
 	GLfloat *GetTexColor(int pSize, int dir);
 	GLboolean CompareColor(GLfloat *actual, GLfloat *expected);
 	GLboolean ComparePixels(GLfloat *buf, int pSize, int coordOrigin);
