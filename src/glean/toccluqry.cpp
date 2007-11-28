@@ -504,6 +504,12 @@ bool OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 		}
 	}
 
+	/* Note: the spec seems to indicate that glGenQueries reserves query
+	 * IDs but doesn't create query objects for those IDs.  A query object
+	 * isn't created until they are used by glBeginQuery.  So this part
+	 * of the test is invalid.
+	 */
+#if 0
 	/* Checkout whether the Query ID just generated is valid */	
 	for (i = 0; i < id_n; i ++) {
 		if (glIsQueryARB(ids1[i]) == GL_FALSE) {
@@ -512,6 +518,7 @@ bool OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 			pass = false;
 		}
 	}
+#endif
 
 	/* if <id> is a non-zero value that is not the name of a query object,
 	 * IsQueryARB returns FALSE. */
