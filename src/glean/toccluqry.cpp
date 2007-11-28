@@ -158,6 +158,7 @@ int OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
 	} while (!ready);
 	glGetQueryObjectuivARB(id, GL_QUERY_RESULT_ARB, &passed);
 
+	// 'passed' should be zero
 	return passed > 0 ? -1 : 0;
 }
 
@@ -286,6 +287,7 @@ int OccluQryTest::conformOQ_GetQry_CnterBit()
 int OccluQryTest::conformOQ_Begin_unused_id()
 {
 	unsigned int id;
+	int retval = 0;
 
 	id = find_unused_id();
 
@@ -295,10 +297,12 @@ int OccluQryTest::conformOQ_Begin_unused_id()
 
 	if (glIsQueryARB(id) == GL_FALSE) {
 		fprintf(stderr, "F: Begin with a unused id failed.\n");
-		return -1;
+		retval = -1;
 	}
 
-	return 0;
+	glEndQuery(GL_SAMPLES_PASSED_ARB);
+
+	return retval;
 }
 
 /* if EndQueryARB is called while no query with the same target is in progress,
