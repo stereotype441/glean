@@ -53,7 +53,6 @@ namespace GLEAN {
 void OccluQryTest::gen_box(GLfloat left, GLfloat right,
 			  GLfloat top, GLfloat btm)
 {
-	glColor3f(0.8, 0.5, 0);
 	glBegin(GL_POLYGON);
 	glVertex3f(left, top, 0);
 	glVertex3f(right, top, 0);
@@ -121,10 +120,10 @@ bool OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
 	glLoadIdentity();
 	glTranslatef( 0.0, 0.0, -10.0);
 
-	/* draw the occluder */
+	/* draw the occluder (red) */
 	glColorMask(1, 1, 1, 1);
 	glDepthMask(GL_TRUE);
-	glColor3f(0.2, 0.7, 0);
+	glColor3f(1, 0, 0);
 	gen_box(-0.5, 0.5, 0.5, -0.5);
 
 	glPushMatrix();
@@ -132,13 +131,15 @@ bool OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
 	glColorMask(0, 0, 0, 0);
 	glDepthMask(GL_FALSE);
 
-	/* draw the 1st box which is occluded by the occluder partly */
+	/* draw the 1st box (gren) which is occluded by the occluder partly */
 	START_QUERY(id);
+	glColor3f(0, 1, 0);
 	gen_box(-0.51,  0.51, 0.51, -0.51);
 	TERM_QUERY();
 
-	/* draw the 2nd box which is occluded by the occluder throughly */
+	/* draw the 2nd box (blue) which is occluded by the occluder throughly */
 	START_QUERY(id);
+	glColor3f(0, 0, 1);
 	gen_box(-0.4, 0.4, 0.4, -0.4); 
 	TERM_QUERY();
 
@@ -164,7 +165,6 @@ bool OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
  */
 bool OccluQryTest::conformOQ_GetObjivAval_multi2()
 {
-	GLint ready;
 	GLuint passed1 = 0, passed2 = 0, passed3 = 0;
 	GLuint id1, id2, id3;
 
@@ -181,10 +181,10 @@ bool OccluQryTest::conformOQ_GetObjivAval_multi2()
 	glTranslatef( 0.0, 0.0, -10.0);
 
 
-	/* draw the occluder */
+	/* draw the occluder (red) */
 	glColorMask(1, 1, 1, 1);
 	glDepthMask(GL_TRUE);
-	glColor3f(0.2, 0.7, 0);
+	glColor3f(1, 0, 0);
 	gen_box(-0.5, 0.5, 0.5, -0.5);
 
 	glPushMatrix();
@@ -194,34 +194,29 @@ bool OccluQryTest::conformOQ_GetObjivAval_multi2()
 
 	id1 = find_unused_id();
 	START_QUERY(id1);
+	/* draw green quad, much larger than occluder */
+	glColor3f(0, 1, 0);
 	gen_box(-0.7, 0.7, 0.7, -0.7);
 	TERM_QUERY();
 
 	id2 = find_unused_id();
 	START_QUERY(id2);
+	/* draw blue quad, slightly larger than occluder */
+	glColor3f(0, 0, 1);
 	gen_box(-0.53, 0.53, 0.53, -0.53);
 	TERM_QUERY();
 
 	id3 = find_unused_id();
 	START_QUERY(id3);
+	/* draw white quad, smaller than occluder (should not be visible) */
+	glColor3f(1, 1, 1);
 	gen_box(-0.4, 0.4, 0.4, -0.4);
 	TERM_QUERY();
 
 	glPopMatrix();
 
-	do {
-		glGetQueryObjectivARB(id1, GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
-	} while (!ready);
 	glGetQueryObjectuivARB(id1, GL_QUERY_RESULT_ARB, &passed1);
-
-	do {
-		glGetQueryObjectivARB(id2, GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
-	} while (!ready);
 	glGetQueryObjectuivARB(id2, GL_QUERY_RESULT_ARB, &passed2);
-
-	do {
-		glGetQueryObjectivARB(id3, GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
-	} while (!ready);
 	glGetQueryObjectuivARB(id3, GL_QUERY_RESULT_ARB, &passed3);
 
 	glDepthMask(GL_TRUE);
