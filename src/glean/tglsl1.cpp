@@ -2025,7 +2025,85 @@ static const ShaderProgram Programs[] = {
 
 	// Vectors, booleans =================================================
 	{
-		"vector relational (1)",
+		"vector relational (vec4 ==)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 1.0, 0.0, 0.2, 0.5); \n"
+		"   vec4 b = vec4( 1.0, 3.0, 0.0, 0.5); \n"
+		"   gl_FragColor = equal(a, b); \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (vec4 !=)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 1.0, 0.0, 0.2, 0.5); \n"
+		"   vec4 b = vec4( 1.0, 3.0, 0.0, 0.5); \n"
+		"   gl_FragColor = notEqual(a, b); \n"
+		"} \n",
+		{ 0.0, 1.0, 1.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (vec4 <=)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
+		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
+		"   gl_FragColor = lessThanEqual(a, b); \n"
+		"} \n",
+		{ 1.0, 0.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (vec4 >=)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
+		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
+		"   gl_FragColor = greaterThanEqual(a, b); \n"
+		"} \n",
+		{ 0.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (vec4 <)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
+		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
+		"   gl_FragColor = lessThan(a, b); \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (vec4 >)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
+		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
+		"   gl_FragColor = greaterThan(a, b); \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"vector relational (bvec2 <,<=)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec2 a = vec2(-1.0, 2.0); \n"
@@ -2044,7 +2122,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"vector relational (2)",
+		"vector relational (bvec2 >,>=)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec2 a = vec2(-1.0, 3.0); \n"
@@ -2063,7 +2141,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"vector relational (3)",
+		"vector relational (bvec2 ==,!=)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec2 a = vec2(-1.0, 3.0); \n"
@@ -2071,10 +2149,10 @@ static const ShaderProgram Programs[] = {
 		"   vec2 c = vec2( 3.0, 2.0); \n"
 		"   bvec2 b1 = equal(a, b); \n"
 		"   bvec2 b2 = notEqual(b, c); \n"
-		"   gl_FragColor.x = float(b1.x); \n"
-		"   gl_FragColor.y = float(b1.y); \n"
-		"   gl_FragColor.z = float(b2.x); \n"
-		"   gl_FragColor.w = float(b2.y); \n"
+		"   gl_FragColor.x = b1.x; \n"
+		"   gl_FragColor.y = b1.y; \n"
+		"   gl_FragColor.z = b2.x; \n"
+		"   gl_FragColor.w = b2.y; \n"
 		"} \n",
 		{ 1.0, 0.0, 1.0, 0.0 },
 		DONT_CARE_Z,
@@ -3252,20 +3330,21 @@ GLSLTest::runOne(MultiTestResult &r, Window &w)
 			if (strcmp(Programs[i].name, singleTest) == 0) {
 				r.numPassed = testProgram(Programs[i]);
 				r.numFailed = 1 - r.numPassed;
-				return;
+				break;
 			}
 		}
-		return;
 	}
-
-	for (int i = 0; Programs[i].name; i++) {
-		if ((Programs[i].flags & FLAG_VERSION_2_1) && !version21)
-			continue; // skip non-applicable tests
-		if (testProgram(Programs[i])) {
-			r.numPassed++;
-		}
-		else {
-			r.numFailed++;
+	else {
+		// loop over all tests
+		for (int i = 0; Programs[i].name; i++) {
+			if ((Programs[i].flags & FLAG_VERSION_2_1) && !version21)
+				continue; // skip non-applicable tests
+			if (testProgram(Programs[i])) {
+				r.numPassed++;
+			}
+			else {
+				r.numFailed++;
+			}
 		}
 	}
 	r.pass = (r.numFailed == 0);
