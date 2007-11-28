@@ -39,7 +39,6 @@
 #include <cmath>
 
 
-
 #define START_QUERY(id)\
 	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, id);
 
@@ -47,15 +46,13 @@
 #define TERM_QUERY()\
 	glEndQueryARB(GL_SAMPLES_PASSED_ARB);\
 
+
 namespace GLEAN {
-
-
 
 /* Generate a box which will be occluded by the occluder */
 void OccluQryTest::gen_box(GLfloat left, GLfloat right,
 			  GLfloat top, GLfloat btm)
 {
-
 	glColor3f(0.8, 0.5, 0);
 	glBegin(GL_POLYGON);
 	glVertex3f(left, top, 0);
@@ -66,19 +63,17 @@ void OccluQryTest::gen_box(GLfloat left, GLfloat right,
 }
 
 
-
-int OccluQryTest::chk_ext(void)
+bool OccluQryTest::chk_ext()
 {
 	const char *ext = (const char *) glGetString(GL_EXTENSIONS);
 
 	if (!strstr(ext, "GL_ARB_occlusion_query")) {
 		fprintf(stdout, "W: Extension GL_ARB_occlusion_query is missing.\n");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
-
 
 
 GLuint OccluQryTest::find_unused_id()
@@ -109,7 +104,7 @@ GLuint OccluQryTest::find_unused_id()
  * if the results are not retrieved before starting a new query on the same
  * target and id.
  */
-int OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
+bool OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
 {
 	GLint ready;
 	GLuint passed = 0;
@@ -159,7 +154,7 @@ int OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
 	glGetQueryObjectuivARB(id, GL_QUERY_RESULT_ARB, &passed);
 
 	// 'passed' should be zero
-	return passed > 0 ? -1 : 0;
+	return passed > 0 ? false : true;
 }
 
 
@@ -167,7 +162,7 @@ int OccluQryTest::conformOQ_GetObjivAval_multi1(GLuint id)
  * to calling GetQueryObject[u]iVARB, the results should be
  * corresponding to those queries (ids) respectively.
  */
-int OccluQryTest::conformOQ_GetObjivAval_multi2()
+bool OccluQryTest::conformOQ_GetObjivAval_multi2()
 {
 	GLint ready;
 	GLuint passed1 = 0, passed2 = 0, passed3 = 0;
@@ -241,10 +236,12 @@ int OccluQryTest::conformOQ_GetObjivAval_multi2()
 	glPopMatrix();
 	
 	if ( passed1 > passed2 && passed2 > passed3 && passed3 == 0)
-		return 0;
+		return true;
 	else
-		return -1;
+		return false;
 }
+
+
 /* 
  * void GetQueryivARB(enum target, enum pname, int *params);
  *
@@ -258,7 +255,7 @@ int OccluQryTest::conformOQ_GetObjivAval_multi2()
  * number of bits): 
  *   n = (min (32, ceil (log2 (maxViewportWidth x maxViewportHeight x 2) ) ) ) or 0
  */
-int OccluQryTest::conformOQ_GetQry_CnterBit()
+bool OccluQryTest::conformOQ_GetQry_CnterBit()
 {
 	int bit_num, dims[2];
 	GLenum err;
@@ -270,44 +267,45 @@ int OccluQryTest::conformOQ_GetQry_CnterBit()
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
 	err = glGetError();
 	if (err == GL_INVALID_OPERATION || err == GL_INVALID_ENUM) 
-		return -2;
+		return false;
 
 	min_impl = ceil(logf((float)dims[0]*(float)dims[1]*1.0*2.0) / logf(2.0));
 	min_bit_num = 32.0 > min_impl ? min_impl : 32.0;
 
 	if ((float)bit_num < min_bit_num)
-		return -1;
+		return false;
 
-	return 0;
+	return true;
 }
 
 
 /* If BeginQueryARB is called with an unused <id>, that name is marked as used
  * and associated with a new query object. */
-int OccluQryTest::conformOQ_Begin_unused_id()
+bool OccluQryTest::conformOQ_Begin_unused_id()
 {
 	unsigned int id;
-	int retval = 0;
+	bool pass = true;
 
 	id = find_unused_id();
 
-	if (id == 0) return -2;
+	if (id == 0)
+		return false;
 
 	glBeginQuery(GL_SAMPLES_PASSED_ARB, id);
 
 	if (glIsQueryARB(id) == GL_FALSE) {
 		fprintf(stderr, "F: Begin with a unused id failed.\n");
-		retval = -1;
+		pass = false;
 	}
 
 	glEndQuery(GL_SAMPLES_PASSED_ARB);
 
-	return retval;
+	return pass;
 }
 
 /* if EndQueryARB is called while no query with the same target is in progress,
  * an INVALID_OPERATION error is generated. */
-int OccluQryTest::conformOQ_EndAfter(GLuint id)
+bool OccluQryTest::conformOQ_EndAfter(GLuint id)
 {
 	START_QUERY(id);
 	TERM_QUERY();  
@@ -317,19 +315,18 @@ int OccluQryTest::conformOQ_EndAfter(GLuint id)
 	if (glGetError() != GL_INVALID_OPERATION) {
 		fprintf(stderr, "F: No GL_INVALID_OPERATION generated if "
 			"EndQuery when there is no queries.\n");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 
 /* Calling either GenQueriesARB while any query of any target is active causes
  * an INVALID_OPERATION error to be generated. */
-int OccluQryTest::conformOQ_GenIn(GLuint id)
+bool OccluQryTest::conformOQ_GenIn(GLuint id)
 {
 	int pass = true;
-
 
 	START_QUERY(id);
 
@@ -342,14 +339,13 @@ int OccluQryTest::conformOQ_GenIn(GLuint id)
   
 	TERM_QUERY();
 
-	return pass == true ? 0 : -1;
+	return pass;
 }
-
 
 
 /* Calling either DeleteQueriesARB while any query of any target is active causes
  * an INVALID_OPERATION error to be generated. */
-int OccluQryTest::conformOQ_DeleteIn(GLuint id)
+bool OccluQryTest::conformOQ_DeleteIn(GLuint id)
 {
 	int pass = true;
 
@@ -367,16 +363,15 @@ int OccluQryTest::conformOQ_DeleteIn(GLuint id)
   
 	TERM_QUERY();
 
-	return pass==true ? 0 : -1;
+	return pass;
 }
 
 
 /* If BeginQueryARB is called while another query is already in progress with
  * the same target, an INVALID_OPERATION error should be generated. */
-int OccluQryTest::conformOQ_BeginIn(GLuint id)
+bool OccluQryTest::conformOQ_BeginIn(GLuint id)
 {
 	int pass = true;
-
 
 	START_QUERY(id);
 
@@ -391,13 +386,13 @@ int OccluQryTest::conformOQ_BeginIn(GLuint id)
 	}
 
 	TERM_QUERY();
-	return pass==true ? 0 : -1;
+	return pass;
 }
 
 
 /* if the query object named by <id> is currently active, then an
  * INVALID_OPERATION error is generated. */
-int OccluQryTest::conformOQ_GetObjAvalIn(GLuint id)
+bool OccluQryTest::conformOQ_GetObjAvalIn(GLuint id)
 {
 	int pass = true;
 	GLint param;
@@ -419,13 +414,13 @@ int OccluQryTest::conformOQ_GetObjAvalIn(GLuint id)
 	}
 	TERM_QUERY();
 
-	return pass==true ? 0 : -1;
+	return pass;
 }
 
 
 /* if the query object named by <id> is currently active, then an
  * INVALID_OPERATION error is generated. */
-int OccluQryTest::conformOQ_GetObjResultIn(GLuint id)
+bool OccluQryTest::conformOQ_GetObjResultIn(GLuint id)
 {
 	int pass = true;
 	GLint param;
@@ -447,16 +442,13 @@ int OccluQryTest::conformOQ_GetObjResultIn(GLuint id)
 	}
 	TERM_QUERY();
 
-	return pass==true ? 0 : -1;
+	return pass;
 }
-
-
-
 
 
 /* If <id> is not the name of a query object, then an INVALID_OPERATION error
  * is generated. */
-int OccluQryTest::conformOQ_GetObjivAval(GLuint id)
+bool OccluQryTest::conformOQ_GetObjivAval(GLuint id)
 {
 	GLuint id_tmp;
 	GLint param;
@@ -467,7 +459,7 @@ int OccluQryTest::conformOQ_GetObjivAval(GLuint id)
 	id_tmp = find_unused_id();
  
 	if (id_tmp == 0)
-		return -2;
+		return false;
 
 	glGetQueryObjectivARB(id_tmp, GL_QUERY_RESULT_AVAILABLE_ARB, &param);
 
@@ -475,26 +467,26 @@ int OccluQryTest::conformOQ_GetObjivAval(GLuint id)
 		fprintf(stderr, "F: No GL_INVALID_OPERATION generated if "
 			"GetQueryObjectuiv can still query the result"
 			"by an unused query id\n.");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 
 /* Basic tests on query id generation and deletion */
-int OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
+bool OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 {
 	GLuint *ids1 = NULL, *ids2 = NULL;
 	unsigned int i, j;
-	int pass = true;
+	bool pass = true;
 
 	ids1 = (GLuint *)malloc(id_n * sizeof(GLuint));
 	ids2 = (GLuint *)malloc(id_n * sizeof(GLuint));
 
 	if (!ids1 || !ids2) {
 		fprintf(stderr, "F: Cannot alloc memory to pointer ids[12].\n");
-		return -2;
+		return false;
 	}
 
 	glGenQueriesARB(id_n, ids1);
@@ -543,7 +535,7 @@ int OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 
 	ids1 = (GLuint *)malloc(id_n * sizeof(GLuint));
 	if (ids1 == NULL)
-		return -2;
+		return false;
 
 	for (i = 0; i < id_n; i ++) {
 		glGenQueriesARB(1, ids1 + i);
@@ -560,58 +552,51 @@ int OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 	if (ids1)
 		free(ids1);
 
-	return pass == true ? 0 : -1;
+	return pass;
 }
 
 
-
-
 /* If <id> is zero, IsQueryARB should return FALSE.*/
-int OccluQryTest::conformOQ_IsIdZero(void)
+bool OccluQryTest::conformOQ_IsIdZero(void)
 {
 	if (glIsQueryARB(0) == GL_TRUE) {
 		fprintf(stderr, "F: zero is treated as a valid id by"
 				"IsQueryARB().\n");
-		return -1;
+		return false;
 	}
 	
-	return 0;
+	return true;
 }
-
 
 
 /* If BeginQueryARB is called with an <id> of zero, an INVALID_OPERATION error
  * should be generated. */
-int OccluQryTest::conformOQ_BeginIdZero(void)
+bool OccluQryTest::conformOQ_BeginIdZero(void)
 {
 	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, 0);
 	if (glGetError() != GL_INVALID_OPERATION) {
 		fprintf(stderr, "F: No GL_INVALID_OPERATION generated if "
 				"BeginQuery with zero ID.\n");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
-
-
 
 
 void OccluQryTest::runOne(MultiTestResult &r, Window &w)
 {
-
-	int result;
+	bool result;
 	(void) w;
 	GLuint queryId;
 
-	if (chk_ext() == -1)
+	if (!chk_ext())
 		return;
 	glEnable(GL_DEPTH_TEST);
 	glGenQueriesARB(1, &queryId);
 
-	if (queryId <= 0)
+	if (queryId == 0)
 		return;
-
 
 #if defined(GL_ARB_occlusion_query)
 	result = conformOQ_GetQry_CnterBit();
@@ -663,14 +648,10 @@ void OccluQryTest::runOne(MultiTestResult &r, Window &w)
 }
 
 
-
-
-
-
 void OccluQryTest::reportPassFail(MultiTestResult &r,
-				int pass, const char *msg) const
+				  bool pass, const char *msg) const
 {
-	if (pass == 0) {
+	if (pass) {
 		if (env->options.verbosity)
 			env->log << name << " subcase PASS: "
 				 << msg << " test\n";

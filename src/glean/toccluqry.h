@@ -46,25 +46,25 @@ class OccluQryTest: public MultiTest {
 
 	virtual void runOne(MultiTestResult& r, Window& w);
    protected:
-	int conformOQ_GetObjivAval_multi1(GLuint id);
-	int conformOQ_GetObjivAval_multi2();
-	int conformOQ_GetQry_CnterBit();
-	int conformOQ_Begin_unused_id();
-	int conformOQ_EndAfter(GLuint id);
-	int conformOQ_GenIn(GLuint id);
-	int conformOQ_BeginIn(GLuint id);
-	int conformOQ_DeleteIn(GLuint id);
-	int conformOQ_GetObjAvalIn(GLuint id);
-	int conformOQ_GetObjResultIn(GLuint id);
-	int conformOQ_GetObjivAval(GLuint id);
-	int conformOQ_Gen_Delete(unsigned int id_n);
-	int conformOQ_IsIdZero(void);
-	int conformOQ_BeginIdZero(void);
+	bool conformOQ_GetObjivAval_multi1(GLuint id);
+	bool conformOQ_GetObjivAval_multi2();
+	bool conformOQ_GetQry_CnterBit();
+	bool conformOQ_Begin_unused_id();
+	bool conformOQ_EndAfter(GLuint id);
+	bool conformOQ_GenIn(GLuint id);
+	bool conformOQ_BeginIn(GLuint id);
+	bool conformOQ_DeleteIn(GLuint id);
+	bool conformOQ_GetObjAvalIn(GLuint id);
+	bool conformOQ_GetObjResultIn(GLuint id);
+	bool conformOQ_GetObjivAval(GLuint id);
+	bool conformOQ_Gen_Delete(unsigned int id_n);
+	bool conformOQ_IsIdZero(void);
+	bool conformOQ_BeginIdZero(void);
    private:
 	void gen_box(GLfloat left, GLfloat right, GLfloat top, GLfloat btm);
 	GLuint find_unused_id();
-	int chk_ext( void );
-	void reportPassFail(MultiTestResult &r, int pass, const char *msg) const;
+	bool chk_ext();
+	void reportPassFail(MultiTestResult &r, bool pass, const char *msg) const;
 };
 
 } // namespace GLEAN
