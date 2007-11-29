@@ -47,7 +47,11 @@ factorNameMapping factorNames[] = {
 	{GL_SRC_ALPHA,			"GL_SRC_ALPHA"},
 	{GL_SRC_ALPHA_SATURATE,		"GL_SRC_ALPHA_SATURATE"},
 	{GL_SRC_COLOR,			"GL_SRC_COLOR"},
-	{GL_ZERO,			"GL_ZERO"}
+	{GL_ZERO,			"GL_ZERO"},
+	{GL_CONSTANT_COLOR,		"GL_CONSTANT_COLOR"},
+	{GL_ONE_MINUS_CONSTANT_COLOR,	"GL_ONE_MINUS_CONSTANT_COLOR"},
+	{GL_CONSTANT_ALPHA,		"GL_CONSTANT_ALPHA"},
+	{GL_ONE_MINUS_CONSTANT_ALPHA,	"GL_ONE_MINUS_CONSTANT_ALPHA"}
 };
 
 char*
@@ -110,11 +114,8 @@ clamp(float f) {
 } // clamp
 
 void
-applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src) {
-	// XXX Currently we don't test any of the const-color blend factors.
-	// It would be a good idea to do so as soon as we have access to an
-	// implementation that supports the OpenGL 1.2 imaging extensions.
-
+applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src,
+		   const GLfloat constantColor[4]) {
 	float sf[4];
 	switch (srcFactor) {
 	case GL_ZERO:
@@ -149,8 +150,33 @@ applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src) {
 		sf[0] = sf[1] = sf[2] = f; sf[3] = 1.0;
 		}
 		break;
+	case GL_CONSTANT_COLOR:
+		sf[0] = constantColor[0];
+		sf[1] = constantColor[1];
+		sf[2] = constantColor[2];
+		sf[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_COLOR:
+		sf[0] = 1.0 - constantColor[0];
+		sf[1] = 1.0 - constantColor[1];
+		sf[2] = 1.0 - constantColor[2];
+		sf[3] = 1.0 - constantColor[3];
+		break;
+	case GL_CONSTANT_ALPHA:
+		sf[0] =
+		sf[1] =
+		sf[2] =
+		sf[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_ALPHA:
+		sf[0] =
+		sf[1] =
+		sf[2] =
+		sf[3] = 1.0 - constantColor[3];
+		break;
 	default:
 		sf[0] = sf[1] = sf[2] = sf[3] = 0.0;
+		abort();
 		break;
 	}
 
@@ -181,8 +207,33 @@ applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src) {
 	case GL_ONE_MINUS_DST_ALPHA:
 		df[0] = df[1] = df[2] = df[3] = 1.0 - dst[3];
 		break;
+	case GL_CONSTANT_COLOR:
+		df[0] = constantColor[0];
+		df[1] = constantColor[1];
+		df[2] = constantColor[2];
+		df[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_COLOR:
+		df[0] = 1.0 - constantColor[0];
+		df[1] = 1.0 - constantColor[1];
+		df[2] = 1.0 - constantColor[2];
+		df[3] = 1.0 - constantColor[3];
+		break;
+	case GL_CONSTANT_ALPHA:
+		df[0] =
+		df[1] =
+		df[2] =
+		df[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_ALPHA:
+		df[0] =
+		df[1] =
+		df[2] =
+		df[3] = 1.0 - constantColor[3];
+		break;
 	default:
 		df[0] = df[1] = df[2] = df[3] = 0.0;
+		abort();
 		break;
 	}
 
@@ -195,7 +246,7 @@ applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src) {
 struct runFactorsResult {float readbackErrorBits; float blendErrorBits;};
 
 runFactorsResult
-runFactors(GLenum srcFactor, GLenum dstFactor,
+runFactors(GLenum srcFactor, GLenum dstFactor, const GLfloat constantColor[4],
     GLEAN::DrawingSurfaceConfig& config, GLEAN::Environment& env) {
 	using namespace GLEAN;
 	
@@ -273,7 +324,7 @@ runFactors(GLenum srcFactor, GLenum dstFactor,
 			sPix[2] = rgba[2];
 			sPix[3] = rgba[3];
 			drawQuad(x + 1, y + 1, rgba);
-			applyBlend(srcFactor, dstFactor, pix, rgba);
+			applyBlend(srcFactor, dstFactor, pix, rgba, constantColor);
 			pix += 4;
 			sPix += 4;
 		}
@@ -357,7 +408,11 @@ BlendFuncTest::runOne(BlendFuncResult& r, Window& w) {
 		GL_ONE_MINUS_SRC_ALPHA,
 		GL_DST_ALPHA,
 		GL_ONE_MINUS_DST_ALPHA,
-		GL_SRC_ALPHA_SATURATE
+		GL_SRC_ALPHA_SATURATE,
+		GL_CONSTANT_COLOR,
+		GL_ONE_MINUS_CONSTANT_COLOR,
+		GL_CONSTANT_ALPHA,
+		GL_ONE_MINUS_CONSTANT_ALPHA
 	};
 	static GLenum dstFactors[] = {
 		GL_ZERO,
@@ -367,8 +422,16 @@ BlendFuncTest::runOne(BlendFuncResult& r, Window& w) {
 		GL_SRC_ALPHA,
 		GL_ONE_MINUS_SRC_ALPHA,
 		GL_DST_ALPHA,
-		GL_ONE_MINUS_DST_ALPHA
+		GL_ONE_MINUS_DST_ALPHA,
+		GL_CONSTANT_COLOR,
+		GL_ONE_MINUS_CONSTANT_COLOR,
+		GL_CONSTANT_ALPHA,
+		GL_ONE_MINUS_CONSTANT_ALPHA
 	};
+	GLfloat constantColor[4] = { 0.25, 0.0, 1.0, 0.5 };
+
+	glBlendColor(constantColor[0], constantColor[1],
+				 constantColor[2], constantColor[3]);
 
 	bool allPassed = true;
 	for (unsigned int sf = 0; sf < sizeof(srcFactors)/sizeof(srcFactors[0]);
@@ -385,7 +448,7 @@ BlendFuncTest::runOne(BlendFuncResult& r, Window& w) {
 			    && (r.config->a == 0))
 				continue;
 
-			runFactorsResult res(runFactors(p.src, p.dst,
+			runFactorsResult res(runFactors(p.src, p.dst, constantColor,
 				*(r.config), *env));
 			w.swap();
 
