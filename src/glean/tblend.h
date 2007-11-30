@@ -35,7 +35,7 @@
 
 namespace GLEAN {
 
-#define drawingSize 64          // We will check each pair of blend factors
+#define drawingSize 32          // We will check each pair of blend factors
 				// for each pixel in a square image of this
 				// dimension, so if you make it too large,
 				// the tests may take quite a while to run.
@@ -46,8 +46,10 @@ public:
 	bool pass;	// not written to log file
 
 	struct PartialResult {
-		GLenum src;	// Source blend factor.
-		GLenum dst;	// Destination blend factor.
+		GLenum srcRGB, srcA;	// Source blend factor.
+		GLenum dstRGB, dstA;	// Destination blend factor.
+		GLenum opRGB, opA;	// Operator (add, sub, min, max)
+		GLfloat constColor[4];
 		float rbErr;	// Max readback error, in bits.
 		float blErr;	// Max blend error, in bits.
 	};
@@ -61,6 +63,28 @@ class BlendFuncTest: public BaseTest<BlendFuncResult> {
 public:
 	GLEAN_CLASS_WH(BlendFuncTest, BlendFuncResult,
 		       windowSize, windowSize);
+
+private:
+	struct runFactorsResult {
+		float readbackErrorBits;
+		float blendErrorBits;
+	};
+
+	runFactorsResult runFactors(GLenum srcFactorRGB, GLenum srcFactorA,
+		   GLenum dstFactorRGB, GLenum dstFactorA,
+		   const GLfloat constantColor[4],
+		   GLEAN::DrawingSurfaceConfig& config,
+				    GLEAN::Environment& env);
+
+
+	bool runCombo(BlendFuncResult& r, Window& w,
+		      BlendFuncResult::PartialResult p,
+		      GLEAN::Environment& env);
+
+private:
+	bool haveSepFunc;
+	bool haveBlendColor;
+
 }; // class BlendFuncTest
 
 } // namespace GLEAN

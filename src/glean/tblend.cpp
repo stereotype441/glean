@@ -33,7 +33,12 @@
 #include "image.h"
 #include <cmath>
 
-namespace {
+#define ELEMENTS(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
+
+static PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate_func = NULL;
+static PFNGLBLENDCOLORPROC glBlendColor_func = NULL;
+
+//namespace {
 
 struct factorNameMapping {GLenum factor; char* name;};
 factorNameMapping factorNames[] = {
@@ -56,9 +61,7 @@ factorNameMapping factorNames[] = {
 
 char*
 factorToName(GLenum factor) {
-	for (unsigned int i = 0;
-	    i < sizeof(factorNames) / sizeof(factorNames[0]);
-	    ++i)
+	for (unsigned int i = 0; i < ELEMENTS(factorNames); ++i)
 		if (factorNames[i].factor == factor)
 			return factorNames[i].name;
 	return 0;
@@ -66,9 +69,7 @@ factorToName(GLenum factor) {
 
 GLenum
 nameToFactor(string& name) {
-	for (unsigned int i = 0;
-	    i < sizeof(factorNames) / sizeof(factorNames[0]);
-	    ++i)
+	for (unsigned int i = 0; i < ELEMENTS(factorNames); ++i)
 		if (factorNames[i].name == name)
 			return factorNames[i].factor;
 	return GL_ZERO;
@@ -78,6 +79,19 @@ bool
 needsDstAlpha(const GLenum func) {
 	return func == GL_DST_ALPHA || func == GL_ONE_MINUS_DST_ALPHA
 		|| func == GL_SRC_ALPHA_SATURATE;
+}
+
+bool
+needsBlendColor(const GLenum func) {
+	switch (func) {
+	case GL_CONSTANT_COLOR:
+	case GL_ONE_MINUS_CONSTANT_COLOR:
+	case GL_CONSTANT_ALPHA:
+	case GL_ONE_MINUS_CONSTANT_ALPHA:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void
@@ -113,126 +127,220 @@ clamp(float f) {
 		return f;
 } // clamp
 
-void
-applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src,
+static void
+applyBlend(GLenum srcFactorRGB, GLenum srcFactorA,
+		   GLenum dstFactorRGB, GLenum dstFactorA,
+		   float* dst, float* src,
 		   const GLfloat constantColor[4]) {
 	float sf[4];
-	switch (srcFactor) {
+
+	// Src RGB term
+	switch (srcFactorRGB) {
 	case GL_ZERO:
-		sf[0] = sf[1] = sf[2] = sf[3] = 0.0;
+		sf[0] = sf[1] = sf[2] = 0.0;
 		break;
 	case GL_ONE:
-		sf[0] = sf[1] = sf[2] = sf[3] = 1.0;
+		sf[0] = sf[1] = sf[2] = 1.0;
 		break;
 	case GL_DST_COLOR:
-		sf[0] = dst[0]; sf[1] = dst[1]; sf[2] = dst[2]; sf[3] = dst[3];
+		sf[0] = dst[0];
+		sf[1] = dst[1];
+		sf[2] = dst[2];
 		break;
 	case GL_ONE_MINUS_DST_COLOR:
-		sf[0] = 1.0 - dst[0]; sf[1] = 1.0 - dst[1];
-		sf[2] = 1.0 - dst[2]; sf[3] = 1.0 - dst[3];
+		sf[0] = 1.0 - dst[0];
+		sf[1] = 1.0 - dst[1];
+		sf[2] = 1.0 - dst[2];
 		break;
 	case GL_SRC_ALPHA:
-		sf[0] = sf[1] = sf[2] = sf[3] = src[3];
+		sf[0] = sf[1] = sf[2] = src[3];
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		sf[0] = sf[1] = sf[2] = sf[3] = 1.0 - src[3];
+		sf[0] = sf[1] = sf[2] = 1.0 - src[3];
 		break;
 	case GL_DST_ALPHA:
-		sf[0] = sf[1] = sf[2] = sf[3] = dst[3];
+		sf[0] = sf[1] = sf[2] = dst[3];
 		break;
 	case GL_ONE_MINUS_DST_ALPHA:
-		sf[0] = sf[1] = sf[2] = sf[3] = 1.0 - dst[3];
+		sf[0] = sf[1] = sf[2] = 1.0 - dst[3];
 		break;
 	case GL_SRC_ALPHA_SATURATE: {
 		float f = 1.0 - dst[3];
 		if (src[3] < f)
 			f = src[3];
-		sf[0] = sf[1] = sf[2] = f; sf[3] = 1.0;
+		sf[0] = sf[1] = sf[2] = f;
 		}
 		break;
 	case GL_CONSTANT_COLOR:
 		sf[0] = constantColor[0];
 		sf[1] = constantColor[1];
 		sf[2] = constantColor[2];
-		sf[3] = constantColor[3];
 		break;
 	case GL_ONE_MINUS_CONSTANT_COLOR:
 		sf[0] = 1.0 - constantColor[0];
 		sf[1] = 1.0 - constantColor[1];
 		sf[2] = 1.0 - constantColor[2];
-		sf[3] = 1.0 - constantColor[3];
 		break;
 	case GL_CONSTANT_ALPHA:
 		sf[0] =
 		sf[1] =
-		sf[2] =
-		sf[3] = constantColor[3];
+		sf[2] = constantColor[3];
 		break;
 	case GL_ONE_MINUS_CONSTANT_ALPHA:
 		sf[0] =
 		sf[1] =
-		sf[2] =
+		sf[2] = 1.0 - constantColor[3];
+		break;
+	default:
+		sf[0] = sf[1] = sf[2] = 0.0;
+		abort();
+		break;
+	}
+
+	// Src Alpha term
+	switch (srcFactorA) {
+	case GL_ZERO:
+		sf[3] = 0.0;
+		break;
+	case GL_ONE:
+		sf[3] = 1.0;
+		break;
+	case GL_DST_COLOR:
+		sf[3] = dst[3];
+		break;
+	case GL_ONE_MINUS_DST_COLOR:
+		sf[3] = 1.0 - dst[3];
+		break;
+	case GL_SRC_ALPHA:
+		sf[3] = src[3];
+		break;
+	case GL_ONE_MINUS_SRC_ALPHA:
+		sf[3] = 1.0 - src[3];
+		break;
+	case GL_DST_ALPHA:
+		sf[3] = dst[3];
+		break;
+	case GL_ONE_MINUS_DST_ALPHA:
+		sf[3] = 1.0 - dst[3];
+		break;
+	case GL_SRC_ALPHA_SATURATE:
+		sf[3] = 1.0;
+		break;
+	case GL_CONSTANT_COLOR:
+		sf[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_COLOR:
+		sf[3] = 1.0 - constantColor[3];
+		break;
+	case GL_CONSTANT_ALPHA:
+		sf[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_ALPHA:
 		sf[3] = 1.0 - constantColor[3];
 		break;
 	default:
-		sf[0] = sf[1] = sf[2] = sf[3] = 0.0;
+		sf[3] = 0.0;
 		abort();
 		break;
 	}
 
 	float df[4];
-	switch (dstFactor) {
+	// Dest RGB term
+	switch (dstFactorRGB) {
 	case GL_ZERO:
-		df[0] = df[1] = df[2] = df[3] = 0.0;
+		df[0] = df[1] = df[2] = 0.0;
 		break;
 	case GL_ONE:
-		df[0] = df[1] = df[2] = df[3] = 1.0;
+		df[0] = df[1] = df[2] = 1.0;
 		break;
 	case GL_SRC_COLOR:
-		df[0] = src[0]; df[1] = src[1]; df[2] = src[2]; df[3] = src[3];
+		df[0] = src[0];
+		df[1] = src[1];
+		df[2] = src[2];
 		break;
 	case GL_ONE_MINUS_SRC_COLOR:
-		df[0] = 1.0 - src[0]; df[1] = 1.0 - src[1];
-		df[2] = 1.0 - src[2]; df[3] = 1.0 - src[3];
+		df[0] = 1.0 - src[0];
+		df[1] = 1.0 - src[1];
+		df[2] = 1.0 - src[2];
 		break;
 	case GL_SRC_ALPHA:
-		df[0] = df[1] = df[2] = df[3] = src[3];
+		df[0] = df[1] = df[2] = src[3];
 		break;
 	case GL_ONE_MINUS_SRC_ALPHA:
-		df[0] = df[1] = df[2] = df[3] = 1.0 - src[3];
+		df[0] = df[1] = df[2] = 1.0 - src[3];
 		break;
 	case GL_DST_ALPHA:
-		df[0] = df[1] = df[2] = df[3] = dst[3];
+		df[0] = df[1] = df[2] = dst[3];
 		break;
 	case GL_ONE_MINUS_DST_ALPHA:
-		df[0] = df[1] = df[2] = df[3] = 1.0 - dst[3];
+		df[0] = df[1] = df[2] = 1.0 - dst[3];
 		break;
 	case GL_CONSTANT_COLOR:
 		df[0] = constantColor[0];
 		df[1] = constantColor[1];
 		df[2] = constantColor[2];
-		df[3] = constantColor[3];
 		break;
 	case GL_ONE_MINUS_CONSTANT_COLOR:
 		df[0] = 1.0 - constantColor[0];
 		df[1] = 1.0 - constantColor[1];
 		df[2] = 1.0 - constantColor[2];
-		df[3] = 1.0 - constantColor[3];
 		break;
 	case GL_CONSTANT_ALPHA:
 		df[0] =
 		df[1] =
-		df[2] =
-		df[3] = constantColor[3];
+		df[2] = constantColor[3];
 		break;
 	case GL_ONE_MINUS_CONSTANT_ALPHA:
 		df[0] =
 		df[1] =
-		df[2] =
+		df[2] = 1.0 - constantColor[3];
+		break;
+	default:
+		df[0] = df[1] = df[2] = 0.0;
+		abort();
+		break;
+	}
+
+	// Dest A term
+	switch (dstFactorA) {
+	case GL_ZERO:
+		df[3] = 0.0;
+		break;
+	case GL_ONE:
+		df[3] = 1.0;
+		break;
+	case GL_SRC_COLOR:
+		df[3] = src[3];
+		break;
+	case GL_ONE_MINUS_SRC_COLOR:
+		df[3] = 1.0 - src[3];
+		break;
+	case GL_SRC_ALPHA:
+		df[3] = src[3];
+		break;
+	case GL_ONE_MINUS_SRC_ALPHA:
+		df[3] = 1.0 - src[3];
+		break;
+	case GL_DST_ALPHA:
+		df[3] = dst[3];
+		break;
+	case GL_ONE_MINUS_DST_ALPHA:
+		df[3] = 1.0 - dst[3];
+		break;
+	case GL_CONSTANT_COLOR:
+		df[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_COLOR:
+		df[3] = 1.0 - constantColor[3];
+		break;
+	case GL_CONSTANT_ALPHA:
+		df[3] = constantColor[3];
+		break;
+	case GL_ONE_MINUS_CONSTANT_ALPHA:
 		df[3] = 1.0 - constantColor[3];
 		break;
 	default:
-		df[0] = df[1] = df[2] = df[3] = 0.0;
+		df[3] = 0.0;
 		abort();
 		break;
 	}
@@ -243,11 +351,16 @@ applyBlend(GLenum srcFactor, GLenum dstFactor, float* dst, float* src,
 	dst[3] = clamp(src[3] * sf[3] + dst[3] * df[3]);
 } // applyBlend
 
-struct runFactorsResult {float readbackErrorBits; float blendErrorBits;};
 
-runFactorsResult
-runFactors(GLenum srcFactor, GLenum dstFactor, const GLfloat constantColor[4],
-    GLEAN::DrawingSurfaceConfig& config, GLEAN::Environment& env) {
+namespace GLEAN {
+
+
+BlendFuncTest::runFactorsResult
+BlendFuncTest::runFactors(GLenum srcFactorRGB, GLenum srcFactorA,
+		   GLenum dstFactorRGB, GLenum dstFactorA,
+		   const GLfloat constantColor[4],
+		   GLEAN::DrawingSurfaceConfig& config, GLEAN::Environment& env)
+{
 	using namespace GLEAN;
 	
 	runFactorsResult result;
@@ -308,7 +421,11 @@ runFactors(GLenum srcFactor, GLenum dstFactor, const GLfloat constantColor[4],
 	Image src(drawingSize, drawingSize, GL_RGBA, GL_FLOAT);
 	RandomBitsDouble srcARand(16, 42);
 
-	glBlendFunc(srcFactor, dstFactor);
+	if (haveSepFunc)
+		glBlendFuncSeparate_func(srcFactorRGB, dstFactorRGB,
+								 srcFactorA, dstFactorA);
+	else
+		glBlendFunc(srcFactorRGB, dstFactorRGB);
 	glEnable(GL_BLEND);
 
 	dRow = expected.pixels();
@@ -324,7 +441,9 @@ runFactors(GLenum srcFactor, GLenum dstFactor, const GLfloat constantColor[4],
 			sPix[2] = rgba[2];
 			sPix[3] = rgba[3];
 			drawQuad(x + 1, y + 1, rgba);
-			applyBlend(srcFactor, dstFactor, pix, rgba, constantColor);
+			applyBlend(srcFactorRGB, srcFactorA,
+					   dstFactorRGB, dstFactorA,
+					   pix, rgba, constantColor);
 			pix += 4;
 			sPix += 4;
 		}
@@ -388,9 +507,42 @@ env.log << '\n'
 	return result;
 } // runOneSet
 
-} // anonymous namespace
 
-namespace GLEAN {
+bool
+BlendFuncTest::runCombo(BlendFuncResult& r, Window& w,
+						BlendFuncResult::PartialResult p,
+						GLEAN::Environment& env)
+{
+	runFactorsResult res(runFactors(p.srcRGB, p.srcA, p.dstRGB, p.dstA,
+									p.constColor,
+					*(r.config), env));
+	w.swap();
+
+	p.rbErr = res.readbackErrorBits;
+	p.blErr = res.blendErrorBits;
+	r.results.push_back(p);
+
+	if (p.rbErr > 1.0 || p.blErr > 1.0) {
+		env.log << name << ":  FAIL "
+			<< r.config->conciseDescription() << '\n'
+			<< "\tsource factor RGB = " << factorToName(p.srcRGB)
+			<< ", source factor A = " << factorToName(p.srcA)
+			<< "\tdest factor RGB = " << factorToName(p.dstRGB)
+			<< ", dest factor A = " << factorToName(p.dstA)
+			<< "\n\tconst color = { "
+			<< p.constColor[0] << ", "
+			<< p.constColor[1] << ", "
+			<< p.constColor[2] << ", "
+			<< p.constColor[3] << " }"
+			<< "\n\tReadback had " << p.rbErr
+			<< " bits in error; blending had "
+			<< p.blErr << " bits in error.\n";
+		return false;
+	}
+	return true;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // runOne:  Run a single test case
@@ -428,47 +580,106 @@ BlendFuncTest::runOne(BlendFuncResult& r, Window& w) {
 		GL_CONSTANT_ALPHA,
 		GL_ONE_MINUS_CONSTANT_ALPHA
 	};
-	GLfloat constantColor[4] = { 0.25, 0.0, 1.0, 0.5 };
 
-	glBlendColor(constantColor[0], constantColor[1],
-				 constantColor[2], constantColor[3]);
+	// test for features, get function pointers
+	if (GLUtils::getVersion() >= 1.4) {
+		haveSepFunc = true;
+		glBlendFuncSeparate_func = (PFNGLBLENDFUNCSEPARATEPROC)
+			GLUtils::getProcAddress("glBlendFuncSeparate");
+	}
+	else if (GLUtils::haveExtension("GL_EXT_blend_func_separate")) {
+		haveSepFunc = true;
+		glBlendFuncSeparate_func = (PFNGLBLENDFUNCSEPARATEPROC)
+			GLUtils::getProcAddress("glBlendFuncSeparateEXT");
+	}
+
+	if (GLUtils::getVersion() >= 1.4) {
+		haveBlendColor = true;
+		glBlendColor_func = (PFNGLBLENDCOLORPROC)
+			GLUtils::getProcAddress("glBlendColor");
+	}
+	else if (GLUtils::haveExtension("GL_EXT_blend_color")) {
+		haveBlendColor = true;
+		glBlendColor_func = (PFNGLBLENDCOLORPROC)
+			GLUtils::getProcAddress("glBlendColorEXT");
+	}
+
+	//printf("version = %f, separate = %d\n", GLUtils::getVersion(), haveSepFunc);
+
+	BlendFuncResult::PartialResult p;
+
+	if (haveBlendColor) {
+		// Just one blend color setting for all tests
+		p.constColor[0] = 0.25;
+		p.constColor[1] = 0.0;
+		p.constColor[2] = 1.0;
+		p.constColor[3] = 0.75;
+		glBlendColor_func(p.constColor[0], p.constColor[1],
+						  p.constColor[2], p.constColor[3]);
+	}
 
 	bool allPassed = true;
-	for (unsigned int sf = 0; sf < sizeof(srcFactors)/sizeof(srcFactors[0]);
-	    ++sf)
 
-		for (unsigned int df = 0;
-		    df < sizeof(dstFactors)/sizeof(dstFactors[0]); ++df) {
+	unsigned numSrcFactorsSep, numDstFactorsSep;
 
-			BlendFuncResult::PartialResult p;
-			p.src = srcFactors[sf];
-			p.dst = dstFactors[df];
+	if (haveSepFunc) {
+		numSrcFactorsSep = ELEMENTS(srcFactors);
+		numDstFactorsSep = ELEMENTS(dstFactors);
+	}
+	else {
+		numSrcFactorsSep = 1;
+		numDstFactorsSep = 1;
+	}
 
-			if ((needsDstAlpha(p.src) || needsDstAlpha(p.dst))
-			    && (r.config->a == 0))
-				continue;
+	p.opRGB = GL_FUNC_ADD;
+	p.opA = GL_FUNC_ADD;
 
-			runFactorsResult res(runFactors(p.src, p.dst, constantColor,
-				*(r.config), *env));
-			w.swap();
+#if 0
+	// use this to test a single combination:
+	p.srcRGB = p.srcA = GL_SRC_ALPHA;
+	p.dstRGB = p.dstA = GL_ONE_MINUS_SRC_ALPHA;
+	allPassed = runCombo(r, w, p, *env);
+#else
+	for (unsigned int sf = 0; sf < ELEMENTS(srcFactors); ++sf) {
+		for (unsigned int sfa = 0; sfa < numSrcFactorsSep; ++sfa) {
+			for (unsigned int df = 0; df < ELEMENTS(dstFactors); ++df) {
+				for (unsigned int dfa = 0; dfa < numDstFactorsSep; ++dfa) {
 
-			p.rbErr = res.readbackErrorBits;
-			p.blErr = res.blendErrorBits;
-			r.results.push_back(p);
+					if (haveSepFunc) {
+						p.srcRGB = srcFactors[sf];
+						p.srcA = srcFactors[sfa];
+						p.dstRGB = dstFactors[df];
+						p.dstA = dstFactors[dfa];
+					}
+					else {
+						p.srcRGB = p.srcA = srcFactors[sf];
+						p.dstRGB = p.dstA = dstFactors[df];
+					}
 
-			if (p.rbErr > 1.0 || p.blErr > 1.0) {
-				env->log << name << ":  FAIL "
-					<< r.config->conciseDescription()<< '\n'
-					<< "\tsource factor = "
-					<< factorToName(p.src)
-					<< ", dest factor = "
-					<< factorToName(p.dst)
-					<< "\n\tReadback had " << p.rbErr
-					<< " bits in error; blending had "
-					<< p.blErr << " bits in error.\n";
-				allPassed = false;
+					// skip test if it depends on non-existant alpha channel
+					if ((r.config->a == 0)
+					    && (needsDstAlpha(p.srcRGB) ||
+						needsDstAlpha(p.srcA) ||
+						needsDstAlpha(p.dstRGB) ||
+						needsDstAlpha(p.dstA)))
+						continue;
+
+					// skip test of blend color used, but not supported.
+					if (!haveBlendColor
+					    && (needsBlendColor(p.srcRGB) ||
+						needsBlendColor(p.srcA) ||
+						needsBlendColor(p.dstRGB) ||
+						needsBlendColor(p.dstA)))
+						continue;
+
+					if (runCombo(r, w, p, *env)) {
+						allPassed = false;
+					}
+				}
 			}
 		}
+	}
+#endif
 
 	r.pass = allPassed;
 } // BlendFuncTest::runOne
@@ -499,7 +710,10 @@ BlendFuncTest::compareOne(BlendFuncResult& oldR, BlendFuncResult& newR) {
 	for (np = newR.results.begin(); np != newR.results.end(); ++np)
 		// Find the matching case, if any, in the old results:
 		for (op = oldR.results.begin(); op != oldR.results.end(); ++op)
-			if (np->src == op->src && np->dst == op->dst) {
+			if (np->srcRGB == op->srcRGB &&
+				np->srcA == op->srcA &&
+				np->dstRGB == op->dstRGB &&
+				np->dstA == op->dstA) {
 				readbackStats.sample(np->rbErr - op->rbErr);
 				blendStats.sample(np->blErr - op->blErr);
 			}
@@ -536,14 +750,20 @@ BlendFuncTest::compareOne(BlendFuncResult& oldR, BlendFuncResult& newR) {
 			    np != newR.results.end(); ++np) {
 				for (op = oldR.results.begin();
 				    op != oldR.results.end(); ++op)
-					if (np->src == op->src
-					 && np->dst == op->dst)
+					if (   np->srcRGB == op->srcRGB
+						&& np->srcA == op->srcA
+						&& np->dstRGB == op->dstRGB
+						&& np->dstA == op->dstA)
 						break;
 				if (op == oldR.results.end())
 					env->log << "\t\t"
-						<< factorToName(np->src)
+						<< factorToName(np->srcRGB)
 						<< ' '
-						<< factorToName(np->dst)
+						<< factorToName(np->srcA)
+						<< ' '
+						<< factorToName(np->dstRGB)
+						<< ' '
+						<< factorToName(np->dstA)
 						<< '\n';
 			}
 		}
@@ -557,14 +777,20 @@ BlendFuncTest::compareOne(BlendFuncResult& oldR, BlendFuncResult& newR) {
 			    op != oldR.results.end(); ++op) {
 				for (np = newR.results.begin();
 				    np != newR.results.end(); ++np)
-					if (op->src == np->src
-					 && op->dst == np->dst)
+					if (   op->srcRGB == np->srcRGB
+					    && op->srcA == np->srcA
+					    && op->dstRGB == np->dstRGB
+					    && op->dstA == np->dstA)
 						break;
 				if (np == newR.results.end())
 					env->log << "\t\t"
-						<< factorToName(op->src)
+						<< factorToName(op->srcRGB)
 						<< ' '
-						<< factorToName(op->dst)
+						<< factorToName(op->srcA)
+						<< ' '
+						<< factorToName(op->dstRGB)
+						<< ' '
+						<< factorToName(op->dstA)
 						<< '\n';
 			}
 		}
@@ -578,14 +804,20 @@ BlendFuncTest::compareOne(BlendFuncResult& oldR, BlendFuncResult& newR) {
 			    np != newR.results.end(); ++np){
 				for (op = oldR.results.begin();
 				    op != oldR.results.end(); ++op)
-					if (np->src == op->src
-					  && np->dst == op->dst)
+					if (   np->srcRGB == op->srcRGB
+						&& np->srcA == op->srcA
+						&& np->dstRGB == op->dstRGB
+						&& np->dstA == op->dstA)
 						break;
 				if (op != oldR.results.end())
 					env->log << "\t\t"
-						<< factorToName(np->src)
+						<< factorToName(op->srcRGB)
 						<< ' '
-						<< factorToName(np->dst)
+						<< factorToName(op->srcA)
+						<< ' '
+						<< factorToName(op->dstRGB)
+						<< ' '
+						<< factorToName(op->dstA)
 						<< '\n';
 			}
 		}
@@ -600,8 +832,10 @@ BlendFuncResult::putresults(ostream& s) const {
 	s << results.size() << '\n';
 	for (vector<PartialResult>::const_iterator p = results.begin();
 	     p != results.end(); ++p)
-		s << factorToName(p->src) << ' '
-		  << factorToName(p->dst) << ' '
+		s << factorToName(p->srcRGB) << ' '
+		  << factorToName(p->srcA) << ' '
+		  << factorToName(p->dstRGB) << ' '
+		  << factorToName(p->dstA) << ' '
 		  << p->rbErr << ' ' << p->blErr << '\n';
 } // BlendFuncResult::put
 
@@ -611,11 +845,13 @@ BlendFuncResult::getresults(istream& s) {
 	s >> n;
 	for (int i = 0; i < n; ++i) {
 		PartialResult p;
-		string src;
-		string dst;
-		s >> src >> dst >> p.rbErr >> p.blErr;
-		p.src = nameToFactor(src);
-		p.dst = nameToFactor(dst);
+		string srcRGB, srcA;
+		string dstRGB, dstA;
+		s >> srcRGB >> srcA >> dstRGB >> dstA >> p.rbErr >> p.blErr;
+		p.srcRGB = nameToFactor(srcRGB);
+		p.srcA = nameToFactor(srcA);
+		p.srcRGB = nameToFactor(srcRGB);
+		p.dstA = nameToFactor(dstA);
 		results.push_back(p);
 	}
 
