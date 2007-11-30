@@ -71,18 +71,23 @@ private:
 	};
 
 	runFactorsResult runFactors(GLenum srcFactorRGB, GLenum srcFactorA,
-		   GLenum dstFactorRGB, GLenum dstFactorA,
-		   const GLfloat constantColor[4],
-		   GLEAN::DrawingSurfaceConfig& config,
+				    GLenum dstFactorRGB, GLenum dstFactorA,
+				    GLenum opRGB, GLenum opA,
+				    const GLfloat constantColor[4],
+				    GLEAN::DrawingSurfaceConfig& config,
 				    GLEAN::Environment& env);
-
 
 	bool runCombo(BlendFuncResult& r, Window& w,
 		      BlendFuncResult::PartialResult p,
 		      GLEAN::Environment& env);
 
-private:
+	bool equalMode(const BlendFuncResult::PartialResult &r1,
+		       const BlendFuncResult::PartialResult &r2) const;
+
+	void printMode(const BlendFuncResult::PartialResult &r) const;
+
 	bool haveSepFunc;
+	bool haveBlendEquation;
 	bool haveBlendColor;
 
 }; // class BlendFuncTest
