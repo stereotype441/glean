@@ -88,6 +88,7 @@ private:
 
 	bool haveSepFunc;
 	bool haveBlendEquation;
+	bool haveBlendEquationSep;
 	bool haveBlendColor;
 
 }; // class BlendFuncTest
