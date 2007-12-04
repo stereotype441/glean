@@ -82,6 +82,7 @@ static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 #define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
 #define FLAG_ILLEGAL_LINK   0x4  // the shaders should not link
 #define FLAG_VERSION_2_1    0x8  // OpenGL 2.1 test (or GLSL 1.20)
+#define FLAG_WINDING_CW    0x10  // clockwise-winding polygon
 
 #define DONT_CARE_Z -1.0
 
@@ -1628,12 +1629,33 @@ static const ShaderProgram Programs[] = {
 		"   gl_FrontColor = vec4(gl_MaxLights, gl_MaxClipPlanes,\n"
 		"                        gl_MaxTextureUnits, \n"
 		"                        gl_MaxTextureCoords); \n"
-		" ;\n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
 		{ 1.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
 		FLAG_NONE
+	},
+
+	{
+		"gl_FrontFacing var (1)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(0.5 * float(gl_FrontFacing)); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"gl_FrontFacing var (2)",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(0.25 + float(gl_FrontFacing)); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_WINDING_CW
 	},
 
 	// Texture functions ==================================================
@@ -3261,12 +3283,24 @@ GLSLTest::testProgram(const ShaderProgram &p)
 		glEnable(GL_DEPTH_TEST);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);  glVertex2f(-r, -r);
-	glTexCoord2f(1, 0);  glVertex2f( r, -r);
-	glTexCoord2f(1, 1);  glVertex2f( r,  r);
-	glTexCoord2f(0, 1);  glVertex2f(-r,  r);
-	glEnd();
+	if (p.flags & FLAG_WINDING_CW) {
+		/* Clockwise */
+		glBegin(GL_POLYGON);
+		glTexCoord2f(0, 0);  glVertex2f(-r, -r);
+		glTexCoord2f(0, 1);  glVertex2f(-r,  r);
+		glTexCoord2f(1, 1);  glVertex2f( r,  r);
+		glTexCoord2f(1, 0);  glVertex2f( r, -r);
+		glEnd();
+	}
+	else {
+		/* Counter Clockwise */
+		glBegin(GL_POLYGON);
+		glTexCoord2f(0, 0);  glVertex2f(-r, -r);
+		glTexCoord2f(1, 0);  glVertex2f( r, -r);
+		glTexCoord2f(1, 1);  glVertex2f( r,  r);
+		glTexCoord2f(0, 1);  glVertex2f(-r,  r);
+		glEnd();
+	}
 
 	// read a pixel from lower-left corder of rendered quad
 	GLfloat pixel[4];
