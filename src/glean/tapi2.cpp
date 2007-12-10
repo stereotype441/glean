@@ -772,11 +772,16 @@ API2Test::testShaderAttribs(void)
 	return true;
 }
 
+#define CLAMP( X, MIN, MAX )  ( (X)<(MIN) ? (MIN) : ((X)>(MAX) ? (MAX) : (X)) )
 
 bool
 API2Test::testStencilFuncSeparate(void)
 {
 	GLint val;
+	GLint stencilBits, stencilMax;
+
+	glGetIntegerv(GL_STENCIL_BITS, &stencilBits);
+	stencilMax = (1 << stencilBits) - 1;
 
 	glStencilFuncSeparate_func(GL_FRONT, GL_LEQUAL, 12, 0xf);
 	glStencilFuncSeparate_func(GL_BACK, GL_GEQUAL, 13, 0xe);
@@ -794,13 +799,13 @@ API2Test::testStencilFuncSeparate(void)
 	}
 
 	glGetIntegerv(GL_STENCIL_BACK_REF, &val);
-	if (val != 13) {
+	if (val != CLAMP(13, 0, stencilMax)) {
 		REPORT_FAILURE("GL_STENCIL_BACK_REF query returned wrong value");
 		return false;
 	}
 
 	glGetIntegerv(GL_STENCIL_REF, &val);
-	if (val != 12) {
+	if (val != CLAMP(12, 0, stencilMax)) {
 		REPORT_FAILURE("GL_STENCIL_REF (front) query returned wrong value");
 		return false;
 	}
