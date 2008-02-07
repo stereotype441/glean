@@ -145,6 +145,22 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		"COS test 2",
+		"!!ARBfp1.0\n"
+		"PARAM values = { 6.78318, 7.28318, 6.28318, -5.78318 }; \n"
+		"COS result.color.x, values.x; \n"
+		"COS result.color.y, values.y; \n"
+		"COS result.color.z, values.z; \n"
+		"COS result.color.w, values.w; \n"
+		"END \n",
+		{ CLAMP01(0.8775),
+		  CLAMP01(0.5403),
+		  CLAMP01(1.0),
+		  CLAMP01(0.8775)
+		},
+		DONT_CARE_Z
+	},
+	{
 		"DP3 test",
 		"!!ARBfp1.0\n"
 		"PARAM p1 = program.local[1]; \n"
@@ -488,6 +504,22 @@ static const FragmentProgram Programs[] = {
 		  CLAMP01(-1.0),
 		  CLAMP01(0.4794),
 		  CLAMP01(0.8414)
+		},
+		DONT_CARE_Z
+	},
+	{
+		"SIN test 2",
+		"!!ARBfp1.0\n"
+		"PARAM values = { 3.14159, -3.14159, 6.78319, -5.78319 }; \n"
+		"SIN result.color.x, values.x; \n"
+		"SIN result.color.y, values.y; \n"
+		"SIN result.color.z, values.z; \n"
+		"SIN result.color.w, values.w; \n"
+		"END \n",
+		{ CLAMP01(0.0),
+		  CLAMP01(0.0),
+		  CLAMP01(0.4794),
+		  CLAMP01(0.4794)
 		},
 		DONT_CARE_Z
 	},
