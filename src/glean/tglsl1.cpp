@@ -1700,7 +1700,7 @@ static const ShaderProgram Programs[] = {
 		"2D Texture lookup with explicit lod (Vertex shader)",
 		"uniform sampler2D tex2d; \n"
 		"void main() { \n"
-		"   gl_FrontColor = texture2DLod(tex2d, gl_TexCoord[0].xy, 2.0);\n"
+		"   gl_FrontColor = texture2DLod(tex2d, gl_MultiTexCoord0.xy, 2.0);\n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
