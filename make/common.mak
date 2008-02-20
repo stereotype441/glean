@@ -160,6 +160,13 @@ INC:=		# -I options for local include directories
 _INC=\
 	$(INC) \
 	-I$(GLEAN_ROOT)/include \
+	-I$(GLEAN_ROOT)/src/libs/dsurf/ \
+	-I$(GLEAN_ROOT)/src/libs/image/ \
+	-I$(GLEAN_ROOT)/src/libs/lex/ \
+	-I$(GLEAN_ROOT)/src/libs/rand/ \
+	-I$(GLEAN_ROOT)/src/libs/stats/ \
+	-I$(GLEAN_ROOT)/src/libs/timer/ \
+	-I$(GLEAN_ROOT)/src/glh/ \
 	$(GLINC) \
 	$(GLUTINC) \
 	$(XINC) \
@@ -204,6 +211,12 @@ LIBDIR:=	# -L options for specifying library directories
 _LIBDIR=\
 	$(LIBDIR) \
 	-L$(GLEAN_ROOT)/lib \
+	-L$(GLEAN_ROOT)/src/libs/dsurf \
+	-L$(GLEAN_ROOT)/src/libs/image \
+	-L$(GLEAN_ROOT)/src/libs/lex \
+	-L$(GLEAN_ROOT)/src/libs/rand \
+	-L$(GLEAN_ROOT)/src/libs/stats \
+	-L$(GLEAN_ROOT)/src/libs/timer \
 	-L$(GLLIB) \
 	-L$(GLUTLIB) \
 	-L$(XLIB) \
