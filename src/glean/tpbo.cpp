@@ -1122,7 +1122,7 @@ bool PBOTest::testPerformance(MultiTestResult & r)
       }
       glGenTextures(1, textures);
       glBindTexture(GL_TEXTURE_2D, textures[0]);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA, TEXSIZE1,
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXSIZE1,
                    TEXSIZE1, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
