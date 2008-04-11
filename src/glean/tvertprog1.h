@@ -72,6 +72,7 @@ private:
 	bool equalColors(const GLfloat a[4], const GLfloat b[4], int flags) const;
 	bool equalDepth(GLfloat z0, GLfloat z1) const;
 	bool testProgram(const VertexProgram &p);
+	void testBadProgram(MultiTestResult &result);
 	void reportFailure(const char *programName,
                            const GLfloat expectedColor[4],
                            const GLfloat actualColor[4] ) const;
