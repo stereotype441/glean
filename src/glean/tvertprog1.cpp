@@ -1104,15 +1104,22 @@ VertexProgramTest::testBadProgram(MultiTestResult &result)
 void
 VertexProgramTest::runOne(MultiTestResult &r, Window &w)
 {
+	// to test a single sub-test, set the name here:
+	const char *single = NULL;
+
 	(void) w;
 	setup();
 
 	for (int i = 0; Programs[i].name; i++) {
-		if (!testProgram(Programs[i])) {
-			r.numFailed++;
-		}
-		else {
-			r.numPassed++;
+
+		if (!single || strcmp(single, Programs[i].name) == 0) {
+
+			if (!testProgram(Programs[i])) {
+				r.numFailed++;
+			}
+			else {
+				r.numPassed++;
+			}
 		}
 	}
 
