@@ -1088,6 +1088,22 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+#if 0 // XXX enable someday
+	{
+		"vector subscript *=",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec4 c = vec4(0.25, 0.5, 0.1, 0.1); \n"
+		"   c[0] *= 4.0; \n"
+		"   c[1] *= 2.0; \n"
+		"   gl_FragColor = c; \n"
+		"} \n",
+		{ 1.0, 1.0, 0.1, 0.1 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+#endif
+
 	// Equality/inequality tests==========================================
 	{
 		"equality (float, pass)",
