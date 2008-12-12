@@ -2069,7 +2069,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 1.0, 0.0, 0.2, 0.5); \n"
 		"   vec4 b = vec4( 1.0, 3.0, 0.0, 0.5); \n"
-		"   gl_FragColor = equal(a, b); \n"
+		"   gl_FragColor = vec4(equal(a, b)); \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 1.0 },
 		DONT_CARE_Z,
@@ -2082,7 +2082,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 1.0, 0.0, 0.2, 0.5); \n"
 		"   vec4 b = vec4( 1.0, 3.0, 0.0, 0.5); \n"
-		"   gl_FragColor = notEqual(a, b); \n"
+		"   gl_FragColor = vec4(notEqual(a, b)); \n"
 		"} \n",
 		{ 0.0, 1.0, 1.0, 0.0 },
 		DONT_CARE_Z,
@@ -2095,7 +2095,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
 		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
-		"   gl_FragColor = lessThanEqual(a, b); \n"
+		"   gl_FragColor = vec4(lessThanEqual(a, b)); \n"
 		"} \n",
 		{ 1.0, 0.0, 1.0, 1.0 },
 		DONT_CARE_Z,
@@ -2108,7 +2108,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
 		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
-		"   gl_FragColor = greaterThanEqual(a, b); \n"
+		"   gl_FragColor = vec4(greaterThanEqual(a, b)); \n"
 		"} \n",
 		{ 0.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
@@ -2121,7 +2121,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
 		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
-		"   gl_FragColor = lessThan(a, b); \n"
+		"   gl_FragColor = vec4(lessThan(a, b)); \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -2134,7 +2134,7 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 a = vec4( 0.5, 1.0, 0.4, 0.0); \n"
 		"   vec4 b = vec4( 1.0, 0.2, 0.4, 0.0); \n"
-		"   gl_FragColor = greaterThan(a, b); \n"
+		"   gl_FragColor = vec4(greaterThan(a, b)); \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
