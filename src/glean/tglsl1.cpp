@@ -1,6 +1,7 @@
 // BEGIN_COPYRIGHT -*- glean -*-
 // 
 // Copyright (C) 1999  Allen Akin   All Rights Reserved.
+// Copyright (C) 2008  VMWare, Inc.  All Rights Reserved.
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -2627,7 +2628,158 @@ static const ShaderProgram Programs[] = {
 		FLAG_VERSION_2_1
 	},
 
-	// Illegal link test ===================================================
+	// Tests for GLSL 1.20 new array features
+	{
+		"GLSL 1.20 arrays",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"float [2] x; \n"
+		"void main() { \n"
+                "   x[0] = 1.0; \n"
+                "   x[1] = 2.0; \n"
+		"   gl_FragColor.x = x[0]; \n"
+		"   gl_FragColor.y = 0.25 * x[1]; \n"
+		"   gl_FragColor.z = 0.1 * (x[0] + x[1]); \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.3, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 array constructor 1",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"float [2] x = float[2](1.0, 2.0); \n"
+		"void main() { \n"
+		"   gl_FragColor.x = x[0]; \n"
+		"   gl_FragColor.y = 0.25 * x[1]; \n"
+		"   gl_FragColor.z = 0.1 * (x[0] + x[1]); \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.3, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 array constructor 2",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 [2] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                          vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 const array constructor 1",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"const float [2] x = float[2](1.0, 2.0); \n"
+		"void main() { \n"
+		"   gl_FragColor.x = x[0]; \n"
+		"   gl_FragColor.y = 0.25 * x[1]; \n"
+		"   gl_FragColor.z = 0.1 * (x[0] + x[1]); \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.3, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 const array constructor 2",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"const vec4 [2] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                                vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 uniform array constructor",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"uniform float [2] x = float[2](1.0, 2.0); \n"
+		"void main() { \n"
+		"   gl_FragColor.x = x[0]; \n"
+		"   gl_FragColor.y = 0.25 * x[1]; \n"
+		"   gl_FragColor.z = 0.1 * (x[0] + x[1]); \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 1.0, 0.5, 0.3, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 array.length()",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"const float [2] x = float[2](1.0, 2.0); \n"
+		"void main() { \n"
+                "   int l = x.length(); \n"
+		"   gl_FragColor = vec4(l * 0.25); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 array error check",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+                "// Note array size disagreement here: \n"
+		"const float [2] x = float[3](1.0, 2.0); \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(1); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1 | FLAG_ILLEGAL_SHADER
+	},
+
+	// Other new GLSL 1.20 features (just parse/compile tests)
+	{
+		"GLSL 1.20 precision qualifiers",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"highp float f1; \n"
+		"mediump float f2; \n"
+		"lowp float f3; \n"
+		"precision mediump float; \n"
+		"precision lowp int; \n"
+		"precision highp float; \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(1); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+	{
+		"GLSL 1.20 invariant, centroid qualifiers",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"invariant varying vec4 v1; \n"
+		"centroid varying vec4 v2; \n"
+		"invariant centroid varying vec4 v3; \n"
+		"varying vec4 v4; \n"
+		"invariant v4; \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(1); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_2_1
+	},
+
+	// Illegal link test ==================================================
 	{
 		"gl_Position not written check",
 		"void main() { \n"
