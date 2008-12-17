@@ -82,7 +82,7 @@ static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 #define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
 #define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
 #define FLAG_ILLEGAL_LINK   0x4  // the shaders should not link
-#define FLAG_VERSION_2_1    0x8  // OpenGL 2.1 test (or GLSL 1.20)
+#define FLAG_VERSION_1_20   0x8  // GLSL 1.20 test
 #define FLAG_WINDING_CW     0x10  // clockwise-winding polygon
 #define FLAG_VERTEX_TEXTURE 0x20
 
@@ -2392,7 +2392,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"mat4x2 construct",
@@ -2408,7 +2408,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.3, 0.4, 0.5, 0.6 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"mat2x3 construct",
@@ -2422,7 +2422,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.4, 0.5, 0.6, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"mat3x2 construct",
@@ -2437,7 +2437,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.3, 0.4, 0.5, 0.6 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"mat4x3 construct",
@@ -2453,7 +2453,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.4, 0.5, 0.6, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"mat3x4 construct",
@@ -2467,7 +2467,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	{
@@ -2487,7 +2487,7 @@ static const ShaderProgram Programs[] = {
 		  0.2 * 0.9 + -0.2 * 1.0 + 0.4 * 0.0 + 0.1 * 1.0,
 		  1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	{
@@ -2509,7 +2509,7 @@ static const ShaderProgram Programs[] = {
 		  0.0
 		},
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	{
@@ -2535,7 +2535,7 @@ static const ShaderProgram Programs[] = {
 		  (0.2 * 0.5 + 0.4 * 0.4 + 0.6 * 0.3 + 0.8 * 0.2) * 0.5
 		},
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	{
@@ -2555,7 +2555,7 @@ static const ShaderProgram Programs[] = {
 		  0.2 * 0.5 + 0.5 * 0.6,
 		  0.2 * 0.7 + 0.5 * 0.8 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"vec3 * mat4x3 multiply",
@@ -2574,7 +2574,7 @@ static const ShaderProgram Programs[] = {
 		  0.2 * 0.7 + 0.5 * 0.8 + 0.1 * 0.9,
 		  0.2 * 1.0 + 0.5 * 0.1 + 0.1 * 0.2 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	{
@@ -2587,7 +2587,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.0, 0.1, 0.2, 0.3 },  // first column of 2x4 matrix
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"uniform matrix 2x4, transposed",
@@ -2599,7 +2599,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.0, 0.2, 0.4, 0.6 },  // first row of 4x2 matrix
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"uniform matrix 4x3",
@@ -2612,7 +2612,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.3, 0.4, 0.5, 1.0 },  // second column of 4x3 matrix
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"uniform matrix 4x3, transposed",
@@ -2625,7 +2625,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.1, 0.5, 0.9, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	// Tests for GLSL 1.20 new array features
@@ -2644,7 +2644,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 0.5, 0.3, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 array constructor 1",
@@ -2659,7 +2659,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 0.5, 0.3, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 array constructor 2",
@@ -2672,7 +2672,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.7, 0.8, 0.9, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 const array constructor 1",
@@ -2687,7 +2687,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 0.5, 0.3, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 const array constructor 2",
@@ -2700,7 +2700,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.7, 0.8, 0.9, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 uniform array constructor",
@@ -2715,7 +2715,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 0.5, 0.3, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 array.length()",
@@ -2728,7 +2728,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 array error check",
@@ -2741,7 +2741,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1 | FLAG_ILLEGAL_SHADER
+		FLAG_VERSION_1_20 | FLAG_ILLEGAL_SHADER
 	},
 
 	// Other new GLSL 1.20 features (just parse/compile tests)
@@ -2760,7 +2760,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 	{
 		"GLSL 1.20 invariant, centroid qualifiers",
@@ -2776,7 +2776,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 1.0, 1.0, 1.0, 1.0 },
 		DONT_CARE_Z,
-		FLAG_VERSION_2_1
+		FLAG_VERSION_1_20
 	},
 
 	// Illegal link test ==================================================
@@ -3122,10 +3122,18 @@ GLSLTest::setup(void)
 		//env->log << "OpenGL 2.x not supported\n";
 		return false;
 	}
-	if (verString[2] >= '1')
-		version21 = GL_TRUE;  // update when needed
-	else
-		version21 = GL_FALSE;  // play it safe
+
+	// check GLSL version
+#ifdef GL_SHADING_LANGUAGE_VERSION
+	const char *glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+#else
+	const char *glslVersion = NULL;
+#endif
+	if (!glslVersion || glslVersion[0] != '1') {
+		env->log << "GLSL 1.x not supported\n";
+		return false;
+	}
+	glsl_120 = (verString[2] >= '2');
 
 	if (!getFunctions()) {
 		env->log << "Unable to get pointer to an OpenGL 2.0 API function\n";
@@ -3551,7 +3559,7 @@ GLSLTest::runOne(MultiTestResult &r, Window &w)
 	else {
 		// loop over all tests
 		for (int i = 0; Programs[i].name; i++) {
-			if ((Programs[i].flags & FLAG_VERSION_2_1) && !version21)
+			if ((Programs[i].flags & FLAG_VERSION_1_20) && !glsl_120)
 				continue; // skip non-applicable tests
 			if (testProgram(Programs[i])) {
 				r.numPassed++;
