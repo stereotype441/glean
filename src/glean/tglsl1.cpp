@@ -2235,6 +2235,93 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"struct (1)",
+		NO_VERTEX_SHADER,
+                "struct s1 { \n"
+                "  float f1; \n"
+                "  vec4 v4; \n"
+                "}; \n"
+                "\n"
+		"void main() { \n"
+                "   s1 a, b; \n"
+                "   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+                "   a.f1 = 0.0; \n"
+                "   b = a; \n"
+                "   gl_FragColor = b.v4; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.75, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"struct (2)",
+		NO_VERTEX_SHADER,
+                "struct s1 { \n"
+                "  float f1; \n"
+                "  vec4 v4; \n"
+                "}; \n"
+                "\n"
+		"void main() { \n"
+                "   s1 a[2]; \n"
+                "   a[0].v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+                "   a[0].f1 = 0.0; \n"
+                "   a[1] = a[0]; \n"
+                "   gl_FragColor = a[1].v4; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.75, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"struct (3)",
+		NO_VERTEX_SHADER,
+                "struct s1 { \n"
+                "  float f1; \n"
+                "  vec4 v4; \n"
+                "}; \n"
+                "\n"
+		"void main() { \n"
+                "   vec4 scale = vec4(0.5); \n"
+                "   vec4 bias = vec4(0.1); \n"
+                "   s1 a; \n"
+                "   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+                "   a.f1 = 0.0; \n"
+                "   gl_FragColor = a.v4 * scale + bias; \n"
+		"} \n",
+		{ 0.225, 0.35, 0.475, 0.6 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"struct (4)",
+		NO_VERTEX_SHADER,
+                "struct s1 { \n"
+                "  float foo; \n"
+                "  vec4 v4; \n"
+                "}; \n"
+                "struct s2 { \n"
+                "  float bar; \n"
+                "  s1 s; \n"
+                "  float baz; \n"
+                "}; \n"
+                "\n"
+		"void main() { \n"
+                "   s2 a; \n"
+                "   a.s.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+                "   a.bar = 0.0; \n"
+                "   a.baz = 0.0; \n"
+                "   a.s.foo = 0.0; \n"
+                "   gl_FragColor = a.s.v4; \n"
+		"} \n",
+		{ 0.25, 0.5, 0.75, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Preprocessor tests ================================================
 	{
 		"Preprocessor test (1)",
