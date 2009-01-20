@@ -57,6 +57,7 @@ private:
 	typedef bool (FBOTest::*TestFunc)(MultiTestResult &r);
 	typedef bool (FBOTest::*SubTestFunc)(void);
 
+	GLboolean haveARBfbo;  // GL_ARB_framebuffer_object supported?
 	GLfloat tolerance[5];
 	void reset(void);
         bool testFunctionality(MultiTestResult &r);
