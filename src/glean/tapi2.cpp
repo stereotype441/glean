@@ -31,9 +31,11 @@
 
 #define GL_GLEXT_PROTOTYPES
 
-#include "tapi2.h"
+#include <stdlib.h>
+#include <cstring>
 #include <cassert>
 #include <math.h>
+#include "tapi2.h"
 
 
 namespace GLEAN {

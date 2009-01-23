@@ -32,9 +32,10 @@
 
 #define GL_GLEXT_PROTOTYPES
 
-#include "ttexunits.h"
+#include <cstring>
 #include <cassert>
 #include <math.h>
+#include "ttexunits.h"
 
 
 namespace GLEAN {

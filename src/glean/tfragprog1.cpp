@@ -39,10 +39,11 @@
 // unique programs work correctly.
 
 
-#include "tfragprog1.h"
+#include <cstring>
 #include <cassert>
 #include <cmath>
 #include <math.h>
+#include "tfragprog1.h"
 
 
 namespace GLEAN {
