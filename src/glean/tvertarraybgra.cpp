@@ -237,7 +237,7 @@ VertArrayBGRAResult::getresults(istream &s)
 
 
 // The test object itself:
-VertArrayBGRATest newTest("vertArrayBGRA", "window, rgb",
+VertArrayBGRATest vertArrayBGRATest("vertArrayBGRA", "window, rgb",
 			  "GL_EXT_vertex_array_bgra",
 			  "Test the GL_EXT_vertex_array_bgra extension.\n");
 
