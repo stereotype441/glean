@@ -160,9 +160,11 @@ VertArrayBGRATest::runOne(VertArrayBGRAResult &r, Window &w)
 		return;
 
 	setupPoints();
+#if 0 // test lighting path too (debug only)
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_COLOR_MATERIAL);
+#endif
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
