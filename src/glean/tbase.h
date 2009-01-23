@@ -275,9 +275,9 @@ public:
 			     ++p) {
 				Window w(ws, **p, fWidth, fHeight);
 				RenderingContext rc(ws, **p);
-				if (!ws.makeCurrent(rc, w))
-					; // XXX need to throw exception here
-
+				if (!ws.makeCurrent(rc, w)) {
+					// XXX need to throw exception here
+				}
 				// Check for all prerequisite extensions.  Note
 				// that this must be done after the rendering
 				// context has been created and made current!
