@@ -180,6 +180,64 @@ TexSwizzleTest::ReportFailure(GLenum swizzleR, GLenum swizzleG,
 }
 
 
+// Test state setting/getting for texture swizzle.
+bool
+TexSwizzleTest::TestAPI(void)
+{
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R_EXT, GL_ONE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G_EXT, GL_ZERO);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B_EXT, GL_RED);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A_EXT, GL_BLUE);
+
+	if (glGetError() != GL_NO_ERROR) {
+		env->log << "\tSetting GL_TEXTURE_SWIZZLE_R/G/B/A generated an error.\n";
+		return false;
+	}
+
+	GLint val;
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R_EXT, &val);
+	if (val != GL_ONE) {
+		env->log << "\tQuery of GL_TEXTURE_SWIZZLE_R_EXT failed.\n";
+		return false;
+	}
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G_EXT, &val);
+	if (val != GL_ZERO) {
+		env->log << "\tQuery of GL_TEXTURE_SWIZZLE_G_EXT failed.\n";
+		return false;
+	}
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B_EXT, &val);
+	if (val != GL_RED) {
+		env->log << "\tQuery of GL_TEXTURE_SWIZZLE_B_EXT failed.\n";
+		return false;
+	}
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A_EXT, &val);
+	if (val != GL_BLUE) {
+		env->log << "\tQuery of GL_TEXTURE_SWIZZLE_A_EXT failed.\n";
+		return false;
+	}
+		
+	// set all at once
+	const GLint swz[4] = { GL_BLUE, GL_GREEN, GL_ALPHA, GL_ZERO };
+	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA_EXT, swz);
+	if (glGetError() != GL_NO_ERROR) {
+		env->log << "\tSetting GL_TEXTURE_SWIZZLE_RGBA_EXT generated an error.\n";
+		return false;
+	}
+
+	GLint swzOut[4];
+	glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA_EXT, swzOut);
+	if (swzOut[0] != swz[0] ||
+		swzOut[1] != swz[1] ||
+		swzOut[2] != swz[2] ||
+		swzOut[3] != swz[3]) {
+		env->log << "\tQuerying GL_TEXTURE_SWIZZLE_RGBA_EXT failed.\n";
+		return false;
+	}
+
+	return true;
+}
+
+
 // Loop over all possible combinations of texture swizzles,
 // drawing with a texture and checking if the results are correct.
 // return true/false for pass/fail
@@ -309,10 +367,14 @@ TexSwizzleTest::runOne(TexSwizzleResult &r, Window &w)
 
 	Setup();
 
-	r.pass = TestSwizzles();
+	r.pass = TestAPI();
+
 	if (r.pass) {
-		if (GLUtils::haveExtension("GL_ARB_fragment_program"))
-			r. pass = TestSwizzlesWithProgram();
+		r.pass = TestSwizzles();
+	}
+
+	if (r.pass && GLUtils::haveExtension("GL_ARB_fragment_program")) {
+		r. pass = TestSwizzlesWithProgram();
 	}
 }
 

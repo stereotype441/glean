@@ -75,6 +75,7 @@ private:
 			   GLenum swizzleA,
 			   const GLubyte *actual,
 			   const GLubyte *expected);
+	bool TestAPI(void);
 	bool TestSwizzles(void);
 	bool TestSwizzlesWithProgram(void);
 	void Setup(void);
