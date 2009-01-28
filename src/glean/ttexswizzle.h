@@ -73,6 +73,7 @@ private:
 			   GLenum swizzleG,
 			   GLenum swizzleB,
 			   GLenum swizzleA,
+			   const GLubyte *texColor,
 			   const GLubyte *actual,
 			   const GLubyte *expected);
 	bool TestAPI(void);

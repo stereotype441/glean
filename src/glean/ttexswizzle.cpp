@@ -158,6 +158,7 @@ TexSwizzleTest::SwizzleString(GLenum swizzle)
 void
 TexSwizzleTest::ReportFailure(GLenum swizzleR, GLenum swizzleG,
 							  GLenum swizzleB, GLenum swizzleA,
+							  const GLubyte *texColor,
 							  const GLubyte *actual,
 							  const GLubyte *expected)
 {
@@ -171,6 +172,9 @@ TexSwizzleTest::ReportFailure(GLenum swizzleR, GLenum swizzleG,
 	if (glIsEnabled(GL_FRAGMENT_PROGRAM_ARB)) {
 		env->log << "\tGL_FRAGMENT_PROGRAM enabled\n";
 	}
+	sprintf(str, "%d, %d, %d, %d",
+			texColor[0], texColor[1], texColor[2], texColor[3]);
+	env->log << "\tTexture color: " << str << "\n";
 	sprintf(str, "%d, %d, %d, %d",
 			expected[0], expected[1], expected[2], expected[3]);
 	env->log << "\tExpected color: " << str << "\n";
@@ -296,7 +300,7 @@ TexSwizzleTest::TestSwizzles(void)
 									  swizzles[ig],
 									  swizzles[ib],
 									  swizzles[ia],
-									  actual, expected);
+									  texColor, actual, expected);
 
 						return false;
 					}						
