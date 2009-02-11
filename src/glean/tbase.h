@@ -125,6 +125,8 @@ and tbasic.cpp.
 
 class GLEAN::DrawingSurfaceConfig;		// Forward reference.
 
+
+// Macro for constructor for Glean test taking width, height and one config flag
 #define GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, ONE)                     \
 	TEST(const char* aName, const char* aFilter,                          \
 	     const char* aDescription):                                       \
@@ -153,11 +155,15 @@ class GLEAN::DrawingSurfaceConfig;		// Forward reference.
 	virtual void compareOne(RESULT& oldR, RESULT& newR);                  \
 	virtual void logOne(RESULT& r)
 
+// Macro for constructor for Glean test taking width, height
 #define GLEAN_CLASS_WH(TEST, RESULT, WIDTH, HEIGHT) \
         GLEAN_CLASS_WHO(TEST, RESULT, WIDTH, HEIGHT, false)
 
+// Macro for constructor for Glean test taking only test class and result class
 #define GLEAN_CLASS(TEST, RESULT) \
         GLEAN_CLASS_WHO(TEST, RESULT, 258, 258, false)
+
+
 
 namespace GLEAN {
 
@@ -185,6 +191,8 @@ public:
 	}
 };
 
+
+// The BaseTest class is a templatized class taking a ResultType as a parameter
 template <class ResultType> class BaseTest: public Test {
 public:
 	BaseTest(const char* aName, const char* aFilter,
