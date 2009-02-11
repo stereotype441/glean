@@ -262,13 +262,16 @@ public:
 	}
 
 	virtual void run(Environment& environment) {
-		if (hasRun) return; // no multiple invocations
+		if (hasRun)
+			return; // no multiple invocations
+
 		// Invoke the prerequisite tests, if any:
 		for (Test** t = prereqs; t != 0 && *t != 0; ++t)
 			(*t)->run(environment);
 		env = &environment; // make environment available
 		logDescription();   // log invocation
 		WindowSystem& ws = env->winSys;
+
 		try {
 			OutputStream os(*this);	// open results file
 
@@ -302,7 +305,10 @@ public:
 				// Save the result
 				results.push_back(r);
 				r->put(os);
-				if (testOne) break;
+
+				// if testOne, skip remaining surface configs
+				if (testOne)
+					break;
 			}
 		}
 		catch (DrawingSurfaceFilter::Syntax e) {
