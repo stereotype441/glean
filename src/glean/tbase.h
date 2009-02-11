@@ -148,6 +148,7 @@ class GLEAN::DrawingSurfaceConfig;		// Forward reference.
 		BaseTest<RESULT>(aName, aFilter, anExtensionList, aDescription) {     \
                 fWidth  = WIDTH;                                              \
                 fHeight = HEIGHT;                                             \
+                testOne = ONE;                                                \
 	}                                                                     \
 	virtual ~TEST() {}                                                    \
                                                                               \
