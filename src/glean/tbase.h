@@ -261,6 +261,12 @@ public:
 				 << '\n';
 	}
 
+	// This method allows a test to indicate that it's not applicable.
+	// For example, the GL version is too low.
+	virtual bool isApplicable() const {
+		return true;
+	}
+
 	virtual void run(Environment& environment) {
 		if (hasRun)
 			return; // no multiple invocations
@@ -290,6 +296,11 @@ public:
 				if (!ws.makeCurrent(rc, w)) {
 					// XXX need to throw exception here
 				}
+
+				// Check if test is applicable to this context
+				if (!isApplicable())
+					continue;
+
 				// Check for all prerequisite extensions.  Note
 				// that this must be done after the rendering
 				// context has been created and made current!
