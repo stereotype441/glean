@@ -3205,13 +3205,6 @@ GLSLTest::setupTextureMatrix1(void)
 bool
 GLSLTest::setup(void)
 {
-	// check that we have OpenGL 2.0
-	const char *verString = (const char *) glGetString(GL_VERSION);
-	if (verString[0] != '2' || verString[1] != '.') {
-		//env->log << "OpenGL 2.x not supported\n";
-		return false;
-	}
-
 	// check GLSL version
 #ifdef GL_SHADING_LANGUAGE_VERSION
 	const char *glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -3222,7 +3215,7 @@ GLSLTest::setup(void)
 		env->log << "GLSL 1.x not supported\n";
 		return false;
 	}
-	glsl_120 = (verString[2] >= '2');
+	glsl_120 = (glslVersion[2] >= '2');
 
 	if (!getFunctions()) {
 		env->log << "Unable to get pointer to an OpenGL 2.0 API function\n";
@@ -3662,9 +3655,27 @@ GLSLTest::runOne(MultiTestResult &r, Window &w)
 }
 
 
+// We need OpenGL 2.0, 2.1 or 3.0
+bool
+GLSLTest::isApplicable() const
+{
+	const char *version = (const char *) glGetString(GL_VERSION);
+	if (strncmp(version, "2.0", 3) == 0 ||
+		strncmp(version, "2.1", 3) == 0 ||
+		strncmp(version, "3.0", 3) == 0) {
+		return true;
+	}
+	else {
+		env->log << name
+				 << ":  skipped.  Requires GL 2.0, 2.1 or 3.0.\n";
+		return false;
+	}
+}
+
+
 // The test object itself:
 GLSLTest glslTest("glsl1", "window, rgb, z",
-		  "",  // no extension filter (we'll test for version 2.x during setup)
+		  "",  // no extension filter but see isApplicable()
 		  "GLSL test 1: test basic Shading Language functionality.\n"
 		  );
 
