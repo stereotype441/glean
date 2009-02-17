@@ -336,6 +336,33 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+        {
+		"Swizzled expression",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   vec4 a = vec4(1, 1, 1, 1); \n"
+                "   vec4 b = vec4(0.5, 0.2, 0.1, 0.8); \n"
+                "   vec4 c = (a * b).wzyx; \n"
+		"   gl_FragColor = c; \n"
+		"} \n",
+		{ 0.8, 0.1, 0.2, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+
+        {
+		"Swizzled swizzle",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
+                "   vec4 b = a.wzyx.yxwz; \n"
+		"   gl_FragColor = b; \n"
+		"} \n",
+		{ 0.3, 0.4, 0.1, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+
 	// Z-write ============================================================
 	{
 		"gl_FragDepth writing",
@@ -1087,6 +1114,45 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor.w = ar[3]; \n"
 		"} \n",
 		{ 0.5, 1.0, 0.25, 0.2 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"array with variable indexing",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float ar[4]; \n"
+		"   ar[0] = 0.0; \n"
+		"   ar[1] = 0.1; \n"
+		"   ar[2] = 0.5; \n"
+		"   ar[3] = 0.7; \n"
+                "   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
+		"   gl_FragColor = vec4(ar[indx]); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"array with swizzled variable indexing",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float ar[4]; \n"
+		"   ar[0] = 0.0; \n"
+		"   ar[1] = 0.8; \n"
+		"   ar[2] = 0.5; \n"
+		"   ar[3] = 0.7; \n"
+                "   ivec2 indx; \n"
+                "   indx.x = 1; \n"
+                "   indx.y = int(uniform1.y * 8.0);  // should be 2 \n"
+                "   float p = ar[indx.x] * ar[indx.y]; \n"
+		"   gl_FragColor = vec4(p); \n"
+		"} \n",
+		{ 0.4, 0.4, 0.4, 0.4 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
