@@ -2964,6 +2964,42 @@ static const ShaderProgram Programs[] = {
 		FLAG_ILLEGAL_LINK
 	},
 
+	{
+		"varying read but not written",
+		// vert shader:
+		"varying vec4 foo; \n"
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		// frag shader:
+		"varying vec4 foo; \n"
+		"void main() { \n"
+		"   gl_FragColor = foo; \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_LINK
+	},
+
+	{
+		"texcoord varying",
+                // Does the linker correctly recognize that texcoord[1] is
+                // written by the vertex shader and read by the fragment shader?
+		// vert shader:
+		"void main() { \n"
+                "   int i = 1; \n"
+                "   gl_TexCoord[i] = vec4(0.5, 0, 0, 0); \n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		// frag shader:
+		"void main() { \n"
+		"   gl_FragColor = gl_TexCoord[1]; \n"
+		"} \n",
+		{ 0.5, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	{ NULL, NULL, NULL, {0,0,0,0}, 0, FLAG_NONE } // end of list sentinal
 };
 
