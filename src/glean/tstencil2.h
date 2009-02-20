@@ -65,8 +65,9 @@ private:
 	bool have_ATI_separate_stencil(void) const;
 	bool have_EXT_stencil_two_side(void) const;
 	bool have_GL2_stencil_two_side(void) const;
+	bool have_stencil_wrap(void) const;
 
-	bool render_test(GLboolean clear, GLuint expectedFront, GLuint expectedBack);
+	bool render_test(GLuint expectedFront, GLuint expectedBack);
 
 	bool compare_state(int method, GLenum found, GLenum expected, const char *msg);
 

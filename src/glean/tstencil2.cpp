@@ -119,6 +119,20 @@ Stencil2Test::have_GL2_stencil_two_side(void) const
 	return false;
 }
 
+bool
+Stencil2Test::have_stencil_wrap(void) const
+{
+	const char *version = (const char *) glGetString(GL_VERSION);
+	if (strncmp(version, "2.", 2) == 0 ||
+	    strncmp(version, "3.0", 3) == 0) {
+		return true;
+	}
+	else if (GLUtils::haveExtension("GL_EXT_stencil_wrap")) {
+		return true;
+	}
+	return false;
+}
+
 
 // Draw four quads:
 //   Bottom row uses GL_CCW
@@ -128,8 +142,7 @@ Stencil2Test::have_GL2_stencil_two_side(void) const
 // Check the values in the stencil buffer to see if they match
 // the expected values.
 bool
-Stencil2Test::render_test(GLboolean clear,
-			  GLuint expectedFront, GLuint expectedBack)
+Stencil2Test::render_test(GLuint expectedFront, GLuint expectedBack)
 {
 	GLint x0 = 0;
 	GLint x1 = windowSize / 2;
@@ -137,11 +150,6 @@ Stencil2Test::render_test(GLboolean clear,
 	GLint y0 = 0;
 	GLint y1 = windowSize / 2;
 	GLint y2 = windowSize;
-
-	if (clear)
-		glClear(GL_COLOR_BUFFER_BIT |
-			GL_STENCIL_BUFFER_BIT |
-			GL_DEPTH_BUFFER_BIT);
 
 	glFrontFace(GL_CCW); // this the GL default
 
@@ -473,6 +481,11 @@ Stencil2Test::test_stencil(int method)
 	// No depth testing
 	glDisable(GL_DEPTH_TEST);
 
+	glClear(GL_COLOR_BUFFER_BIT |
+		GL_STENCIL_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT);
+
+
 	// set stencil buffer vals to 5
 	pass = set_stencil_state(method,
 				 GL_KEEP, GL_KEEP,  // stencil fail
@@ -481,7 +494,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_ALWAYS, GL_ALWAYS,  // stencil func
 				 5, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_TRUE, 5, 5);
+		pass = render_test(5, 5);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -494,7 +507,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_ALWAYS, GL_ALWAYS,  // stencil func
 				 5, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 6, 4);  // don't glClear
+		pass = render_test(6, 4);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -509,7 +522,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_EQUAL, GL_LESS,  // stencil func
 				 6, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 6, 0);  // don't glClear
+		pass = render_test(6, 0);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -524,7 +537,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_NOTEQUAL, GL_LESS,  // stencil func
 				 10, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 6, 1);  // don't glClear
+		pass = render_test(6, 1);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -535,6 +548,10 @@ Stencil2Test::test_stencil(int method)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	glClear(GL_COLOR_BUFFER_BIT |
+		GL_STENCIL_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT);
+
 	// set stencil buffer vals to 7, set Z values
 	pass = set_stencil_state(method,
 				 GL_KEEP, GL_KEEP,  // stencil fail
@@ -543,13 +560,13 @@ Stencil2Test::test_stencil(int method)
 				 GL_ALWAYS, GL_ALWAYS,  // stencil func
 				 7, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_TRUE, 7, 7);  // glClear
+		pass = render_test(7, 7);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
 
 
-	// don't clear z buffer, GL_LESS test should fail everywhere
+	// GL_LESS test should fail everywhere
 	// decr front to 5, incr back to 2
 	pass = set_stencil_state(method,
 				 GL_KEEP, GL_KEEP,  // stencil fail
@@ -558,7 +575,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_ALWAYS, GL_ALWAYS,  // stencil func
 				 99, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 6, 8);  // don't glClear
+		pass = render_test(6, 8);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -576,7 +593,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_ALWAYS, GL_ALWAYS,  // stencil func
 				 3, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 3, 7);  // don't glClear
+		pass = render_test(3, 7);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -590,7 +607,7 @@ Stencil2Test::test_stencil(int method)
 				 GL_EQUAL, GL_NOTEQUAL,  // stencil func
 				 3, ~0);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 4, 6);  // don't glClear
+		pass = render_test(4, 6);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
@@ -611,7 +628,55 @@ Stencil2Test::test_stencil(int method)
 				 GL_EQUAL, GL_EQUAL,  // stencil func
 				 15, 0x2);  // ref, mask
 	if (pass)
-		pass = render_test(GL_FALSE, 3, 6);  // don't glClear
+		pass = render_test(3, 6);
+	reset_stencil_state(method);
+	if (!pass)
+		return false;
+
+
+	//============================================================
+	// Test common two-sided stencil modes for shadow volume rendering
+	// Requires stencil +/- wrap feature.
+
+	if (!have_stencil_wrap())
+		return true;
+
+	glClear(GL_COLOR_BUFFER_BIT |
+		GL_STENCIL_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	// "traditional / Z-pass" method:
+	// front face: incr on zpass
+	// back face: decr on zpass
+	// both front and back Z-test should pass here
+	pass = set_stencil_state(method,
+				 GL_KEEP, GL_KEEP,  // stencil fail
+				 GL_KEEP, GL_KEEP,  // z fail
+				 GL_INCR_WRAP_EXT, GL_DECR_WRAP_EXT,  // z pass
+				 GL_ALWAYS, GL_ALWAYS,  // stencil func
+				 0, ~0);  // ref, mask
+	if (pass)
+		pass = render_test(1, stencilMax);
+	reset_stencil_state(method);
+	if (!pass)
+		return false;
+
+
+	// "Z-fail" method:
+	// front face: decr on zfail
+	// back face: incr on zfail
+	// both front and back Z-test should fail here
+	pass = set_stencil_state(method,
+				 GL_KEEP, GL_KEEP,  // stencil fail
+				 GL_DECR_WRAP_EXT, GL_INCR_WRAP_EXT,  // z fail
+				 GL_KEEP, GL_KEEP,  // z pass
+				 GL_ALWAYS, GL_ALWAYS,  // stencil func
+				 0, ~0);  // ref, mask
+	if (pass)
+		pass = render_test(0, 0);
 	reset_stencil_state(method);
 	if (!pass)
 		return false;
