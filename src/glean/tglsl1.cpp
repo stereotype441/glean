@@ -363,6 +363,20 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
         },
 
+        {
+		"Swizzled swizzled swizzle",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
+                "   vec4 b = a.wzyx.yxwz.xxyz; \n"
+		"   gl_FragColor = b; \n"
+		"} \n",
+		{ 0.3, 0.3, 0.4, 0.1 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+
+
 	// Z-write ============================================================
 	{
 		"gl_FragDepth writing",
