@@ -564,6 +564,18 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		"swizzled move test",
+		"!!ARBfp1.0\n"
+		"TEMP t; \n"
+		"PARAM p = program.local[1]; \n"
+		"MOV t, p; \n"
+		"MOV t, t.yxwz; \n"  // "in-place" swizzle
+		"MOV result.color, t; \n"
+		"END \n",
+		{ Param1[1], Param1[0], Param1[3], Param1[2] },
+		DONT_CARE_Z
+	},
+	{
 		"XPD test 1",
 		"!!ARBfp1.0\n"
 		"PARAM p1 = program.local[1]; \n"
