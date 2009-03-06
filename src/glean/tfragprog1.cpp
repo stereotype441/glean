@@ -437,6 +437,17 @@ static const FragmentProgram Programs[] = {
 		DONT_CARE_Z
 	},
 	{
+		/* check that RCP result is replicated across XYZW */
+		"RCP test 2 (reciprocal)",
+		"!!ARBfp1.0\n"
+		"PARAM values = {8, -10, 1, 12 }; \n"
+		"MOV result.color, values; \n"
+		"RCP result.color, values.x; \n"
+		"END \n",
+		{ 1.0 / 8.0, 1.0 / 8.0, 1.0 / 8.0, 1.0 / 8.0 },
+		DONT_CARE_Z
+	},
+	{
 		"RSQ test 1 (reciprocal square root)",
 		"!!ARBfp1.0\n"
 		"PARAM values = {1, 4, 9, 100 }; \n"
