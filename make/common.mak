@@ -174,7 +174,7 @@ _INC=\
 OPT:=		# Optimization options
 ifeq ($(PLATFORM), Unix)
 _OPT=\
-	 -fno-unroll-all-loops \
+	-O -fno-unroll-all-loops \
 	$(OPT)
 endif # Unix
 ifeq ($(PLATFORM), BeOS)
