@@ -174,7 +174,7 @@ _INC=\
 OPT:=		# Optimization options
 ifeq ($(PLATFORM), Unix)
 _OPT=\
-	-O -fno-unroll-all-loops \
+	 -fno-unroll-all-loops \
 	$(OPT)
 endif # Unix
 ifeq ($(PLATFORM), BeOS)
@@ -202,7 +202,7 @@ endif # BeOS
 ifeq ($(PLATFORM), MacOSX)
 _WARN=\
 	-Wall \
-	-Wmissing-prototypes -Wmissing-declarations \
+	-Wextra \
 	$(WARN)
 endif # BeOS
 LIBDIR:=	# -L options for specifying library directories
