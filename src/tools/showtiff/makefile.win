@@ -46,7 +46,7 @@ CLEAN :
 	-@erase "$(INTDIR)\*.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(OUTDIR)\$(FTARGET).pch
-	-@deltree /Y "$(OUTDIR)"
+	-@rd /S /Q "$(OUTDIR)"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -87,7 +87,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\$(FTARGET).pdb"
 	-@erase "$(GLEAN_BIN_DIR)\$(FTARGET).ilk"
 	-@erase "$(OUTDIR)\$(FTARGET).pch
-	-@deltree /Y "$(OUTDIR)"
+	-@rd /S /Q "$(OUTDIR)"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
