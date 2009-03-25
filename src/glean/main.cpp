@@ -31,8 +31,6 @@
 
 // main.cpp:  main program for Glean
 
-using namespace std;
-
 #include <cassert>
 #include <cstring>
 #include <iostream>
@@ -45,6 +43,8 @@ using namespace std;
 #include "version.h"
 #include "lex.h"
 #include "dsfilt.h"
+
+using namespace std;
 
 using namespace GLEAN;
 
