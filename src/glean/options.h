@@ -48,10 +48,10 @@
 #ifndef __options_h__
 #define __options_h__
 
-using namespace std;
-
 #include <string>
 #include <vector>
+
+using namespace std;
 
 namespace GLEAN {
 
