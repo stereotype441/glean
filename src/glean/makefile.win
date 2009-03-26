@@ -36,26 +36,37 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\misc.obj" \
 		"$(INTDIR)\options.obj" \
 		"$(INTDIR)\rc.obj" \
+		"$(INTDIR)\tapi2.obj" \
 		"$(INTDIR)\tbasic.obj" \
 		"$(INTDIR)\tbasicperf.obj" \
 		"$(INTDIR)\tbinding.obj" \
 		"$(INTDIR)\tblend.obj" \
 		"$(INTDIR)\tchgperf.obj" \
+		"$(INTDIR)\tdepthstencil.obj" \
 		"$(INTDIR)\test.obj" \
+		"$(INTDIR)\tfpexceptions.obj" \
+		"$(INTDIR)\tfragprog1.obj" \
 		"$(INTDIR)\tgetstr.obj" \
 		"$(INTDIR)\tlogicop.obj" \
 		"$(INTDIR)\tmaskedclear.obj" \
+		"$(INTDIR)\tmultitest.obj" \
 		"$(INTDIR)\torthpos.obj" \
 		"$(INTDIR)\tpaths.obj" \
 		"$(INTDIR)\tpgos.obj" \
+		"$(INTDIR)\tpointatten.obj" \
 		"$(INTDIR)\treadpix.obj" \
 		"$(INTDIR)\trgbtris.obj" \
 		"$(INTDIR)\tscissor.obj" \
+		"$(INTDIR)\tstencil2.obj" \
 		"$(INTDIR)\tteapot.obj" \
+		"$(INTDIR)\ttexcombine4.obj" \
 		"$(INTDIR)\ttexcombine.obj" \
 		"$(INTDIR)\ttexcube.obj" \
 		"$(INTDIR)\ttexenv.obj" \
 		"$(INTDIR)\ttexgen.obj" \
+		"$(INTDIR)\ttexrect.obj" \
+		"$(INTDIR)\ttexture_srgb.obj" \
+		"$(INTDIR)\tvertprog1.obj" \
 		"$(INTDIR)\tvtxperf.obj" \
 		"$(INTDIR)\winsys.obj"
 
