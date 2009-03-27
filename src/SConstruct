@@ -47,7 +47,6 @@ if env['platform'] == 'unix':
         '__X11__',
     ])
     env.Prepend(LIBS = [
-        'glut',
         'GLU',
         'GL',
     ])
@@ -61,7 +60,6 @@ if env['platform'] == 'windows':
         '__MS__',
     ])
     env.Prepend(LIBS = [
-        'glut32',
         'glu32',
         'opengl32',
         'gdi32',
@@ -69,13 +67,25 @@ if env['platform'] == 'windows':
         'kernel32',
     ])
 
-if True:
-    env.Prepend(CPPPATH = ['#glext'])
-if True:
-    SConscript('tiff/SConscript')
+conf = Configure(env)
+if not conf.CheckCHeader('GL/glext.h'):
+    conf.env.Prepend(CPPPATH = ['#glext'])
+if conf.CheckCHeader('GL/glut.h'):
+    if env['platform'] == 'windows':
+        conf.env.Prepend(LIBS = ['glut32'])
+    else:
+        conf.env.Prepend(LIBS = ['glut'])
+    conf.env['glut'] = True
+else:
+    conf.env['glut'] = False
+if conf.CheckCHeader('tiff.h'):
+    conf.env.Prepend(LIBS = ['tiff'])
+else:
+    SConscript(['tiff/SConscript'])
     Import(['tiff'])
-    env.Prepend(CPPPATH = ['#tiff'])
-    env.Prepend(LIBS = [tiff])
+    conf.env.Prepend(CPPPATH = ['#tiff'])
+    conf.env.Prepend(LIBS = [tiff])
+env = conf.Finish()
 
 env.Prepend(CPPPATH = [
     '#glh',

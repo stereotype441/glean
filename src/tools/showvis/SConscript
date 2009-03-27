@@ -1,3 +1,8 @@
-Import(['env'])
+Import(['*'])
 
-env.Program('showvis', ['main.cpp'])
+if env['glut']:
+    env = env.Clone()
+
+    env.Prepend(LIBS = [dsurf, lex])
+
+    env.Program('showvis', ['main.cpp'])

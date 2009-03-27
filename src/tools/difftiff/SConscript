@@ -1,3 +1,8 @@
-Import(['env'])
+Import(['*'])
 
-env.Program('difftiff', ['main.cpp'])
+if env['glut']:
+    env = env.Clone()
+
+    env.Prepend(LIBS = [image])
+
+    env.Program('difftiff', ['main.cpp'])
