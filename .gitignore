@@ -1,0 +1,12 @@
+.*.sw?
+.scon*
+*.a
+*.exe
+*.lib
+*.o
+*.obj
+*.os
+*.pyc
+*.pyo
+*.so
+config.log
