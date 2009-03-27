@@ -9,4 +9,5 @@
 *.pyc
 *.pyo
 *.so
+build
 config.log

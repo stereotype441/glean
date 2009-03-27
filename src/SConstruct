@@ -97,4 +97,13 @@ env.Prepend(CPPPATH = [
     '#libs/timer',
 ])
 
-SConscript(dirs = ['libs', 'glean', 'tools'])
+variant_dir = env['platform']
+if env['machine'] != 'generic':
+    variant_dir += '-' + env['machine']
+if env['debug']:
+    variant_dir += "-debug"
+variant_dir = os.path.join('..', 'build', variant_dir)
+
+env.VariantDir(variant_dir, '.', duplicate=0)
+
+SConscript('SConscript', variant_dir=variant_dir, duplicate=0)
