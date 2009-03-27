@@ -41,6 +41,110 @@ Export(['env'])
 
 env.Tool(env['toolchain'], ['../scons'])
 
+env['gcc'] = 'gcc' in os.path.basename(env['CC']).split('-')
+env['msvc'] = env['CC'] == 'cl'
+
+# C preprocessor options
+cppdefines = []
+if env['debug']:
+    cppdefines += ['DEBUG']
+else:
+    cppdefines += ['NDEBUG']
+if env['platform'] == 'windows':
+    cppdefines += [
+        'WIN32',
+        '_CONSOLE',
+        '_MBCS',
+    ]
+    if env['debug']:
+        cppdefines += ['_DEBUG']
+env.Append(CPPDEFINES = cppdefines)
+
+# C compiler options
+cflags = [] # C
+cxxflags = [] # C++
+ccflags = [] # C & C++
+if env['gcc']:
+    if env['debug']:
+        ccflags += ['-O0', '-g3']
+    else:
+        ccflags += ['-O3', '-g0']
+    if env['machine'] == 'x86':
+        ccflags += ['-m32']
+    if env['machine'] == 'x86_64':
+        ccflags += ['-m64']
+    # See also:
+    # - http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    ccflags += [
+        '-Werror=declaration-after-statement',
+        '-Wall',
+        '-Wmissing-field-initializers',
+        '-Wpointer-arith',
+        '-fmessage-length=0', # be nice to Eclipse
+    ]
+    cflags += [
+        '-Wmissing-prototypes',
+    ]
+if env['msvc']:
+    if env['debug']:
+        ccflags += [
+          '/Od', # disable optimizations
+          '/Oi', # enable intrinsic functions
+          '/Oy-', # disable frame pointer omission
+          '/GL-', # disable whole program optimization
+        ]
+    else:
+        ccflags += [
+          '/Ox', # maximum optimizations
+          '/Oi', # enable intrinsic functions
+          '/Ot', # favor code speed
+        ]
+    ccflags += [
+        '/EHsc', # set exception handling model
+        #'/W3', # warning level
+        #'/Wp64', # enable 64 bit porting warnings
+    ]
+    # Automatic pdb generation
+    # See http://scons.tigris.org/issues/show_bug.cgi?id=1656
+    env.EnsureSConsVersion(0, 98, 0)
+    env['PDB'] = '${TARGET.base}.pdb'
+env.Append(CCFLAGS = ccflags)
+env.Append(CFLAGS = cflags)
+env.Append(CXXFLAGS = cxxflags)
+
+if env['platform'] == 'windows' and env['msvc']:
+    # Choose the appropriate MSVC CRT
+    # http://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
+    if env['debug']:
+        env.Append(CCFLAGS = ['/MTd'])
+        env.Append(SHCCFLAGS = ['/LDd'])
+    else:
+        env.Append(CCFLAGS = ['/MT'])
+        env.Append(SHCCFLAGS = ['/LD'])
+    
+# Assembler options
+if env['gcc']:
+    if env['machine'] == 'x86':
+        env.Append(ASFLAGS = ['-m32'])
+    if env['machine'] == 'x86_64':
+        env.Append(ASFLAGS = ['-m64'])
+
+# Linker options
+linkflags = []
+if env['gcc']:
+    if env['machine'] == 'x86':
+        linkflags += ['-m32']
+    if env['machine'] == 'x86_64':
+        linkflags += ['-m64']
+if platform == 'windows' and env['msvc']:
+    # See also:
+    # - http://msdn2.microsoft.com/en-us/library/y0zzbyt4.aspx
+    linkflags += [
+        '/fixed:no',
+        '/incremental:no',
+    ]
+env.Append(LINKFLAGS = linkflags)
+
 if env['platform'] == 'unix':
     env.Append(CPPDEFINES = [
         '__UNIX__',
@@ -53,9 +157,6 @@ if env['platform'] == 'unix':
 
 if env['platform'] == 'windows':
     env.Append(CPPDEFINES = [
-        'WIN32',
-        '_CONSOLE',
-        '_MBCS',
         '__WIN__',
         '__MS__',
     ])
@@ -101,7 +202,7 @@ variant_dir = env['platform']
 if env['machine'] != 'generic':
     variant_dir += '-' + env['machine']
 if env['debug']:
-    variant_dir += "-debug"
+    variant_dir += '-debug'
 variant_dir = os.path.join('..', 'build', variant_dir)
 
 env.VariantDir(variant_dir, '.', duplicate=0)
