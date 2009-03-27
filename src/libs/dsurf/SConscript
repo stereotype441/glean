@@ -1,0 +1,11 @@
+Import(['env'])
+
+dsurf = env.StaticLibrary(
+    target = 'dsurf',
+    source = [
+        'dsconfig.cpp',
+        'dsfilt.cpp',
+    ],
+)
+
+Export(['dsurf'])

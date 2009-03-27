@@ -1,0 +1,10 @@
+Import(['env'])
+
+timer = env.StaticLibrary(
+    target = 'timer',
+    source = [
+        'timer.cpp',
+    ],
+)
+
+Export(['timer'])

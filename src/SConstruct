@@ -1,0 +1,90 @@
+import os
+import platform
+import sys
+
+_platform_map = {
+	'freebsd': 'unix',
+	'linux2': 'unix',
+	'win32': 'windows',
+}
+
+default_platform = sys.platform
+default_platform = _platform_map.get(default_platform, default_platform)
+
+_machine_map = {
+	'x86': 'x86',
+	'i386': 'x86',
+	'i486': 'x86',
+	'i586': 'x86',
+	'i686': 'x86',
+	'ppc' : 'ppc',
+	'x86_64': 'x86_64',
+}
+if 'PROCESSOR_ARCHITECTURE' in os.environ:
+	default_machine = os.environ['PROCESSOR_ARCHITECTURE']
+else:
+	default_machine = platform.machine()
+default_machine = _machine_map.get(default_machine, 'generic')
+
+vars = Variables()
+vars.Add(BoolOption('debug', 'debug build', 'no'))
+vars.Add(EnumOption('platform', 'target platform', default_platform,
+                    allowed_values=('unix', 'windows')))
+vars.Add(EnumOption('machine', 'use machine-specific assembly code', default_machine,
+                    allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
+vars.Add(EnumOption('toolchain', 'compiler toolchain', 'default',
+                    allowed_values=('default', 'crossmingw', 'winsdk')))
+
+env = Environment(variables=vars)
+
+Export(['env'])
+
+env.Tool(env['toolchain'], ['../scons'])
+
+if env['platform'] == 'unix':
+    env.Append(CPPDEFINES = [
+        '__UNIX__',
+        '__X11__',
+    ])
+    env.Prepend(LIBS = [
+        'glut',
+        'GLU',
+        'GL',
+    ])
+
+if env['platform'] == 'windows':
+    env.Append(CPPDEFINES = [
+        'WIN32',
+        '_CONSOLE',
+        '_MBCS',
+        '__WIN__',
+        '__MS__',
+    ])
+    env.Prepend(LIBS = [
+        'glut32',
+        'glu32',
+        'opengl32',
+        'gdi32',
+        'user32',
+        'kernel32',
+    ])
+
+if True:
+    env.Prepend(CPPPATH = ['#glext'])
+if True:
+    SConscript('tiff/SConscript')
+    Import(['tiff'])
+    env.Prepend(CPPPATH = ['#tiff'])
+    env.Prepend(LIBS = [tiff])
+
+env.Prepend(CPPPATH = [
+    '#glh',
+    '#libs/dsurf',
+    '#libs/image',
+    '#libs/lex',
+    '#libs/rand',
+    '#libs/stats',
+    '#libs/timer',
+])
+
+SConscript(dirs = ['libs', 'glean', 'tools'])

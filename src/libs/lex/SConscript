@@ -1,0 +1,10 @@
+Import(['env'])
+
+lex = env.StaticLibrary(
+    target = 'lex',
+    source = [
+        'lex.cpp',
+    ],
+)
+
+Export(['lex'])

@@ -1,0 +1,16 @@
+Import(['env'])
+
+image = env.StaticLibrary(
+    target = 'image',
+    source = [
+        'gl.cpp',
+        'misc.cpp',
+        'pack.cpp',
+        'rdtiff.cpp',
+        'reg.cpp',
+        'unpack.cpp',
+        'wrtiff.cpp',
+    ],
+)
+
+Export(['image'])
