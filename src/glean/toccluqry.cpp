@@ -38,6 +38,7 @@
 #include <cstring>
 #include <stdio.h>
 #include <cmath>
+#include "rand.h"
 #include "toccluqry.h"
 
 
@@ -79,6 +80,7 @@ bool OccluQryTest::chk_ext()
 
 GLuint OccluQryTest::find_unused_id()
 {
+	RandomBits idRand(32, 183485);
 	unsigned int id;
 	int counter = 0;
 
@@ -86,7 +88,7 @@ GLuint OccluQryTest::find_unused_id()
 
 	while (1) {
 		/* assuming that at least 2^32-1 <id> can be generated */
-		id = random() % (((unsigned long) 1 << 32) - 1);
+		id = idRand.next();
 		if (id != 0 && glIsQueryARB(id) == GL_FALSE)
 			return id;
 		if (++ counter >= MAX_FIND_ID_ROUND) {
