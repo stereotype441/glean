@@ -1,6 +1,7 @@
 .*.sw?
 .scon*
 *.a
+*.dep
 *.exe
 *.lib
 *.o
