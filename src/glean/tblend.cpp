@@ -46,7 +46,7 @@ static PFNGLBLENDEQUATIONSEPARATEPROC glBlendEquationSeparate_func = NULL;
 
 struct enumNameMapping {
 	GLenum token;
-	char* name;
+	const char* name;
 };
 
 enumNameMapping factorNames[] = {
@@ -77,7 +77,7 @@ enumNameMapping blendopNames[] = {
 };
 
 
-char*
+const char*
 factorToName(GLenum factor) {
 	for (unsigned int i = 0; i < ELEMENTS(factorNames); ++i)
 		if (factorNames[i].token == factor)
@@ -93,7 +93,7 @@ nameToFactor(string& name) {
 	return GL_ZERO;
 } // nameToFactor
 
-char *
+const char *
 opToName(GLenum op) {
 	for (unsigned int i = 0; i < ELEMENTS(blendopNames); ++i)
 		if (blendopNames[i].token == op)

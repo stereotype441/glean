@@ -51,7 +51,7 @@ enum {
 	MENU_QUIT
 };
 
-enum {
+static enum {
 	SHOW_IMAGE1,
 	SHOW_IMAGE2,
 	SHOW_DIFF,

@@ -46,9 +46,7 @@ env['msvc'] = env['CC'] == 'cl'
 
 # C preprocessor options
 cppdefines = []
-if env['debug']:
-    cppdefines += ['DEBUG']
-else:
+if not env['debug']:
     cppdefines += ['NDEBUG']
 if env['platform'] == 'windows':
     cppdefines += [
