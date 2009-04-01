@@ -196,13 +196,27 @@ env.Prepend(CPPPATH = [
     '#libs/timer',
 ])
 
-variant_dir = env['platform']
+variant = env['platform']
 if env['machine'] != 'generic':
-    variant_dir += '-' + env['machine']
+    variant += '-' + env['machine']
 if env['debug']:
-    variant_dir += '-debug'
-variant_dir = os.path.join('..', 'build', variant_dir)
+    variant += '-debug'
+env['variant'] = variant
+
+variant_dir = os.path.join('..', 'build', variant)
 
 env.VariantDir(variant_dir, '.', duplicate=0)
 
 SConscript('SConscript', variant_dir=variant_dir, duplicate=0)
+
+env.Tool('packaging')
+env.Package(
+    NAME           = 'glean',
+    #VERSION        = '1.1' + '-' + env['variant'],
+    VERSION        = env['variant'] + '-' + '1.1',
+    PACKAGEVERSION = 0,
+    PACKAGETYPE    = 'zip',
+    LICENSE        = 'mit',
+    SUMMARY        = 'An OpenGL Test and Benchmarking Suite',
+    URL            = 'http://glean.sourceforge.net/'
+)

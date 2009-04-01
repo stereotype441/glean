@@ -5,4 +5,8 @@ if env['glut']:
 
     env.Prepend(LIBS = [image])
 
-    env.Program('showtiff', ['main.cpp'])
+    showtiff = env.Program('showtiff', ['main.cpp'])
+
+    env.Default(showtiff)
+
+    env.Install('/bin', showtiff)

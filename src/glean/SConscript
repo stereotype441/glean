@@ -75,7 +75,11 @@ if env['platform'] != 'windows':
         'tvertarraybgra.cpp',
     ]
 
-env.Program(
+glean = env.Program(
     target = 'glean',
     source = main + tests,
 )
+
+env.Default(glean)
+
+env.Install('/bin', glean)

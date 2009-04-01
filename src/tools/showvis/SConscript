@@ -5,4 +5,8 @@ if env['glut']:
 
     env.Prepend(LIBS = [dsurf, lex])
 
-    env.Program('showvis', ['main.cpp'])
+    showvis = env.Program('showvis', ['main.cpp'])
+
+    env.Default(showvis)
+
+    env.Install('/bin', showvis)
