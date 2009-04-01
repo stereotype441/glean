@@ -121,7 +121,7 @@ typedef enum {		// These variable tags are used as array indices,
 	V_LAST
 } CanonVar;
 
-struct {CanonVar var; char* name;} varNames[] = {
+static struct {CanonVar var; const char* name;} varNames[] = {
 	{VID,			"id"},
 	{VFBCID,		"fbcID"},
 	{VCANRGBA,		"canRGBA"},
@@ -159,7 +159,7 @@ struct {CanonVar var; char* name;} varNames[] = {
 	{VTRANSI,		"transI"}
 };
 
-char* mapVarToName[V_LAST];
+const char* mapVarToName[V_LAST];
 map<string, CanonVar> mapNameToVar;
 bool mapsInitialized = false;
 
