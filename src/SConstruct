@@ -3,13 +3,12 @@ import platform
 import sys
 
 _platform_map = {
-	'freebsd': 'unix',
-	'linux2': 'unix',
+	'freebsd': 'freebsd',
+	'linux2': 'linux',
 	'win32': 'windows',
 }
 
-default_platform = sys.platform
-default_platform = _platform_map.get(default_platform, default_platform)
+default_platform = _platform_map.get(sys.platform, 'unix')
 
 _machine_map = {
 	'x86': 'x86',
@@ -29,7 +28,7 @@ default_machine = _machine_map.get(default_machine, 'generic')
 vars = Variables()
 vars.Add(BoolOption('debug', 'debug build', 'no'))
 vars.Add(EnumOption('platform', 'target platform', default_platform,
-                    allowed_values=('unix', 'windows')))
+                    allowed_values=('linux', 'freebsd', 'unix', 'other')))
 vars.Add(EnumOption('machine', 'use machine-specific assembly code', default_machine,
                     allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
 vars.Add(EnumOption('toolchain', 'compiler toolchain', 'default',
@@ -143,7 +142,7 @@ if env['platform'] == 'windows' and env['msvc']:
     ]
 env.Append(LINKFLAGS = linkflags)
 
-if env['platform'] == 'unix':
+if env['platform'] in ('freebsd', 'linux'):
     env.Append(CPPDEFINES = [
         '__UNIX__',
         '__X11__',
