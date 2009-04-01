@@ -7,8 +7,10 @@
 *.o
 *.obj
 *.os
+*.pdb
 *.pyc
 *.pyo
 *.so
+*.zip
 build
 config.log
