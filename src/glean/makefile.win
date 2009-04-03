@@ -59,6 +59,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\treadpixperf.obj" \
 		"$(INTDIR)\trgbtris.obj" \
 		"$(INTDIR)\tscissor.obj" \
+		"$(INTDIR)\tshaderapi.obj" \
 		"$(INTDIR)\tstencil2.obj" \
 		"$(INTDIR)\tteapot.obj" \
 		"$(INTDIR)\ttexcombine4.obj" \
@@ -68,6 +69,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\ttexgen.obj" \
 		"$(INTDIR)\ttexrect.obj" \
 		"$(INTDIR)\ttexture_srgb.obj" \
+		"$(INTDIR)\tvertattrib.obj" \
 		"$(INTDIR)\tvertprog1.obj" \
 		"$(INTDIR)\tvtxperf.obj" \
 		"$(INTDIR)\winsys.obj"
