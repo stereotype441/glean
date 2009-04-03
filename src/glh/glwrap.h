@@ -128,7 +128,7 @@
 #endif
 
 
-#ifndef GL_ARB_half_float_pixel
+#ifdef __APPLE__
 typedef unsigned short GLhalfARB;
 #endif
 
