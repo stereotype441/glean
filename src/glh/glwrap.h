@@ -128,6 +128,11 @@
 #endif
 
 
+#ifndef GL_ARB_half_float_pixel
+typedef unsigned short GLhalfARB;
+#endif
+
+
 // Windows has a convention for typedef'ing pointers to OpenGL functions
 // which encapsulates some of the oddities of Win32 calling conventions.
 // Identical conventions are being established for Linux, but they are
