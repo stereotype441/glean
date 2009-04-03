@@ -117,6 +117,17 @@
 		#define GL_OPERAND2_ALPHA_EXT	GL_OPERAND2_ALPHA_ARB
 	#endif
 #endif
+
+
+#ifndef GL_EXT_texture_swizzle
+#define GL_TEXTURE_SWIZZLE_R_EXT          0x8E42
+#define GL_TEXTURE_SWIZZLE_G_EXT          0x8E43
+#define GL_TEXTURE_SWIZZLE_B_EXT          0x8E44
+#define GL_TEXTURE_SWIZZLE_A_EXT          0x8E45
+#define GL_TEXTURE_SWIZZLE_RGBA_EXT       0x8E46
+#endif
+
+
 // Windows has a convention for typedef'ing pointers to OpenGL functions
 // which encapsulates some of the oddities of Win32 calling conventions.
 // Identical conventions are being established for Linux, but they are
