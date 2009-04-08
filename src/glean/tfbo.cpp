@@ -177,41 +177,45 @@ FBOTest::checkResult(const GLfloat color[4], const int depth,
 }
 
 
-#define CHECK_FRAMEBUFFER_STATUS(func)                            \
-{                                                           \
-        GLenum status;                                            \
-        status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
-        switch(status) {                                          \
-          case GL_FRAMEBUFFER_COMPLETE_EXT:                       \
-            /*printf("  (%s:%d)GL_FRAMEBUFFER_COMPLETE_EXT\n", func, __LINE__);*/          \
-            break;                                                \
-          case GL_FRAMEBUFFER_UNSUPPORTED_EXT:                    \
-            printf("  (%s:%d)GL_FRAMEBUFFER_UNSUPPORTED_EXT\n", func, __LINE__);           \
-            /* choose different formats */                        \
-            break;                                                \
-          case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:          \
-            printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n", func, __LINE__); \
-            break;                                                \
-          case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:          \
-            printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n", func, __LINE__); \
-            break;                                                \
-          case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:             \
-            printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n", func, __LINE__);    \
-            break;                                                \
-          case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:         \
-            printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n", func, __LINE__);\
-            break;                                                \
-          case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:         \
-            printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n", func, __LINE__);\
-            break;                                                \
-	  case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:  \
-	    printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n", func, __LINE__);\
-	    break;						   \
-          default:                                                \
-            /* programming error; will fail on all hardware */    \
-            printf("  (%s:%d)programming error\n", func, __LINE__);                        \
-            break;                                                \
-        }                                                         \
+// Check FB status, print unexpected results to stdout.
+static GLenum
+CheckFramebufferStatus(const char *func, int line)
+{
+	GLenum status;
+	status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+
+	switch(status) {
+	case GL_FRAMEBUFFER_COMPLETE_EXT:
+		/*printf("  (%s:%d)GL_FRAMEBUFFER_COMPLETE_EXT\n", func, line);*/
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_UNSUPPORTED_EXT\n", func, line);
+		/* choose different formats */
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n", func, line);
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n", func, line);
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n", func, line);
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n", func, line);
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+		printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n", func, line);
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+	    printf("  (%s:%d)GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n", func, line);
+	    break;
+	default:
+		/* programming error; will fail on all hardware */
+		printf("  (%s:%d)programming error\n", func, line);
+		break;
+	}
+	return status;
 }
 
 
@@ -309,7 +313,7 @@ FBOTest::testRender2SingleTexture(void)
         GLuint textures[1];
         int mode;
 	int maxzoffset = -1;
-
+	GLenum status;
 
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &maxzoffset);
 	if (maxzoffset > 16)
@@ -318,12 +322,12 @@ FBOTest::testRender2SingleTexture(void)
         for (depthBuffer = 0; depthBuffer < 2; depthBuffer++) {
                 for (stencilBuffer = 0; stencilBuffer < 2; stencilBuffer++) {
                         for (mode = 0; mode < 4; mode++) {
-				if (mode == 2&&maxzoffset <= 0)
+
+				//
+				// Setup state to test
+				//
+				if (mode == 2 && maxzoffset <= 0)
 					continue;
-                                glClearColor(0.0, 0.0, 0.0, 1.0);
-                                glClear(GL_COLOR_BUFFER_BIT |
-                                        GL_DEPTH_BUFFER_BIT |
-                                        GL_STENCIL_BUFFER_BIT);
 
                                 if (useFramebuffer)
                                         glGenFramebuffersEXT(1, fbs);
@@ -475,7 +479,6 @@ FBOTest::testRender2SingleTexture(void)
                                                 }
                                         }
 
-
                                         switch (textureModes[mode]) {
                                         case GL_TEXTURE_1D:
                                                 int name;
@@ -571,9 +574,20 @@ FBOTest::testRender2SingleTexture(void)
                                                 break;
                                         }
 
-                                        CHECK_FRAMEBUFFER_STATUS("FBOTest::testRender2SingleTexture");
+                                        status = CheckFramebufferStatus("FBOTest::testRender2SingleTexture", __LINE__);
                                 }
+				else {
+					status = GL_FRAMEBUFFER_COMPLETE_EXT;
+				}
 
+
+				if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+					continue;
+
+
+				//
+				// Render, test the results
+				//
 
                                 if (depthBuffer) {
                                         glClear(GL_DEPTH_BUFFER_BIT);
@@ -849,7 +863,7 @@ FBOTest::testRender2MultiTexture(void)
                                         glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
                                         glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
                                 }
-                                CHECK_FRAMEBUFFER_STATUS("FBOTest::testRender2MultiTexture");
+                                CheckFramebufferStatus("FBOTest::testRender2MultiTexture", __LINE__);
                         }
                 }
 
@@ -875,7 +889,7 @@ FBOTest::testRender2MultiTexture(void)
                                         glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + idx);
                                 }
 
-                                CHECK_FRAMEBUFFER_STATUS("FBOTest::testRender2MultiTexture");
+                                CheckFramebufferStatus("FBOTest::testRender2MultiTexture", __LINE__);
                                 if (mode == SINGLE_COLOR_ATTACH) {
                                         glFramebufferTexture2DEXT
                                                 (GL_FRAMEBUFFER_EXT,
@@ -995,7 +1009,7 @@ FBOTest::testRender2depthTexture(void)
                 glDrawBuffer(GL_NONE);
                 glReadBuffer(GL_NONE);
 
-                CHECK_FRAMEBUFFER_STATUS("FBOTest::testRender2depthTexture");
+                CheckFramebufferStatus("FBOTest::testRender2depthTexture", __LINE__);
         }
         glClear(GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -1099,7 +1113,7 @@ FBOTest::testRender2MipmapTexture(void)
                                 (GL_FRAMEBUFFER_EXT,
                                  GL_COLOR_ATTACHMENT0_EXT,
                                  GL_TEXTURE_2D, textures[0], level);
-                        CHECK_FRAMEBUFFER_STATUS("FBOTest::testRender2MipmapTexture");
+                        CheckFramebufferStatus("FBOTest::testRender2MipmapTexture", __LINE__);
 
                         glColor4fv(colors[RED + (level % (WHITE - RED))]);
                         glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -1376,7 +1390,7 @@ FBOTest::testPerformance(MultiTestResult & r)
                                 (GL_FRAMEBUFFER_EXT,
                                  GL_COLOR_ATTACHMENT0_EXT,
                                  GL_TEXTURE_2D, textures[0], 0);
-                        CHECK_FRAMEBUFFER_STATUS("FBOTest::testPerformance");
+                        CheckFramebufferStatus("FBOTest::testPerformance", __LINE__);
                 }
 
                 int i;
