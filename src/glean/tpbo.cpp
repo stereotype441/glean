@@ -210,8 +210,8 @@ bool PBOTest::testDrawPixels(void)
    GLubyte * pboPackMem = NULL;
    GLubyte black[3] = { 0, 0, 0 };
 
-   glBindBuffer(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBuffer(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    for (useUnpackBuffer = 0; useUnpackBuffer < usePBO + 1; useUnpackBuffer++) {
       for (usePackBuffer = 0; usePackBuffer < usePBO + 1; usePackBuffer++) {
@@ -219,14 +219,14 @@ bool PBOTest::testDrawPixels(void)
          glClear(GL_COLOR_BUFFER_BIT);
          if (useUnpackBuffer) {
             glGenBuffersARB(1, pb_unpack);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pb_unpack[0]);
-            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pb_unpack[0]);
+            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                          TEXSIZE * TEXSIZE * 4 * sizeof(GLubyte), NULL,
                          GL_STREAM_DRAW);
          }
          GLubyte *pboMem = NULL;
          if (useUnpackBuffer) {
-            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                        GL_WRITE_ONLY);
          }
          else {
@@ -242,14 +242,14 @@ bool PBOTest::testDrawPixels(void)
             }
 
          if (useUnpackBuffer) {
-            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
          }
 
          if (useUnpackBuffer) {
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pb_unpack[0]);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pb_unpack[0]);
             glDrawPixels(TEXSIZE, TEXSIZE, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
          }
          else
             glDrawPixels(TEXSIZE, TEXSIZE, GL_BGRA, GL_UNSIGNED_BYTE, pboMem);
@@ -257,13 +257,13 @@ bool PBOTest::testDrawPixels(void)
          // Check the result
          if (usePackBuffer) {
             glGenBuffersARB(1, pb_pack);
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, pb_pack[0]);
-            glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT,
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pb_pack[0]);
+            glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB,
                          windowSize * windowSize * 4 *
                          sizeof(GL_UNSIGNED_BYTE), NULL, GL_STREAM_DRAW);
             glReadPixels(0, 0, windowSize, windowSize, GL_BGRA,
                          GL_UNSIGNED_BYTE, NULL);
-            pboPackMem = (GLubyte *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_EXT,
+            pboPackMem = (GLubyte *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB,
                                        GL_READ_ONLY);
          }
          else {
@@ -311,12 +311,12 @@ bool PBOTest::testDrawPixels(void)
 
 
          if (usePackBuffer) {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER_EXT, 0);
+            glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_pack);
          }
 
          if (useUnpackBuffer) {
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_unpack);
          }
 
@@ -337,8 +337,8 @@ bool PBOTest::testPixelMap(void)
    int size;
    int max;
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    glGetIntegerv(GL_MAX_PIXEL_MAP_TABLE, &max);
 
@@ -349,13 +349,13 @@ bool PBOTest::testPixelMap(void)
          glClear(GL_COLOR_BUFFER_BIT);
          if (useUnpackBuffer) {
             glGenBuffersARB(1, pb_unpack);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pb_unpack[0]);
-            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT, max * sizeof(GLushort),
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pb_unpack[0]);
+            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, max * sizeof(GLushort),
                          NULL, GL_STREAM_DRAW);
          }
          GLushort *pboMem = NULL;
          if (useUnpackBuffer) {
-            pboMem = (GLushort *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+            pboMem = (GLushort *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                         GL_WRITE_ONLY);
          }
          else {
@@ -365,12 +365,12 @@ bool PBOTest::testPixelMap(void)
             pboMem[i] = max - i - 1;
 
          if (useUnpackBuffer) {
-            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
             glPixelMapusv(GL_PIXEL_MAP_R_TO_R, max, NULL);
             glPixelMapusv(GL_PIXEL_MAP_G_TO_G, max, NULL);
             glPixelMapusv(GL_PIXEL_MAP_B_TO_B, max, NULL);
             glPixelMapusv(GL_PIXEL_MAP_A_TO_A, max, NULL);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
          }
          else {
             glPixelMapusv(GL_PIXEL_MAP_R_TO_R, max, pboMem);
@@ -391,11 +391,11 @@ bool PBOTest::testPixelMap(void)
          // Read back pixel map
          if (usePackBuffer) {
             glGenBuffersARB(1, pb_pack);
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, pb_pack[0]);
-            glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT, max * sizeof(GLushort),
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pb_pack[0]);
+            glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, max * sizeof(GLushort),
                          NULL, GL_STREAM_DRAW);
             glGetPixelMapusv(GL_PIXEL_MAP_R_TO_R, NULL);
-            pboMem = (GLushort *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_EXT,
+            pboMem = (GLushort *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB,
                                         GL_READ_ONLY);
          }
          else {
@@ -412,8 +412,8 @@ bool PBOTest::testPixelMap(void)
 
 
          if (usePackBuffer) {
-            glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_EXT);
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+            glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_pack);
          }
          else {
@@ -421,7 +421,7 @@ bool PBOTest::testPixelMap(void)
          }
 
          if (useUnpackBuffer) {
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_unpack);
          }
 
@@ -445,8 +445,8 @@ bool PBOTest::testBitmap(void)
    GLubyte *pboUnpackMem = NULL;
    GLfloat *pboPackMem = NULL;
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    for (usePackBuffer = 0; usePackBuffer < usePBO + 1; usePackBuffer++) {
       for (useUnpackBuffer = 0; useUnpackBuffer < usePBO + 1;
@@ -456,10 +456,10 @@ bool PBOTest::testBitmap(void)
 
          if (useUnpackBuffer) {
             glGenBuffersARB(1, pb_unpack);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pb_unpack[0]);
-            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT, TEXSIZE * TEXSIZE, NULL,
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pb_unpack[0]);
+            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, TEXSIZE * TEXSIZE, NULL,
                          GL_STREAM_DRAW);
-            pboUnpackMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+            pboUnpackMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                        GL_WRITE_ONLY);
          }
          else {
@@ -474,9 +474,9 @@ bool PBOTest::testBitmap(void)
          glColor4f(1.0, 1.0, 1.0, 0.0);
          glRasterPos2f(0.0, 0.0);
          if (useUnpackBuffer) {
-            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
             glBitmap(TEXSIZE, TEXSIZE, 0, 0, 0, 0, NULL);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
          }
          else
             glBitmap(TEXSIZE, TEXSIZE, 0, 0, 0, 0, pboUnpackMem);
@@ -484,15 +484,15 @@ bool PBOTest::testBitmap(void)
          // Check the result
          if (usePackBuffer) {
             glGenBuffersARB(1, pb_pack);
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, pb_pack[0]);
-            glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT,
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pb_pack[0]);
+            glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB,
                             windowSize * windowSize * 4 * sizeof(GLfloat),
                             NULL,
                             GL_STREAM_DRAW);
             glReadPixels(0, 0, windowSize, windowSize, GL_RGB, GL_FLOAT,
                          NULL);
             pboPackMem =
-               (GLfloat *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_EXT,
+               (GLfloat *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB,
                                        GL_READ_ONLY);
          }
          else {
@@ -539,13 +539,13 @@ bool PBOTest::testBitmap(void)
             }
          }
          if (usePackBuffer) {
-            glUnmapBuffer(GL_PIXEL_PACK_BUFFER_EXT);
-            glBindBuffer(GL_PIXEL_PACK_BUFFER_EXT, 0);
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+            glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_pack);
          }
 
          if (useUnpackBuffer) {
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pb_unpack);
          }
       }
@@ -568,8 +568,8 @@ bool PBOTest::testTexImage(void)
    GLfloat black[3] = { 0.0, 0.0, 0.0 };
    GLfloat buf[windowSize * windowSize * 3];
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    glClearColor(0.0, 0.0, 0.0, 1.0);
    glClear(GL_COLOR_BUFFER_BIT);
@@ -587,8 +587,8 @@ bool PBOTest::testTexImage(void)
                   glGenBuffersARB(1, unpack_pb);
                   if (glIsBufferARB(unpack_pb[0]) == false)
                      return false;
-                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, unpack_pb[0]);
-                  glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, unpack_pb[0]);
+                  glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                TEXSIZE * TEXSIZE * 3 * sizeof(GLfloat), NULL,
                                GL_STREAM_DRAW);
                }
@@ -600,7 +600,7 @@ bool PBOTest::testTexImage(void)
 
                if (useTexUnpackBuffer) {
                   pboMem =
-                     (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+                     (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                              GL_WRITE_ONLY);
                }
                else {
@@ -614,10 +614,10 @@ bool PBOTest::testTexImage(void)
                }
 
                if (useTexUnpackBuffer) {
-                  glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+                  glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
                   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXSIZE, TEXSIZE, 0,
                                GL_RGB, GL_FLOAT, NULL);
-                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
                }
                else
                   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXSIZE, TEXSIZE, 0,
@@ -625,14 +625,14 @@ bool PBOTest::testTexImage(void)
 
                if (useTexUnpackBuffer) {
                   if (breakCOWPBO) {
-                     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, unpack_pb[0]);
+                     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, unpack_pb[0]);
                      pboMem =
-                        (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+                        (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                                 GL_WRITE_ONLY);
                      for (i = 0; i < TEXSIZE * TEXSIZE * 3; i++)
                         pboMem[i] = 0.2;
-                     glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
-                     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+                     glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+                     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
                   }
                }
 
@@ -648,8 +648,8 @@ bool PBOTest::testTexImage(void)
 
                // Check PBO's content
                if (useTexUnpackBuffer) {
-                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, unpack_pb[0]);
-                  pboMem = (GLfloat *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER_EXT,
+                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, unpack_pb[0]);
+                  pboMem = (GLfloat *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB,
                                              GL_READ_ONLY);
                   if (breakCOWPBO) {
                      for (i = 0; i < TEXSIZE * TEXSIZE * 3; i++)
@@ -659,20 +659,20 @@ bool PBOTest::testTexImage(void)
                            return false;
                         }
                   }
-                  glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
-                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+                  glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+                  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
                }
 
 
                // Read texture back
                if (useTexPackBuffer) {
                   glGenBuffersARB(1, pack_pb);
-                  glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, pack_pb[0]);
-                  glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT,
+                  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pack_pb[0]);
+                  glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB,
                                TEXSIZE * TEXSIZE * 3 * sizeof(GLfloat), NULL,
                                GL_STREAM_DRAW);
                   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, NULL);
-                  pboMem = (GLfloat *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_EXT,
+                  pboMem = (GLfloat *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB,
                                              GL_READ_ONLY);
                }
                else {
@@ -711,8 +711,8 @@ bool PBOTest::testTexImage(void)
                }
 
                if (useTexPackBuffer) {
-                  glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_EXT);
-                  glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+                  glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+                  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
                   glDeleteBuffersARB(1, pack_pb);
                }
                if (useTexUnpackBuffer) {
@@ -797,8 +797,8 @@ bool PBOTest::testTexSubImage(void)
    GLfloat green[3] = { 0.0, 1.0, 0.0 };
    GLfloat black[3] = { 0.0, 0.0, 0.0 };
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    for (useUnpackBuffer = 0; useUnpackBuffer < usePBO + 1; useUnpackBuffer++) {
       glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -806,10 +806,10 @@ bool PBOTest::testTexSubImage(void)
 
       if (useUnpackBuffer) {
          glGenBuffersARB(1, pbs);
-         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pbs[0]);
-         glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT, TEXSIZE * TEXSIZE * 3 * sizeof(GLfloat),
+         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbs[0]);
+         glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, TEXSIZE * TEXSIZE * 3 * sizeof(GLfloat),
                       NULL, GL_STREAM_DRAW);
-         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
       }
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -819,8 +819,8 @@ bool PBOTest::testTexSubImage(void)
 
       GLfloat *pboMem = NULL;
       if (useUnpackBuffer) {
-         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, pbs[0]);
-         pboMem = (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbs[0]);
+         pboMem = (GLfloat *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                     GL_WRITE_ONLY);
       }
       else {
@@ -834,10 +834,10 @@ bool PBOTest::testTexSubImage(void)
       }
 
       if (useUnpackBuffer) {
-         glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+         glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, TEXSIZE, TEXSIZE, GL_RGB,
                          GL_FLOAT, NULL);
-         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+         glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
       }
       else
          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, TEXSIZE, TEXSIZE, GL_RGB,
@@ -906,8 +906,8 @@ bool PBOTest::testPolygonStip(void)
    GLfloat white[3] = { 1.0, 1.0, 1.0 };
    GLfloat black[3] = { 0.0, 0.0, 0.0 };
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    for (useUnpackBuffer = 0; useUnpackBuffer < usePBO + 1; useUnpackBuffer++) {
       for (usePackBuffer = 0; usePackBuffer < usePBO + 1; usePackBuffer++) {
@@ -916,10 +916,10 @@ bool PBOTest::testPolygonStip(void)
 
          if (useUnpackBuffer) {
             glGenBuffersARB(1, unpack_pb);
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, unpack_pb[0]);
-            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT, 32 * 32 / 8, NULL,
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, unpack_pb[0]);
+            glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, 32 * 32 / 8, NULL,
                          GL_STREAM_DRAW);
-            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                        GL_WRITE_ONLY);
          }
          else {
@@ -933,7 +933,7 @@ bool PBOTest::testPolygonStip(void)
          }
 
          if (useUnpackBuffer) {
-            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
             glPolygonStipple(NULL);
          }
          else {
@@ -943,11 +943,11 @@ bool PBOTest::testPolygonStip(void)
          // Read back the stipple pattern
          if (usePackBuffer) {
             glGenBuffersARB(1, pack_pb);
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, pack_pb[0]);
-            glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT, 32 * 32 / 8, NULL,
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pack_pb[0]);
+            glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, 32 * 32 / 8, NULL,
                          GL_STREAM_DRAW);
             glGetPolygonStipple(NULL);
-            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_EXT,
+            pboMem = (GLubyte *) glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB,
                                        GL_READ_ONLY);
          }
          else {
@@ -964,11 +964,11 @@ bool PBOTest::testPolygonStip(void)
 
 
          if (useUnpackBuffer) {
-            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, unpack_pb);
          }
          if (usePackBuffer) {
-            glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+            glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
             glDeleteBuffersARB(1, pack_pb);
          }
 
@@ -1033,14 +1033,14 @@ bool PBOTest::testErrorHandling(void)
 {
    GLuint fbs[1];
 
-   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
-   glBindBufferARB(GL_PIXEL_PACK_BUFFER_EXT, 0);
+   glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
    if (usePBO) {
       /* test that glDrawPixels from too small of buffer raises error */
       glGenBuffersARB(1, fbs);
       glBindBufferARB(GL_PIXEL_UNPACK_BUFFER, fbs[0]);
-      glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_EXT, 32 * 32 * 4, NULL,
+      glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, 32 * 32 * 4, NULL,
                    GL_STREAM_DRAW);
       glDrawPixels(32, 32 + 1, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
       if (glGetError() != GL_INVALID_OPERATION)
@@ -1052,7 +1052,7 @@ bool PBOTest::testErrorHandling(void)
       /* test that glReadPixels into too small of buffer raises error */
       glGenBuffersARB(1, fbs);
       glBindBufferARB(GL_PIXEL_PACK_BUFFER, fbs[0]);
-      glBufferDataARB(GL_PIXEL_PACK_BUFFER_EXT, 32 * 32 * 4, NULL,
+      glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, 32 * 32 * 4, NULL,
                    GL_STREAM_DRAW);
       glReadPixels(0, 0, 32, 32 + 1, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
       if (glGetError() != GL_INVALID_OPERATION)
@@ -1140,7 +1140,7 @@ bool PBOTest::testPerformance(MultiTestResult & r)
          if (mode) {
             glBindBufferARB(GL_PIXEL_UNPACK_BUFFER, pbs[0]);
             pboMem =
-               (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT,
+               (GLubyte *) glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB,
                                        GL_WRITE_ONLY);
          }
          else {
@@ -1155,7 +1155,7 @@ bool PBOTest::testPerformance(MultiTestResult & r)
          }
 
          if (mode) {
-            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT);
+            glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, TEXSIZE1,
                             TEXSIZE1, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
             glBindBufferARB(GL_PIXEL_UNPACK_BUFFER, 0);
