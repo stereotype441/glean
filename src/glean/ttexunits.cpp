@@ -53,7 +53,11 @@ void
 TexUnitsTest::reportFailure(const char *msg, GLint unit) const
 {
    char s[100];
+#if defined(_MSC_VER)
+   _snprintf(s, sizeof(s), msg, unit);
+#else
    snprintf(s, sizeof(s), msg, unit);
+#endif
    env->log << "FAILURE:\n";
    env->log << "\t" << s << "\n";
 }
