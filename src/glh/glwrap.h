@@ -157,6 +157,15 @@
 #endif
 
 
+#ifndef GL_NV_texture_env_combine4
+#define GL_COMBINE4_NV                    0x8503
+#define GL_SOURCE3_RGB_NV                 0x8583
+#define GL_SOURCE3_ALPHA_NV               0x858B
+#define GL_OPERAND3_RGB_NV                0x8593
+#define GL_OPERAND3_ALPHA_NV              0x859B
+#endif
+
+
 #ifdef __APPLE__
 typedef unsigned short GLhalfARB;
 #endif
