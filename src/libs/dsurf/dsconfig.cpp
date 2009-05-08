@@ -32,7 +32,7 @@
 // dsconfig.cpp:  Implementation of drawing surface configuration utilities
 #include "dsconfig.h"
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <string.h>
 #include <map>
 #include <limits.h>
@@ -650,11 +650,7 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(string& str) {
 ///////////////////////////////////////////////////////////////////////////////
 string
 DrawingSurfaceConfig::canonicalDescription() {
-
-	// Would rather use ostringstream, but it's not available in
-	// egcs 1.1.2.
-	char buf[1024];
-	ostrstream s(buf, sizeof(buf));
+	ostringstream s;
 
 #	if defined(__X11__)
 	    s << mapVarToName[VID] << ' ' << visID;
@@ -731,8 +727,7 @@ DrawingSurfaceConfig::canonicalDescription() {
 ///////////////////////////////////////////////////////////////////////////////
 string
 DrawingSurfaceConfig::conciseDescription() {
-	char buf[1024];
-	ostrstream s(buf, sizeof(buf));
+	ostringstream s;
 
 	if (canRGBA && canCI)
 		s << "dual ";
