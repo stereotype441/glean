@@ -56,6 +56,10 @@ public:
 		       windowSize, windowSize);
 
 private:
+        bool provoking_vertex_first;
+        bool quads_follows_pv_convention;
+        bool testing_first_pv;
+
         void drawArrays(GLenum mode, const GLfloat *verts, GLuint count);
         void drawBeginEnd(GLenum mode, const GLfloat *verts, GLuint count);
         bool testPositions(Window &w, GLenum mode,

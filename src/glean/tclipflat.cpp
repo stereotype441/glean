@@ -33,6 +33,8 @@
 // Test with glDrawArrays and glBegin/End.  Test GL_CCW and GL_CW winding.
 // XXX We should also test with two-sided lighting.
 //
+// If GL_EXT_provoking_vertex is supported, that feature is tested as well.
+//
 // Author: Brian Paul
 
 
@@ -41,6 +43,9 @@
 
 
 namespace GLEAN {
+
+
+static PFNGLPROVOKINGVERTEXEXTPROC ProvokingVertexEXT_func = NULL;
 
 
 // Note: all correctly rendered tris/quad/polygons will be green.
@@ -53,30 +58,67 @@ static const GLfloat TriVerts[6][5] =
      // R  G  B     X   Y
       { 1, 0, 0,   -1, -1 },
       { 0, 0, 1,    1, -1 },
-      { 0, 1, 0,    1,  1 },
+      { 0, 1, 0,    1,  1 }, // PV
 
       { 0, 0, 1,    1,  1 },
       { 1, 0, 0,   -1,  1 },
-      { 0, 1, 0,   -1, -1 }
+      { 0, 1, 0,   -1, -1 } // PV
    };
 
+// GL_TRIANGLES: first provoking vertex
+static const GLfloat TriVertsFirstPV[6][5] =
+   {
+      { 0, 1, 0,    1,  1 }, // PV
+      { 1, 0, 0,   -1, -1 },
+      { 0, 0, 1,    1, -1 },
+
+      { 0, 1, 0,   -1, -1 }, // PV
+      { 0, 0, 1,    1,  1 },
+      { 1, 0, 0,   -1,  1 }
+   };
+
+
 // GL_TRIANGLE_STRIP: provoking vertex = last of tri
-static const GLfloat TriStripVerts[4][5] =
+static const GLfloat TriStripVerts[6][5] =
    {
       { 1, 0, 0,   -1, -1 },
       { 0, 0, 1,    1, -1 },
-      { 0, 1, 0,   -1,  1 },
-      { 0, 1, 0,    1,  1 }
+      { 0, 1, 0,   -1,  0 }, // PV
+      { 0, 1, 0,    1,  0 }, // PV
+      { 0, 1, 0,   -1,  1 }, // PV
+      { 0, 1, 0,    1,  1 }  // PV
    };
+
+// GL_TRIANGLE_STRIP: first provoking vertex
+static const GLfloat TriStripVertsFirstPV[6][5] =
+   {
+      { 0, 1, 0,   -1,  1 }, // PV
+      { 0, 1, 0,    1,  1 }, // PV
+      { 0, 1, 0,   -1,  0 }, // PV
+      { 0, 1, 0,    1,  0 }, // PV
+      { 1, 0, 0,   -1, -1 },
+      { 0, 0, 1,    1, -1 }
+   };
+
 
 // GL_TRIANGLE_FAN: provoking vertex = last of tri
 static const GLfloat TriFanVerts[4][5] =
    {
       { 1, 0, 0,   -1, -1 },
       { 0, 0, 1,    1, -1 },
-      { 0, 1, 0,    1,  1 },
-      { 0, 1, 0,   -1,  1 }
+      { 0, 1, 0,    1,  1 }, // PV
+      { 0, 1, 0,   -1,  1 }  // PV
    };
+
+// GL_TRIANGLE_FAN: first provoking vertex
+static const GLfloat TriFanVertsFirstPV[4][5] =
+   {
+      { 0, 0, 1,    1, -1 },
+      { 0, 1, 0,    1,  1 }, // PV
+      { 0, 1, 0,   -1,  1 }, // PV
+      { 1, 0, 0,   -1, -1 }
+   };
+
 
 // GL_QUADS: provoking vertex = last of quad
 static const GLfloat QuadVerts[4][5] =
@@ -84,22 +126,46 @@ static const GLfloat QuadVerts[4][5] =
       { 1, 0, 0,   -1, -1 },
       { 0, 0, 1,    1, -1 },
       { 1, 1, 0,    1,  1 },
-      { 0, 1, 0,   -1,  1 }
+      { 0, 1, 0,   -1,  1 }  // PV
    };
 
+// GL_QUADS: first provoking vertex
+static const GLfloat QuadVertsFirstPV[4][5] =
+   {
+      { 0, 1, 0,   -1,  1 }, // PV
+      { 1, 0, 0,   -1, -1 },
+      { 0, 0, 1,    1, -1 },
+      { 1, 1, 0,    1,  1 }
+   };
+
+
 // GL_QUAD_STRIP: provoking vertex = last of quad
-static const GLfloat QuadStripVerts[4][5] =
+static const GLfloat QuadStripVerts[6][5] =
    {
       { 1, 0, 0,   -1, -1 },
       { 0, 0, 1,    1, -1 },
+      { 1, 1, 0,   -1,  0 },
+      { 0, 1, 0,    1,  0 }, // PV
       { 1, 1, 0,   -1,  1 },
-      { 0, 1, 0,    1,  1 }
+      { 0, 1, 0,    1,  1 }  // PV
    };
+
+// GL_QUAD_STRIP: first provoking vertex
+static const GLfloat QuadStripVertsFirstPV[6][5] =
+   {
+      { 0, 1, 0,   -1, -1 }, // PV
+      { 1, 1, 0,    1, -1 },
+      { 0, 1, 0,   -1,  0 }, // PV
+      { 1, 0, 0,    1,  0 },
+      { 0, 0, 1,   -1,  1 },
+      { 1, 0, 0,    1,  1 }
+   };
+
 
 // GL_POLYGON: provoking vertex = first vertex
 static const GLfloat PolygonVerts[4][5] =
    {
-      { 0, 1, 0,   -1, -1 },
+      { 0, 1, 0,   -1, -1 }, // PV
       { 1, 0, 0,    1, -1 },
       { 0, 0, 1,    1,  1 },
       { 1, 1, 0,   -1,  1 }
@@ -128,6 +194,17 @@ ClipFlatTest::setup(void)
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
    glFrontFace(GL_CW);
+
+   provoking_vertex_first = GLUtils::haveExtension("GL_EXT_provoking_vertex");
+
+   if (provoking_vertex_first) {
+      ProvokingVertexEXT_func = reinterpret_cast<PFNGLPROVOKINGVERTEXEXTPROC>
+         (GLUtils::getProcAddress("glProvokingVertexEXT"));
+
+      GLboolean k;
+      glGetBooleanv(GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION_EXT, &k);
+      quads_follows_pv_convention = k;
+   }
 }
 
 
@@ -246,6 +323,9 @@ ClipFlatTest::reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
             << d << "(" << m << "), glFrontFace("
             << f << ")\n";
 
+   if (testing_first_pv)
+      env->log << "\tGL_EXT_provoking_vertex test: GL_FIRST_VERTEX_CONVENTION_EXT mode\n";
+
    env->log << "\tExpected color (0, 1, 0) but found ("
             << badColor[0] << ", "
             << badColor[1] << ", "
@@ -306,6 +386,7 @@ ClipFlatTest::runOne(ClipFlatResult &r, Window &w)
 {
    setup();
 
+   testing_first_pv = false;
    r.pass = true;
 
    if (r.pass)
@@ -337,6 +418,54 @@ ClipFlatTest::runOne(ClipFlatResult &r, Window &w)
       r.pass = testPositions(w, GL_POLYGON,
                              (GLfloat *) PolygonVerts,
                              Elements(PolygonVerts));
+
+   if (provoking_vertex_first) {
+      ProvokingVertexEXT_func(GL_FIRST_VERTEX_CONVENTION_EXT);
+      testing_first_pv = true;
+
+      if (r.pass)
+         r.pass = testPositions(w, GL_TRIANGLES,
+                                (GLfloat *) TriVertsFirstPV,
+                                Elements(TriVertsFirstPV));
+
+      if (r.pass)
+         r.pass = testPositions(w, GL_TRIANGLE_STRIP,
+                                (GLfloat *) TriStripVertsFirstPV,
+                                Elements(TriStripVertsFirstPV));
+
+      if (r.pass)
+         r.pass = testPositions(w, GL_TRIANGLE_FAN,
+                                (GLfloat *) TriFanVertsFirstPV,
+                                Elements(TriFanVertsFirstPV));
+
+      if (r.pass) {
+         if (quads_follows_pv_convention)
+            r.pass = testPositions(w, GL_QUADS,
+                                   (GLfloat *) QuadVertsFirstPV,
+                                   Elements(QuadVertsFirstPV));
+         else
+            r.pass = testPositions(w, GL_QUADS,
+                                   (GLfloat *) QuadVerts,
+                                   Elements(QuadVerts));
+      }
+
+      if (r.pass) {
+         if (quads_follows_pv_convention)
+            r.pass = testPositions(w, GL_QUAD_STRIP,
+                                   (GLfloat *) QuadStripVertsFirstPV,
+                                   Elements(QuadStripVertsFirstPV));
+         else
+            r.pass = testPositions(w, GL_QUAD_STRIP,
+                                   (GLfloat *) QuadStripVerts,
+                                   Elements(QuadStripVerts));
+      }
+
+      if (r.pass) {
+         r.pass = testPositions(w, GL_POLYGON,
+                                (GLfloat *) PolygonVerts,
+                                Elements(PolygonVerts));
+      }
+   }
 }
 
 
