@@ -82,6 +82,9 @@ class Options {
 				// Sorted list of tests to be executed.
 
 	bool overwrite;		// overwrite old results database if exists
+
+	bool quick;		// run fewer/quicker tests when possible
+
 #if defined(__X11__)
 	string dpyName;		// Name of the X11 display providing the
 				// OpenGL implementation to be tested.
