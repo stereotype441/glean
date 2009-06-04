@@ -39,6 +39,7 @@
 
 
 #include <cassert>
+#include <cstring>
 #include "tclipflat.h"
 
 
