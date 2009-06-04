@@ -31,6 +31,9 @@
 // is clipped for glShadeModel(GL_FLAT).
 //
 // Test with glDrawArrays and glBegin/End.  Test GL_CCW and GL_CW winding.
+// Back-face polygon culling is enabled so if the winding order of any
+// primitive is incorrect, nothing may be drawn.
+//
 // XXX We should also test with two-sided lighting.
 //
 // If GL_EXT_provoking_vertex is supported, that feature is tested as well.
@@ -93,12 +96,12 @@ static const GLfloat TriStripVerts[6][5] =
 // GL_TRIANGLE_STRIP: first provoking vertex
 static const GLfloat TriStripVertsFirstPV[6][5] =
    {
-      { 0, 1, 0,   -1,  1 }, // PV
-      { 0, 1, 0,    1,  1 }, // PV
+      { 0, 1, 0,   -1, -1 }, // PV
+      { 0, 1, 0,    1, -1 }, // PV
       { 0, 1, 0,   -1,  0 }, // PV
       { 0, 1, 0,    1,  0 }, // PV
-      { 1, 0, 0,   -1, -1 },
-      { 0, 0, 1,    1, -1 }
+      { 1, 0, 0,   -1,  1 },
+      { 0, 0, 1,    1,  1 }
    };
 
 
@@ -195,6 +198,8 @@ ClipFlatTest::setup(void)
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
    glFrontFace(GL_CW);
+   glCullFace(GL_FRONT);
+   glEnable(GL_CULL_FACE);
 
    provoking_vertex_first = GLUtils::haveExtension("GL_EXT_provoking_vertex");
 
@@ -247,6 +252,9 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
 {
    GLubyte image[windowSize * windowSize * 3];
    GLuint i, j;
+   GLboolean anyGreen = GL_FALSE;
+
+   badColor[0] = badColor[1] = badColor[2] = 0.0f;
 
    glReadPixels(0, 0, windowSize, windowSize,
                 GL_RGB, GL_UNSIGNED_BYTE, image);
@@ -266,6 +274,7 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
                   image[k + 1] == 255 &&
                   image[k + 0] == 0) {
             // green - OK
+            anyGreen = GL_TRUE;
          }
          else {
             // any other color = failure
@@ -277,7 +286,7 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
          }
       }
    }
-   return true;
+   return anyGreen;
 }
 
 
@@ -348,10 +357,14 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
       // Test CW, CCW winding (should make no difference)
       for (facing = 0; facing < 2; facing++) {
 
-         if (facing == 0)
+         if (facing == 0) {
             glFrontFace(GL_CCW);
-         else
+            glCullFace(GL_BACK);
+         }
+         else {
             glFrontFace(GL_CW);
+            glCullFace(GL_FRONT);
+         }
 
          // Test clipping at 9 locations.
          // Only the center location will be unclipped.
