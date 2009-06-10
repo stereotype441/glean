@@ -2660,6 +2660,19 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"Preprocessor test (7)",
+		NO_VERTEX_SHADER,
+		"#define FOO(x) \\\n"
+                " ((x) + (x)) \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(FOO(0.25)); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Illegal shaders ==================================================
 	{
 		"undefined variable",
