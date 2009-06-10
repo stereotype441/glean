@@ -717,7 +717,6 @@ DrawingSurfaceConfig::canonicalDescription() {
 	  << ' ' << mapVarToName[VTRANSA] << ' ' << transA
 	  << ' ' << mapVarToName[VTRANSI] << ' ' << transI;
 
-	s << '\0';
 	return s.str();
 } // DrawingSurfaceConfig::canonicalDescription
 
@@ -843,7 +842,6 @@ DrawingSurfaceConfig::conciseDescription() {
 			s << ", id " << pfdID;
 #	endif
 
-	s << '\0';
 	return s.str();
 } // DrawingSurfaceConfig::conciseDescription
 
