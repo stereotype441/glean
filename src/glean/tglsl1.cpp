@@ -2610,6 +2610,56 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"Preprocessor test (4)",
+		NO_VERTEX_SHADER,
+		"#if 1 \n"
+		"#define FOO(x) x \n"
+		"#else \n"
+		"#define FOO(x) (0.5 * (x)) \n"
+		"#endif \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(FOO(0.25)); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test (5)",
+		NO_VERTEX_SHADER,
+		"#define BAR(x) x \n"
+		"#if 1 \n"
+		"#define FOO(x) BAR(x) \n"
+		"#else \n"
+		"#define FOO(x) (BAR(x) + BAR(x)) \n"
+		"#endif \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(FOO(0.25)); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test (6)",
+		NO_VERTEX_SHADER,
+		"#define BAR(x) x \n"
+		"#if 0 \n"
+		"#define FOO(x) BAR(x) \n"
+		"#else \n"
+		"#define FOO(x) (BAR(x) + BAR(x)) \n"
+		"#endif \n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(FOO(0.25)); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Illegal shaders ==================================================
 	{
 		"undefined variable",
