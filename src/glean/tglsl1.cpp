@@ -41,6 +41,13 @@
 
 namespace GLEAN {
 
+static PFNGLTEXIMAGE3DPROC glTexImage3D_func = NULL;
+
+static PFNGLACTIVETEXTUREPROC glActiveTexture_func = NULL;
+
+static PFNGLPOINTPARAMETERFPROC glPointParameterf_func = NULL;
+static PFNGLPOINTPARAMETERFVPROC glPointParameterfv_func = NULL;
+static PFNGLSECONDARYCOLOR3FVPROC glSecondaryColor3fv_func = NULL;
 
 static PFNGLATTACHSHADERPROC glAttachShader_func = NULL;
 static PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation_func = NULL;
@@ -3241,10 +3248,25 @@ static const ShaderProgram Programs[] = {
 
 
 
-// Get ptrs to 2.0 API functions.
+// Get ptrs to API functions.
 bool
 GLSLTest::getFunctions(void)
 {
+	glTexImage3D_func = (PFNGLTEXIMAGE3DPROC) GLUtils::getProcAddress("glTexImage3D");
+	if (!glTexImage3D_func)
+		return false;
+	glActiveTexture_func = (PFNGLACTIVETEXTUREPROC) GLUtils::getProcAddress("glActiveTexture");
+	if (!glActiveTexture_func)
+		return false;
+	glPointParameterf_func = (PFNGLPOINTPARAMETERFPROC) GLUtils::getProcAddress("glPointParameterf");
+	if (!glPointParameterf_func)
+		return false;
+	glPointParameterfv_func = (PFNGLPOINTPARAMETERFVPROC) GLUtils::getProcAddress("glPointParameterfv");
+	if (!glPointParameterfv_func)
+		return false;
+	glSecondaryColor3fv_func = (PFNGLSECONDARYCOLOR3FVPROC) GLUtils::getProcAddress("glSecondaryColor3fv");
+	if (!glSecondaryColor3fv_func)
+		return false;
 	glAttachShader_func = (PFNGLATTACHSHADERPROC) GLUtils::getProcAddress("glAttachShader");
 	if (!glAttachShader_func)
 		return false;
@@ -3373,7 +3395,7 @@ GLSLTest::setupTextures(void)
 	glGenTextures(1, &obj3D);
 	glGenTextures(1, &objZ);
 
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture_func(GL_TEXTURE0);
 
 	//
 	// 2D texture, w/ mipmap
@@ -3492,7 +3514,7 @@ GLSLTest::setupTextures(void)
 		}
 	}
 	glBindTexture(GL_TEXTURE_3D, obj3D);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 16, 16, 16, 0,
+	glTexImage3D_func(GL_TEXTURE_3D, 0, GL_RGBA, 16, 16, 16, 0,
 		     GL_RGBA, GL_UNSIGNED_BYTE, teximage3D);
 
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -3509,7 +3531,7 @@ GLSLTest::setupTextures(void)
 				teximageZ[i][j] = 0.75;
 		}
 	}
-	glActiveTexture(GL_TEXTURE1); // NOTE: Unit 1
+	glActiveTexture_func(GL_TEXTURE1); // NOTE: Unit 1
 	glBindTexture(GL_TEXTURE_2D, objZ);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 16, 16, 0,
 		     GL_DEPTH_COMPONENT, GL_FLOAT, teximageZ);
@@ -3518,7 +3540,7 @@ GLSLTest::setupTextures(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_ARB,
 					GL_COMPARE_R_TO_TEXTURE_ARB);
 	
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture_func(GL_TEXTURE0);
 }
 
 
@@ -3533,9 +3555,9 @@ GLSLTest::setupTextureMatrix1(void)
 		0.1, 0.2, 0.3, 1.0   // col 3
 	};
 	glMatrixMode(GL_TEXTURE);
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture_func(GL_TEXTURE1);
 	glLoadMatrixf(m);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture_func(GL_TEXTURE0);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -3565,17 +3587,17 @@ GLSLTest::setup(void)
 
 	// load program inputs
 	glColor4fv(PrimaryColor);
-	glSecondaryColor3fv(SecondaryColor);
+	glSecondaryColor3fv_func(SecondaryColor);
 
 	// other GL state
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, MatDiffuse);
 	glPointSize(PSIZE);
-	glPointParameterf(GL_POINT_SIZE_MIN, PSIZE_MIN);
-	glPointParameterf(GL_POINT_SIZE_MAX, PSIZE_MAX);
-	glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, PSIZE_THRESH);
-	glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, PointAtten);
+	glPointParameterf_func(GL_POINT_SIZE_MIN, PSIZE_MIN);
+	glPointParameterf_func(GL_POINT_SIZE_MAX, PSIZE_MAX);
+	glPointParameterf_func(GL_POINT_FADE_THRESHOLD_SIZE, PSIZE_THRESH);
+	glPointParameterfv_func(GL_POINT_DISTANCE_ATTENUATION, PointAtten);
 	glFogf(GL_FOG_START, FOG_START);
 	glFogf(GL_FOG_END, FOG_END);
 	glFogfv(GL_FOG_COLOR, FogColor);

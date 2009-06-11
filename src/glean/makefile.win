@@ -48,6 +48,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\tfpexceptions.obj" \
 		"$(INTDIR)\tfragprog1.obj" \
 		"$(INTDIR)\tgetstr.obj" \
+		"$(INTDIR)\tglsl1.obj" \
 		"$(INTDIR)\tlogicop.obj" \
 		"$(INTDIR)\tmaskedclear.obj" \
 		"$(INTDIR)\tmultitest.obj" \
