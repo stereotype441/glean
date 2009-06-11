@@ -71,6 +71,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\ttexrect.obj" \
 		"$(INTDIR)\ttexture_srgb.obj" \
 		"$(INTDIR)\tvertattrib.obj" \
+		"$(INTDIR)\tvertarraybgra.obj" \
 		"$(INTDIR)\tvertprog1.obj" \
 		"$(INTDIR)\tvtxperf.obj" \
 		"$(INTDIR)\winsys.obj"
