@@ -42,6 +42,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\tbinding.obj" \
 		"$(INTDIR)\tblend.obj" \
 		"$(INTDIR)\tchgperf.obj" \
+		"$(INTDIR)\tclipflat.obj" \
 		"$(INTDIR)\tdepthstencil.obj" \
 		"$(INTDIR)\test.obj" \
 		"$(INTDIR)\tfpexceptions.obj" \
