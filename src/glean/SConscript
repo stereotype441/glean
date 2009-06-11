@@ -32,6 +32,7 @@ tests = [
     'tbinding.cpp',
     'tblend.cpp',
     'tchgperf.cpp',
+    'tclipflat.cpp',
     'tdepthstencil.cpp',
     'tfpexceptions.cpp',
     'tfragprog1.cpp',
@@ -59,6 +60,7 @@ tests = [
     'ttexrect.cpp',
     'ttexture_srgb.cpp',
     'tvertattrib.cpp',
+    'tvertarraybgra.cpp',
     'tvertprog1.cpp',
     'tvtxperf.cpp',
 ]
@@ -72,7 +74,6 @@ if env['platform'] != 'windows':
         'tpointsprite.cpp',
         'ttexswizzle.cpp',
         'ttexunits.cpp',
-        'tvertarraybgra.cpp',
     ]
 
 glean = env.Program(
