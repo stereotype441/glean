@@ -26,13 +26,13 @@ else:
 default_machine = _machine_map.get(default_machine, 'generic')
 
 vars = Variables()
-vars.Add(BoolOption('debug', 'debug build', 'no'))
-vars.Add(EnumOption('platform', 'target platform', default_platform,
-                    allowed_values=('linux', 'freebsd', 'unix', 'other', 'windows')))
-vars.Add(EnumOption('machine', 'use machine-specific assembly code', default_machine,
-                    allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
-vars.Add(EnumOption('toolchain', 'compiler toolchain', 'default',
-                    allowed_values=('default', 'crossmingw', 'winsdk')))
+vars.Add(BoolVariable('debug', 'debug build', 'no'))
+vars.Add(EnumVariable('platform', 'target platform', default_platform,
+                      allowed_values=('linux', 'freebsd', 'unix', 'other', 'windows')))
+vars.Add(EnumVariable('machine', 'use machine-specific assembly code', default_machine,
+                      allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
+vars.Add(EnumVariable('toolchain', 'compiler toolchain', 'default',
+                      allowed_values=('default', 'crossmingw', 'winsdk')))
 
 env = Environment(variables=vars)
 
