@@ -35,6 +35,7 @@ vars.Add(EnumVariable('toolchain', 'compiler toolchain', 'default',
                       allowed_values=('default', 'crossmingw', 'winsdk')))
 
 env = Environment(variables=vars)
+Help(vars.GenerateHelpText(env))
 
 Export(['env'])
 
