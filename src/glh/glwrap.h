@@ -74,6 +74,7 @@
 #  include <Carbon/Carbon.h>
 #  include <OpenGL/glu.h>
 #  include <OpenGL/glext.h>
+#  include <OpenGL/glut.h>
 #  include <AGL/agl.h>
 #  include <AGL/aglRenderers.h>
 #  if !defined(GLAPIENTRY)
