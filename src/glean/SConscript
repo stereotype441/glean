@@ -37,6 +37,7 @@ tests = [
     'tfpexceptions.cpp',
     'tfragprog1.cpp',
     'tgetstr.cpp',
+    'tglsl1.cpp',
     'tlogicop.cpp',
     'tmaskedclear.cpp',
     'tmultitest.cpp',
@@ -68,7 +69,6 @@ tests = [
 if env['platform'] != 'windows':
     tests += [
         'tfbo.cpp',
-        'tglsl1.cpp',
         'toccluqry.cpp',
         'tpbo.cpp',
         'tpointsprite.cpp',
