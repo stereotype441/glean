@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>Building glean using scons</TITLE>
+  <META NAME="description" CONTENT="building glean using scons">
+  <META NAME="author" CONTENT="Jose Fonseca">
+  <LINK REV="made" HREF="mailto:jfonseca@vmware.com">
+</HEAD>
+
+<BODY bgcolor=#FFFFFF topmargin="10" bottommargin="10" leftmargin="10"
+  rightmargin="10" marginheight="0" marginwidth="0">
+
+<H1>Building <I>glean</I> with scons</H1>
+
+<P>
+Now you can build glean on GNU/Linux or Windows using
+<A HREF="http://www.scons.org/">scons</A>. The advantages over GNU make are:
+<UL TYPE=DISC>
+	<LI> no need to set build options &mdash; everything is autodetected;
+	<LI> automatically uses an included tiff library if none can be found;
+	<LI> support to cross build from GNU/Linux to Windows using MinGW cross
+	compilers.
+</UL>
+
+<H2>Build <I>glean</I> on GNU/Linux or Windows</H2>
+
+<P>
+Simply type
+<PRE>
+    scons -C src
+</PRE>
+
+<P>
+Everything should be autodetected for you.
+
+<P>
+You can change aspects of the build by passing options in the name=value. To
+list these options and see their default value do
+<PRE>
+    scons -C src -h
+</PRE>
+
+
+<H2>Build <I>glean</I> for Windows on GNU/Linux</H2>
+
+<P>
+Type
+<PRE>
+    scons -C src platform=windows machine=x86 toolchain=crossmingw
+</PRE>
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="index.html"><I>glean</I> home</A>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>
