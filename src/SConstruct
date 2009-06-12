@@ -26,7 +26,7 @@ else:
 default_machine = _machine_map.get(default_machine, 'generic')
 
 vars = Variables()
-vars.Add(BoolVariable('debug', 'debug build', 'no'))
+vars.Add(BoolVariable('debug', 'debug build', 'yes'))
 vars.Add(EnumVariable('platform', 'target platform', default_platform,
                       allowed_values=('linux', 'freebsd', 'unix', 'other', 'windows')))
 vars.Add(EnumVariable('machine', 'use machine-specific assembly code', default_machine,
