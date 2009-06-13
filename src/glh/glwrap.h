@@ -454,6 +454,9 @@ typedef void (GLAPIENTRY * PFNGLVERTEXATTRIB3FPROC) (GLuint index, GLfloat x, GL
 typedef void (GLAPIENTRY * PFNGLVERTEXATTRIB4FPROC) (GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
 typedef void (GLAPIENTRY * PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 
+// GL_ARB_window_pos
+typedef void (GLAPIENTRY * PFNGLWINDOWPOS2IARBPROC) (GLint x, GLint y);
+
 // OpenGL 1.2 enumerants, to allow glean to be compiled on OpenGL 1.1 systems.
 // (This odd workaround is needed to handle problems with some copies of
 // glext.h that are floating around the net.)
