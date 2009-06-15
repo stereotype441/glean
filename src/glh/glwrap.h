@@ -77,6 +77,9 @@
 #  include <GLUT/glut.h>
 #  include <AGL/agl.h>
 #  include <AGL/aglRenderers.h>
+#  if !defined(APIENTRY)
+#      define APIENTRY
+#  endif
 #  if !defined(GLAPIENTRY)
 #      define GLAPIENTRY
 #  endif
