@@ -45,6 +45,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\tclipflat.obj" \
 		"$(INTDIR)\tdepthstencil.obj" \
 		"$(INTDIR)\test.obj" \
+		"$(INTDIR)\tfbo.obj" \
 		"$(INTDIR)\tfpexceptions.obj" \
 		"$(INTDIR)\tfragprog1.obj" \
 		"$(INTDIR)\tgetstr.obj" \

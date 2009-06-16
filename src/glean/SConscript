@@ -34,6 +34,7 @@ tests = [
     'tchgperf.cpp',
     'tclipflat.cpp',
     'tdepthstencil.cpp',
+    'tfbo.cpp',
     'tfpexceptions.cpp',
     'tfragprog1.cpp',
     'tgetstr.cpp',
@@ -68,7 +69,6 @@ tests = [
 
 if env['platform'] != 'windows':
     tests += [
-        'tfbo.cpp',
         'toccluqry.cpp',
         'tpbo.cpp',
         'tpointsprite.cpp',
