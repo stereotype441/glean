@@ -77,13 +77,13 @@ if env['gcc']:
     # See also:
     # - http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
     ccflags += [
-        '-Werror=declaration-after-statement',
         '-Wall',
         '-Wmissing-field-initializers',
         '-Wpointer-arith',
         '-fmessage-length=0', # be nice to Eclipse
     ]
     cflags += [
+        '-Wdeclaration-after-statement',
         '-Wmissing-prototypes',
     ]
 if env['msvc']:
