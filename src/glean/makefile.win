@@ -53,6 +53,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\tlogicop.obj" \
 		"$(INTDIR)\tmaskedclear.obj" \
 		"$(INTDIR)\tmultitest.obj" \
+		"$(INTDIR)\toccluqry.obj" \
 		"$(INTDIR)\torthpos.obj" \
 		"$(INTDIR)\tpaths.obj" \
 		"$(INTDIR)\tpgos.obj" \
