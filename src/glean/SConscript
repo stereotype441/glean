@@ -31,6 +31,7 @@ tests = [
     'tbasicperf.cpp',
     'tbinding.cpp',
     'tblend.cpp',
+    'tbufferobject.cpp',
     'tchgperf.cpp',
     'tclipflat.cpp',
     'tdepthstencil.cpp',
