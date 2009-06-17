@@ -26,6 +26,7 @@
 // 
 // END_COPYRIGHT
 
+#include <cstring>
 #include "tmultitest.h"
 
 namespace GLEAN {
