@@ -38,6 +38,9 @@
 #include "tbufferobject.h"
 
 
+namespace GLEAN {
+
+
 // GL_ARB_vertex/fragment_program
 static PFNGLGENBUFFERSARBPROC glGenBuffersARB_func = NULL;
 static PFNGLDELETEBUFFERSARBPROC glDeleteBuffersARB_func = NULL;
@@ -52,10 +55,6 @@ static PFNGLCOPYBUFFERSUBDATAPROC glCopyBufferSubData_func = NULL;
 // GL_ARB_map_buffer_range
 static PFNGLMAPBUFFERRANGEPROC glMapBufferRange_func = NULL;
 static PFNGLFLUSHMAPPEDBUFFERRANGEPROC glFlushMappedBufferRange_func = NULL;
-
-
-
-namespace GLEAN {
 
 
 BufferObjectResult::BufferObjectResult()
