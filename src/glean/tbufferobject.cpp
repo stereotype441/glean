@@ -180,12 +180,78 @@ BufferObjectTest::testCopyBuffer(void)
 }
 
 
-// test GL_ARB_map_buffer_range
+// Test GL_ARB_map_buffer_range
+// This isn't exhaustive, but covers the basics.
 bool
 BufferObjectTest::testMapBufferRange(void)
 {
-   // XXX to do
-   return true;
+   static const GLsizei size = 30000;
+   GLubyte buf[size];
+   GLuint buffer;
+   GLubyte *map;
+   GLint i, j;
+   bool pass = true;
+
+   // create buffer
+   glGenBuffersARB_func(1, &buffer);
+   glBindBufferARB_func(target1, buffer);
+   glBufferDataARB_func(target1, size, NULL, GL_STATIC_DRAW);
+
+   // initialize to zeros
+   map = (GLubyte *) glMapBufferRange_func(target1, 0, size, GL_MAP_WRITE_BIT);
+   for (i = 0; i < size; i++) {
+      map[i] = buf[i] = 0;
+   }
+   glUnmapBufferARB_func(target1);
+
+   // write to random ranges
+   for (i = 0; i < 50; i++) {
+      const int mapSize = rand.next() % size;
+      const int mapOffset = rand.next() % (size - mapSize);
+
+      assert(mapOffset + mapSize <= size);
+
+      map = (GLubyte *)
+         glMapBufferRange_func(target1, mapOffset, mapSize,
+                               GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
+
+      for (j = 0; j < mapSize; j++) {
+         map[j] = buf[mapOffset + j] = (mapOffset + j) & 0xff;
+      }
+
+      glFlushMappedBufferRange_func(target1, 0, mapSize);
+
+      glUnmapBufferARB_func(target1);
+   }
+
+   if (glGetError())
+      pass = false;
+
+   // read/check random ranges
+   for (i = 0; i < 50 && pass; i++) {
+      const int mapSize = rand.next() % size;
+      const int mapOffset = rand.next() % (size - mapSize);
+
+      assert(mapOffset + mapSize <= size);
+
+      map = (GLubyte *) glMapBufferRange_func(target1, mapOffset,
+                                              mapSize, GL_MAP_READ_BIT);
+
+      for (j = 0; j < mapSize; j++) {
+         if (map[j] != buf[mapOffset + j]) {
+            pass = false;
+            break;
+         }
+      }
+      glUnmapBufferARB_func(target1);
+   }
+
+   glDeleteBuffersARB_func(1, &buffer);
+
+   if (glGetError())
+      pass = false;
+
+   return pass;
 }
 
 
