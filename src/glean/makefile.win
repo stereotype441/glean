@@ -57,6 +57,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\toccluqry.obj" \
 		"$(INTDIR)\torthpos.obj" \
 		"$(INTDIR)\tpaths.obj" \
+		"$(INTDIR)\tpbo.obj" \
 		"$(INTDIR)\tpgos.obj" \
 		"$(INTDIR)\tpixelformats.obj" \
 		"$(INTDIR)\tpointatten.obj" \

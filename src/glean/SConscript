@@ -46,6 +46,7 @@ tests = [
     'toccluqry.cpp',
     'torthpos.cpp',
     'tpaths.cpp',
+    'tpbo.cpp',
     'tpgos.cpp',
     'tpixelformats.cpp',
     'tpointatten.cpp',
@@ -71,7 +72,6 @@ tests = [
 
 if env['platform'] != 'windows':
     tests += [
-        'tpbo.cpp',
         'tpointsprite.cpp',
         'ttexswizzle.cpp',
         'ttexunits.cpp',
