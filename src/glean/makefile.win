@@ -61,6 +61,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\tpgos.obj" \
 		"$(INTDIR)\tpixelformats.obj" \
 		"$(INTDIR)\tpointatten.obj" \
+		"$(INTDIR)\tpointsprite.obj" \
 		"$(INTDIR)\treadpix.obj" \
 		"$(INTDIR)\treadpixperf.obj" \
 		"$(INTDIR)\trgbtris.obj" \
