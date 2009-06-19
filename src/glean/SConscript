@@ -66,16 +66,12 @@ tests = [
     'ttexrect.cpp',
     'ttexswizzle.cpp',
     'ttexture_srgb.cpp',
+    'ttexunits.cpp',
     'tvertattrib.cpp',
     'tvertarraybgra.cpp',
     'tvertprog1.cpp',
     'tvtxperf.cpp',
 ]
-
-if env['platform'] != 'windows':
-    tests += [
-        'ttexunits.cpp',
-    ]
 
 glean = env.Program(
     target = 'glean',
