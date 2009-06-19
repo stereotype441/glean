@@ -75,6 +75,7 @@ LINK32_OBJS= 	"$(INTDIR)\codedid.obj" \
 		"$(INTDIR)\ttexenv.obj" \
 		"$(INTDIR)\ttexgen.obj" \
 		"$(INTDIR)\ttexrect.obj" \
+		"$(INTDIR)\ttexswizzle.obj" \
 		"$(INTDIR)\ttexture_srgb.obj" \
 		"$(INTDIR)\tvertattrib.obj" \
 		"$(INTDIR)\tvertarraybgra.obj" \

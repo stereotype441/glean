@@ -64,6 +64,7 @@ tests = [
     'ttexenv.cpp',
     'ttexgen.cpp',
     'ttexrect.cpp',
+    'ttexswizzle.cpp',
     'ttexture_srgb.cpp',
     'tvertattrib.cpp',
     'tvertarraybgra.cpp',
@@ -73,7 +74,6 @@ tests = [
 
 if env['platform'] != 'windows':
     tests += [
-        'ttexswizzle.cpp',
         'ttexunits.cpp',
     ]
 

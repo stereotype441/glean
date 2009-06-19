@@ -47,6 +47,9 @@
 
 namespace GLEAN {
 
+static PFNGLPROGRAMSTRINGARBPROC glProgramStringARB_func = NULL;
+static PFNGLBINDPROGRAMARBPROC glBindProgramARB_func = NULL;
+static PFNGLGENPROGRAMSARBPROC glGenProgramsARB_func = NULL;
 
 static const int TexSize = 16;
 
@@ -323,9 +326,9 @@ TexSwizzleTest::TestSwizzlesWithProgram(void)
 		"END\n";
 	GLuint prog;
 
-	glGenProgramsARB(1, &prog);
-	glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, prog);
-	glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB,
+	glGenProgramsARB_func(1, &prog);
+	glBindProgramARB_func(GL_FRAGMENT_PROGRAM_ARB, prog);
+	glProgramStringARB_func(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB,
 					   strlen(text), (const GLubyte *) text);
 
 	assert(glGetError() == GL_NO_ERROR);
@@ -343,6 +346,13 @@ TexSwizzleTest::TestSwizzlesWithProgram(void)
 void
 TexSwizzleTest::Setup(void)
 {
+	glProgramStringARB_func = (PFNGLPROGRAMSTRINGARBPROC) GLUtils::getProcAddress("glProgramStringARB");
+	assert(glProgramStringARB_func);
+	glBindProgramARB_func = (PFNGLBINDPROGRAMARBPROC) GLUtils::getProcAddress("glBindProgramARB");
+	assert(glBindProgramARB_func);
+	glGenProgramsARB_func = (PFNGLGENPROGRAMSARBPROC) GLUtils::getProcAddress("glGenProgramsARB");
+	assert(glGenProgramsARB_func);
+
 	// setup transformation
 	glViewport(0, 0, windowSize, windowSize);
 	glMatrixMode(GL_MODELVIEW);
