@@ -301,7 +301,7 @@ bool GeomRenderer::generateDisplayList(GLenum mode, GLint& listHandleOut)
 
     listHandleOut = glGenLists(1);
     glNewList(listHandleOut, GL_COMPILE);
-    result = renderPrimitives(mode));
+    result = renderPrimitives(mode);
     assert(result);
     glEndList();
 
