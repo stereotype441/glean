@@ -292,6 +292,8 @@ bool GeomRenderer::renderPrimitives(GLenum mode)
 
 bool GeomRenderer::generateDisplayList(GLenum mode, GLint& listHandleOut)
 {
+    bool result;
+
     if (!isReadyToRender())
     {
         return false;
@@ -299,7 +301,8 @@ bool GeomRenderer::generateDisplayList(GLenum mode, GLint& listHandleOut)
 
     listHandleOut = glGenLists(1);
     glNewList(listHandleOut, GL_COMPILE);
-    assert(renderPrimitives(mode));
+    result = renderPrimitives(mode));
+    assert(result);
     glEndList();
 
     return true;
