@@ -1072,6 +1072,43 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"while-loop with continue",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   int i = 0; \n"
+		"   float sum = 0.0; \n"
+		"   while (i < 20) { \n"
+                "      ++i; \n"
+                "      if (i > 5) \n"
+                "         continue; \n"
+                "      sum += 0.1; \n"
+		"   } \n"
+		"   gl_FragColor = vec4(sum); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"for-loop with continue",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   int i; \n"
+		"   float sum = 0.0; \n"
+		"   for (i = 0; i < 20; ++i) { \n"
+                "      if (i > 4) \n"
+                "         continue; \n"
+                "      sum += 0.1; \n"
+		"   } \n"
+		"   gl_FragColor = vec4(sum); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"do-loop with break",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
