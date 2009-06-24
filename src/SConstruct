@@ -180,14 +180,16 @@ if conf.CheckCHeader('GL/glut.h'):
     conf.env['glut'] = True
 else:
     conf.env['glut'] = False
-if conf.CheckCHeader('tiff.h'):
+has_tiff = conf.CheckCHeader('tiff.h')
+env = conf.Finish()
+
+if has_tiff:
     conf.env.Prepend(LIBS = ['tiff'])
 else:
     SConscript(['tiff/SConscript'])
     Import(['tiff'])
     conf.env.Prepend(CPPPATH = ['#tiff'])
     conf.env.Prepend(LIBS = [tiff])
-env = conf.Finish()
 
 env.Prepend(CPPPATH = [
     '#glh',
