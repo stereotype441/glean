@@ -3,6 +3,7 @@ import platform
 import sys
 
 _platform_map = {
+	'darwin': 'darwin',
 	'freebsd': 'freebsd',
 	'linux2': 'linux',
 	'win32': 'windows',
@@ -28,7 +29,7 @@ default_machine = _machine_map.get(default_machine, 'generic')
 vars = Variables()
 vars.Add(BoolVariable('debug', 'debug build', 'yes'))
 vars.Add(EnumVariable('platform', 'target platform', default_platform,
-                      allowed_values=('linux', 'freebsd', 'unix', 'other', 'windows')))
+                      allowed_values=('linux', 'freebsd', 'unix', 'other', 'windows', 'darwin')))
 vars.Add(EnumVariable('machine', 'use machine-specific assembly code', default_machine,
                       allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
 vars.Add(EnumVariable('toolchain', 'compiler toolchain', 'default',
@@ -146,7 +147,7 @@ if env['platform'] == 'windows' and env['msvc']:
     ]
 env.Append(LINKFLAGS = linkflags)
 
-if env['platform'] in ('freebsd', 'linux'):
+if env['platform'] in ('freebsd', 'linux', 'unix'):
     env.Append(CPPDEFINES = [
         '__UNIX__',
         '__X11__',
@@ -167,6 +168,18 @@ if env['platform'] == 'windows':
         'gdi32',
         'user32',
         'kernel32',
+    ])
+
+if env['platform'] == 'darwin':
+    env.Append(CPPDEFINES = [
+        '__UNIX__',
+        '__AGL__',
+    ])
+    env.Prepend(FRAMEWORKS = [
+        'AGL',
+        'Carbon',
+        'GLUT',
+        'OpenGL',
     ])
 
 conf = Configure(env)
