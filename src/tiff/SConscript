@@ -73,6 +73,7 @@ if env['platform'] == 'windows':
     ])
 elif env['platform'] == 'darwin':
     sources += ['tif_apple.c']
+    env.Prepend(CPPPATH = ['/Developer/Headers/FlatCarbon'])
 else:
     sources += ['tif_unix.c']
 
