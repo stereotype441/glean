@@ -36,10 +36,10 @@
 
 #include "tbasic.h"
 
-class DrawingSurfaceConfig;		// Forward reference.
-class GLEAN::Window;
-
 namespace GLEAN {
+
+class DrawingSurfaceConfig;		// Forward reference.
+class Window;
 
 #define drawingSize 64
 
