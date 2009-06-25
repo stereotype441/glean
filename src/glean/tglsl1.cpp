@@ -2183,7 +2183,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"function with early return",
+		"function with early return (1)",
 		NO_VERTEX_SHADER,
 		"float minimum(in float x, in float y) { \n"
 		"   if (x < y) \n"
@@ -2200,7 +2200,45 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
+#if 0
+	{
+		"function with early return (2)",  // reverse case of above
+		NO_VERTEX_SHADER,
+		"float minimum(in float x, in float y) { \n"
+		"   if (x < y) \n"
+		"      return x; \n"
+		"   return y; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   float a = 0.25; \n"
+		"   float z = minimum(a, 0.5); \n"
+		"   gl_FragColor = vec4(z); \n"
+		"} \n",
+		{ 0.25, 0.25, 0.25, 0.25 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
 
+	{
+		"function with early return (3)",
+		NO_VERTEX_SHADER,
+                "float val = 0.5; \n"
+		"void sub(in float x) { \n"
+		"   if (x > 0.0) \n"
+		"      return; \n"
+		"   val = 1.0; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   sub(1.0); \n"
+		"   gl_FragColor = vec4(val); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+#endif
 	{
 		"nested function calls (1)",
 		NO_VERTEX_SHADER,
