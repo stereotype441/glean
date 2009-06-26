@@ -2855,6 +2855,17 @@ static const ShaderProgram Programs[] = {
 		FLAG_ILLEGAL_SHADER
 	},
 
+	{
+		"TIntermediate::addUnaryMath",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   -vec4(x ? 1.0 : -1.0); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_ILLEGAL_SHADER
+	},
+
 	// GLSL 1.20 tests ======================================================
 	{
 		"mat2x4 construct",
