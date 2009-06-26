@@ -1172,6 +1172,23 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"discard statement in for loop",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   gl_FragColor = vec4(1.0); \n"
+		"   int i; \n"
+		"   for (i = 0; i < 1000; i++) { \n"
+		"      if (i == 9) { \n"
+		"         discard; \n"
+		"      } \n"
+		"   } \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },  // glClear color
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"conditional expression",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
