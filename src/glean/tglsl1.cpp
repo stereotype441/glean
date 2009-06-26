@@ -1090,7 +1090,6 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
-#if 0
 	{
 		"for-loop with continue",
 		NO_VERTEX_SHADER,
@@ -1108,7 +1107,6 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-#endif
 
 	{
 		"do-loop with break",
@@ -2219,7 +2217,7 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-#if 0
+
 	{
 		"function with early return (2)",  // reverse case of above
 		NO_VERTEX_SHADER,
@@ -2257,7 +2255,7 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
-#endif
+
 	{
 		"nested function calls (1)",
 		NO_VERTEX_SHADER,
