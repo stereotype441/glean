@@ -1095,7 +1095,7 @@ VertexProgramTest::testBadProgram(MultiTestResult &result)
 			result.numFailed++;
 
 			while (err != 0)
-				glGetError();
+				err = glGetError();
 		} else {
 			result.numPassed++;
 		}
