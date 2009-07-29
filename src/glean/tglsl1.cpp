@@ -3175,6 +3175,86 @@ static const ShaderProgram Programs[] = {
 		DONT_CARE_Z,
 		FLAG_VERSION_1_20
 	},
+#if 0 // not working with Mesa yet
+	{
+		"GLSL 1.20 array constructor 3",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 [] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+	{
+		"GLSL 1.20 array constructor 4",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 [2] colors = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                         vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+	{
+		"GLSL 1.20 array constructor 5",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 [] colors = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+	{
+		"GLSL 1.20 array constructor 6",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 colors[] = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                       vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+	{
+		"GLSL 1.20 array constructor 7",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 colors[2] = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+	{
+		"GLSL 1.20 array constructor 8",
+		NO_VERTEX_SHADER,
+		"#version 120 \n"
+		"vec4 colors[2] = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
+                "                         vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"void main() { \n"
+		"   gl_FragColor = colors[1]; \n"
+		"} \n",
+		{ 0.7, 0.8, 0.9, 1.0 },
+		DONT_CARE_Z,
+		FLAG_VERSION_1_20
+	},
+#endif
 	{
 		"GLSL 1.20 const array constructor 1",
 		NO_VERTEX_SHADER,
