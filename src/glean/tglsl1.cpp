@@ -2185,13 +2185,13 @@ static const ShaderProgram Programs[] = {
 	{
 		"function call with in, out params",
 		NO_VERTEX_SHADER,
-		"void half(in float x, out float y) { \n"
+		"void Half(in float x, out float y) { \n"
 		"   y = 0.5 * x; \n"
 		"} \n"
 		"\n"
 		"void main() { \n"
 		"   float a = 0.5, b = 0.1; \n"
-		"   half(a, b); \n"
+		"   Half(a, b); \n"
 		"   gl_FragColor = vec4(b); \n"
 		"} \n",
 		{ 0.25, 0.25, 0.25, 0.25 },
@@ -2259,7 +2259,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"nested function calls (1)",
 		NO_VERTEX_SHADER,
-		"float half(const in float x) { \n"
+		"float Half(const in float x) { \n"
 		"   return 0.5 * x; \n"
 		"} \n"
 		"\n"
@@ -2269,7 +2269,7 @@ static const ShaderProgram Programs[] = {
 		"\n"
 		"void main() { \n"
 		"   float a = 0.5; \n"
-		"   float b = square(half(1.0)); \n"
+		"   float b = square(Half(1.0)); \n"
 		"   gl_FragColor = vec4(b); \n"
 		"} \n",
 		{ 0.25, 0.25, 0.25, 0.25 },
@@ -2280,12 +2280,12 @@ static const ShaderProgram Programs[] = {
 	{
 		"nested function calls (2)",
 		NO_VERTEX_SHADER,
-		"float half(const in float x) { \n"
+		"float Half(const in float x) { \n"
 		"   return 0.5 * x; \n"
 		"} \n"
 		"\n"
 		"float square_half(const in float x) { \n"
-		"   float y = half(x); \n"
+		"   float y = Half(x); \n"
 		"   return y * y; \n"
 		"} \n"
 		"\n"
@@ -2302,13 +2302,13 @@ static const ShaderProgram Programs[] = {
 	{
 		"nested function calls (3)",
 		NO_VERTEX_SHADER,
-		"float half(const in float x) { \n"
+		"float Half(const in float x) { \n"
 		"   return 0.5 * x; \n"
 		"} \n"
 		"\n"
 		"void main() { \n"
 		"   float a = 0.5; \n"
-		"   float b = half(half(a)); \n"
+		"   float b = Half(Half(a)); \n"
 		"   gl_FragColor = vec4(b); \n"
 		"} \n",
 		{ 0.125, 0.125, 0.125, 0.125 },
