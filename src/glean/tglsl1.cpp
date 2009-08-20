@@ -359,6 +359,21 @@ static const ShaderProgram Programs[] = {
         },
 
         {
+		// This test targets SOA implementations where we have to
+		// check for SOA dependencies.
+		"Swizzle in-place",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+                "   vec4 a = vec4(0.5, 0.2, 0.1, 0.8); \n"
+                "   a = a.yxwz; \n"
+		"   gl_FragColor = a; \n"
+		"} \n",
+		{ 0.2, 0.5, 0.8, 0.1 },
+		DONT_CARE_Z,
+		FLAG_NONE
+        },
+
+        {
 		"Swizzled swizzle",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
