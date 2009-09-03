@@ -765,6 +765,7 @@ bool PBOTest::testTexImage(void)
                glTexCoord2f(0, 1);
                glVertex2f(0, TEXSIZE);
                glEnd();
+               glDisable(GL_TEXTURE_2D);
 
                glReadPixels(0, 0, windowSize, windowSize, GL_RGB, GL_FLOAT,
                             buf);
@@ -1008,6 +1009,7 @@ bool PBOTest::testPolygonStip(void)
          }
 
          glEnable(GL_POLYGON_STIPPLE);
+         glColor4f(1.0, 1.0, 1.0, 0.0);
          glBegin(GL_POLYGON);
          glVertex2f(0, 0);
          glVertex2f(10, 0);
