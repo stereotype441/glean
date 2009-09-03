@@ -3652,6 +3652,23 @@ static const ShaderProgram Programs[] = {
 		FLAG_VERSION_1_20
 	},
 
+#if 0
+	// Check behaviour of inf/nan =========================================
+	{
+		"Divide by zero",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   float div = uniform1.y / uniform1.w; // div by zero\n"
+		"   div = div * uniform1.w; // mul by zero \n"
+		"   gl_FragColor = vec4(0.5 + div); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+#endif
+
 	// Illegal link test ==================================================
 	{
 		"gl_Position not written check",
