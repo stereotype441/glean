@@ -36,7 +36,7 @@
 //
 // XXX We should also test with two-sided lighting.
 //
-// If GL_EXT_provoking_vertex is supported, that feature is tested as well.
+// If GL_ARB/EXT_provoking_vertex is supported, that feature is tested as well.
 //
 // Author: Brian Paul
 
@@ -48,8 +48,7 @@
 
 namespace GLEAN {
 
-
-static PFNGLPROVOKINGVERTEXEXTPROC ProvokingVertexEXT_func = NULL;
+static PFNGLPROVOKINGVERTEXEXTPROC ProvokingVertex_func = NULL;
 
 
 // Note: all correctly rendered tris/quad/polygons will be green.
@@ -201,12 +200,18 @@ ClipFlatTest::setup(void)
    glCullFace(GL_FRONT);
    glEnable(GL_CULL_FACE);
 
-   provoking_vertex_first = GLUtils::haveExtension("GL_EXT_provoking_vertex");
+   if (GLUtils::haveExtension("GL_ARB_provoking_vertex")) {
+      ProvokingVertex_func = reinterpret_cast<PFNGLPROVOKINGVERTEXPROC>
+         (GLUtils::getProcAddress("glProvokingVertex"));
+      provoking_vertex_first = true;
+   }
+   else if (GLUtils::haveExtension("GL_EXT_provoking_vertex")) {
+      ProvokingVertex_func = reinterpret_cast<PFNGLPROVOKINGVERTEXEXTPROC>
+         (GLUtils::getProcAddress("glProvokingVertexEXT"));
+      provoking_vertex_first = true;
+   }
 
    if (provoking_vertex_first) {
-      ProvokingVertexEXT_func = reinterpret_cast<PFNGLPROVOKINGVERTEXEXTPROC>
-         (GLUtils::getProcAddress("glProvokingVertexEXT"));
-
       GLboolean k;
       glGetBooleanv(GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION_EXT, &k);
       quads_follows_pv_convention = k;
@@ -434,7 +439,7 @@ ClipFlatTest::runOne(ClipFlatResult &r, Window &w)
                              Elements(PolygonVerts));
 
    if (provoking_vertex_first) {
-      ProvokingVertexEXT_func(GL_FIRST_VERTEX_CONVENTION_EXT);
+      ProvokingVertex_func(GL_FIRST_VERTEX_CONVENTION_EXT);
       testing_first_pv = true;
 
       if (r.pass)
