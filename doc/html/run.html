@@ -76,6 +76,9 @@ A more verbose log, including descriptions of each test,
 will be generated if you supply the <KBD>-v</KBD> option on the
 <I>glean</I> command line.
 
+
+<H3>Running particular tests</H3>
+
 <P>
 To run just a particular set of tests, or to exclude some tests from the
 usual run of all tests, you can use the <KBD>-t</KBD>
@@ -85,6 +88,22 @@ option on the command line:
     $GLEAN_ROOT/bin/glean -r mysubset -t "-blendFunc-texBindPerf"
 </PRE>
 
+
+<H3>Running quicker</H3>
+
+<P>
+Some tests take quite a while to run.
+To run faster, the --quick option can be given on the command line.
+Not all glean tests recognize this option, but those that do (such as
+texCombine) will typically run fewer iterations.
+</P>
+<P>
+Unless --visuals is specified, testing will also be limited to the first
+RGB visual with Z and stencil that's marked as conformant.
+</P>
+
+
+<H3>Getting accurate performance numbers</H3>
 
 <P>
 Some of the tests in <I>glean</I> (such as the texBindPerf test
