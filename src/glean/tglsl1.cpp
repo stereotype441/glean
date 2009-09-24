@@ -2272,6 +2272,27 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"function with early return (4)",
+		NO_VERTEX_SHADER,
+                "float val = 0.5; \n"
+		"void sub(in float x) { \n"
+		"   if (x >= 0.3) \n"
+		"      if (x >= 0.4) \n"
+		"         return; \n"
+		"   val = 1.0; \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   sub(gl_TexCoord[0].s); \n"
+		"   gl_FragColor = vec4(val); \n"
+		"} \n",
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+
+	{
 		"nested function calls (1)",
 		NO_VERTEX_SHADER,
 		"float Half(const in float x) { \n"
