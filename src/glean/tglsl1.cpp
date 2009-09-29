@@ -606,6 +606,23 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		// This test is interesting for sqrt(0) which may be
+		// implemented as 1/rsqrt(x) which would generate Inf values
+		"sqrt(vec4) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(0.0, 0.09, 0.25, 1.0); \n"
+                "   u = u * uniform1.xxxx; // mul by 1.0 \n"
+                "   u = sqrt(u); \n"
+		"   gl_FragColor = u; \n"
+		"} \n",
+		{ 0.0, 0.3, 0.5, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"clamp() function",
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
