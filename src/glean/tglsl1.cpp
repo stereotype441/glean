@@ -623,6 +623,22 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"sqrt(vec2) function",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec2 u = vec2(0.0, 0.04); \n"
+                "   u = u * uniform1.xx; // mul by 1.0 \n"
+                "   u = sqrt(u); \n"
+                "   u = u * uniform1.xx; // mul by 1.0 \n"
+		"   gl_FragColor = vec4(u.x, u.y, 0.0, 0.0); \n"
+		"} \n",
+		{ 0.0, 0.2, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"clamp() function",
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
