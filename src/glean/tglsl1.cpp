@@ -1011,6 +1011,23 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"precision log2",
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 vals = vec4(0.125096, 0.250265, 0.500301, 2.001205); \n"
+		"   vals *= uniform1.xxxx; // multiply by one \n"
+		"   vec4 actual = log2(vals); \n"
+		"   vec4 expected = vec4(-2.998889, -1.998471, -0.999131, 1.000869); \n"
+		"   vec4 error = abs(actual - expected); \n"
+		"   gl_FragColor = vec4(lessThan(error, vec4(1e-05))); \n"
+		"} \n",
+		{ 1.0, 1.0, 1.0, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Flow Control ======================================================
 	{
 		"simple if statement, fragment shader",
