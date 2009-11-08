@@ -526,6 +526,10 @@ bool OccluQryTest::conformOQ_Gen_Delete(unsigned int id_n)
 
 	if (!ids1 || !ids2) {
 		fprintf(stderr, "F: Cannot alloc memory to pointer ids[12].\n");
+		if (ids1)
+			free(ids1);
+		if (ids2)
+			free(ids2);		
 		return false;
 	}
 
