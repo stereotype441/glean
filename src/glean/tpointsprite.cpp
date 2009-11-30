@@ -55,9 +55,11 @@ static PFNGLPOINTPARAMETERFPROC glPointParameterf_func = NULL;
 //background color
 static GLfloat   bgColor[4] = {0.0, 0.0, 0.0, 0.0};
 
-//mipmap texture's color, every texture partite to upper and lower part that 
-//has different colors
-//for 1x1 texture, only lower part is used
+// Partition each mipmap into two halves.  The top half gets one color, and
+// the bottom half gets a different color.  Use a different pair of colors for
+// each LOD.
+//
+// For the 1x1 LOD, only lower part (second color in the table) is used.
 static GLfloat   texColor[6][2][4] = {
           {{1.0, 0.0, 0.0, 1.0}, {0.0, 1.0, 0.0, 1.0}},  // 32x32
           {{0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 0.0, 1.0}},  // 16x16
@@ -146,7 +148,7 @@ PointSpriteTest::CheckDefaultState(MultiTestResult &r)
 	if (enable != GL_FALSE)
 	{
 		env->log << name << "subcase FAIL: "
-			 << "PointSprite should be disabled defaultlly\n";
+			 << "PointSprite should be disabled by default\n";
 		r.numFailed++;
 	} else {
 		r.numPassed++;
@@ -369,7 +371,8 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	if (maxPointSize > WINSIZE / 2)
 		maxPointSize = WINSIZE / 2;
 
-	//primitive may be point or polygon which mode is GL_POINT
+	// Draw GL_POINTS primitives, and draw GL_POLYGON primitives with the
+	// polygon mode set to GL_POINT.
 	for (primType = 0; primType < 2; primType ++)
 	{
 		for (coordOrigin = 0; coordOrigin < 2; coordOrigin++)
