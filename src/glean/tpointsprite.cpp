@@ -131,7 +131,7 @@ PointSpriteTest::SetupMipmap(GLuint *texID)
 	glTexImage2D(GL_TEXTURE_2D, 5, GL_RGBA, 1, 1, 0, 
 				GL_RGBA, GL_FLOAT, texImages[5]);
 
-	glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+	glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 }
 
 void
@@ -142,7 +142,7 @@ PointSpriteTest::CheckDefaultState(MultiTestResult &r)
 	GLint     coordOrigin;
 
 	// check point sprite status, default is GL_FALSE
-	enable = glIsEnabled(GL_POINT_SPRITE_ARB);
+	enable = glIsEnabled(GL_POINT_SPRITE);
 	if (enable != GL_FALSE)
 	{
 		env->log << name << "subcase FAIL: "
@@ -153,7 +153,7 @@ PointSpriteTest::CheckDefaultState(MultiTestResult &r)
 	}
 
 	// check coordinate replacement, default is GL_FALSE
-	glGetTexEnviv(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, &coordReplace);
+	glGetTexEnviv(GL_POINT_SPRITE, GL_COORD_REPLACE, &coordReplace);
 
 	if (coordReplace != GL_FALSE)
 	{
@@ -362,10 +362,10 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 
 	buf = (GLfloat *)malloc(3 * WINSIZE * WINSIZE / 4 * sizeof(GLfloat));
 
-	// enable point_sprite_ARB
-	glEnable(GL_POINT_SPRITE_ARB);
+	// Enable point sprite mode
+	glEnable(GL_POINT_SPRITE);
 
-	glGetFloatv(GL_POINT_SIZE_MAX_ARB, &maxPointSize);
+	glGetFloatv(GL_POINT_SIZE_MAX, &maxPointSize);
 	if (maxPointSize > WINSIZE / 2)
 		maxPointSize = WINSIZE / 2;
 
@@ -420,7 +420,7 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	}
 
 	glDeleteTextures(1, &texID);
-	glDisable(GL_POINT_SPRITE_ARB);
+	glDisable(GL_POINT_SPRITE);
 	free(buf);
 	for (i = 0; i < 6; i++)
 		free(texImages[i]);
