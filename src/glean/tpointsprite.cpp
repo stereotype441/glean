@@ -274,14 +274,14 @@ FindNonBlack(const GLfloat *buf, GLint w, GLint h, GLint *x0, GLint *y0)
  * @param coordOrigin: coordinate origin--UPPER_LEFT or LOWER_LEFT
  */
 GLboolean
-PointSpriteTest::ComparePixels(GLfloat *buf, int pSize, int coordOrigin)
+PointSpriteTest::ComparePixels(GLfloat *buf, int pSize, GLenum coordOrigin)
 {
 	GLfloat *lowerColor,  *upperColor, *expectedColor;
 	GLint  i, j;
 	GLint x0, y0;
 
-	lowerColor = GetTexColor(pSize, coordOrigin ? 0 : 1);
-	upperColor = GetTexColor(pSize, coordOrigin ? 1 : 0);
+	lowerColor = GetTexColor(pSize, (coordOrigin == GL_UPPER_LEFT) ? 0 : 1);
+	upperColor = GetTexColor(pSize, (coordOrigin == GL_UPPER_LEFT) ? 1 : 0);
 
 	// Find first (lower-left) pixel that's not black.
 	// The pixels hit by sprite rasterization may vary from one GL to
@@ -375,13 +375,18 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	// polygon mode set to GL_POINT.
 	for (primType = 0; primType < 2; primType ++)
 	{
+		static const GLenum origin[2] = {
+			GL_UPPER_LEFT, GL_LOWER_LEFT
+		};
+		static const char *const origin_strings[2] = {
+			"GL_UPPER_LEFT", "GL_LOWER_LEFT"
+		};
+
 		for (coordOrigin = 0; coordOrigin < 2; coordOrigin++)
 		{
 
-			if (coordOrigin)
-				glPointParameterf_func(GL_POINT_SPRITE_COORD_ORIGIN, GL_UPPER_LEFT);
-			else
-				glPointParameterf_func(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+			glPointParameterf_func(GL_POINT_SPRITE_COORD_ORIGIN,
+					       origin[coordOrigin]);
 
 			pointSize = 1.85;
 			for (; pointSize <= maxPointSize; pointSize += 2.0)
@@ -408,10 +413,13 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 
 				glReadPixels(0, 0, WINSIZE/2, WINSIZE/2, GL_RGB, GL_FLOAT, buf);
 		
-				if (!ComparePixels(buf, expectedSize, coordOrigin))
+				if (!ComparePixels(buf, expectedSize,
+						   origin[coordOrigin]))
 				{
 					env->log << "\tPrimitive type: " << (primType ? "GL_POLYGON" : "GL_POINTS") << "\n";
-					env->log << "\tCoord Origin at: " << (coordOrigin ? "GL_LOWER_LEFT" : "GL_UPPER_LEFT") << "\n";
+					env->log << "\tCoord Origin at: " <<
+						origin_strings[coordOrigin] <<
+						"\n";
 					env->log << "\tPointSize: " << pointSize << "\n";
 					r.numFailed++;
 					r.numPassed--;
