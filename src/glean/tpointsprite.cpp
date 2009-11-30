@@ -50,7 +50,7 @@
 
 namespace GLEAN {
 
-static PFNGLPOINTPARAMETERFPROC glPointParameterf_func = NULL;
+static PFNGLPOINTPARAMETERIPROC glPointParameteri_func = NULL;
 
 //background color
 static GLfloat   bgColor[4] = {0.0, 0.0, 0.0, 0.0};
@@ -166,19 +166,22 @@ PointSpriteTest::CheckDefaultState(MultiTestResult &r)
 		r.numPassed++;
 	}
 
-	// check coordinate origin, default is UPPER_LEFT
-	glEnable(GL_POINT_SPRITE);
-	glGetIntegerv(GL_POINT_SPRITE_COORD_ORIGIN, &coordOrigin);
-	if (coordOrigin != GL_UPPER_LEFT)
-	{
-		env->log << name << "subcase FAIL: "
-			 << "defult value of COORD_ORIGIN should be GL_UPPER_LEFT\n";
-		r.numFailed++;
-	} else {
-		r.numPassed++;
-	}
+	if (have_2_0) {
+		// check coordinate origin, default is UPPER_LEFT
+		glEnable(GL_POINT_SPRITE);
+		glGetIntegerv(GL_POINT_SPRITE_COORD_ORIGIN, &coordOrigin);
+		if (coordOrigin != GL_UPPER_LEFT)
+		{
+			env->log << name << "subcase FAIL: "
+				"defult value of COORD_ORIGIN "
+				"should be GL_UPPER_LEFT\n";
+			r.numFailed++;
+		} else {
+			r.numPassed++;
+		}
 
-	glDisable(GL_POINT_SPRITE);
+		glDisable(GL_POINT_SPRITE);
+	}
 }
 
 GLboolean
@@ -341,8 +344,13 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 
 	(void) w;
 
-	glPointParameterf_func = (PFNGLPOINTPARAMETERFPROC) GLUtils::getProcAddress("glPointParameterf");
-	assert(glPointParameterf_func);
+	have_2_0 = (strtod((const char *) glGetString(GL_VERSION), NULL) > 2.0);
+	if (have_2_0) {
+		glPointParameteri_func = (PFNGLPOINTPARAMETERIPROC)
+			GLUtils::getProcAddress("glPointParameteri");
+
+		assert(glPointParameteri_func);
+	}
 
 	CheckDefaultState(r);
 	
@@ -375,6 +383,7 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	// polygon mode set to GL_POINT.
 	for (primType = 0; primType < 2; primType ++)
 	{
+		const unsigned numOrigin = (have_2_0) ? 2 : 1;
 		static const GLenum origin[2] = {
 			GL_UPPER_LEFT, GL_LOWER_LEFT
 		};
@@ -382,11 +391,12 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 			"GL_UPPER_LEFT", "GL_LOWER_LEFT"
 		};
 
-		for (coordOrigin = 0; coordOrigin < 2; coordOrigin++)
+		for (coordOrigin = 0; coordOrigin < numOrigin; coordOrigin++)
 		{
-
-			glPointParameterf_func(GL_POINT_SPRITE_COORD_ORIGIN,
-					       origin[coordOrigin]);
+			if (have_2_0) {
+				glPointParameteri_func(GL_POINT_SPRITE_COORD_ORIGIN,
+						       origin[coordOrigin]);
+			}
 
 			pointSize = 1.85;
 			for (; pointSize <= maxPointSize; pointSize += 2.0)

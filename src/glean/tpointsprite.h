@@ -53,6 +53,7 @@ class PointSpriteTest: public MultiTest
 private:
 	GLfloat *texImages[6];
 	GLfloat mTolerance[3];
+	bool have_2_0;	
 
 	void GenMipmap();
 	void SetupMipmap(GLuint *texID);
