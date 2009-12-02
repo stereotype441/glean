@@ -383,7 +383,7 @@ PointSpriteTest::runOne(MultiTestResult &r, Window &w)
 	// polygon mode set to GL_POINT.
 	for (primType = 0; primType < 2; primType ++)
 	{
-		const unsigned numOrigin = (have_2_0) ? 2 : 1;
+		const GLint numOrigin = (have_2_0) ? 2 : 1;
 		static const GLenum origin[2] = {
 			GL_UPPER_LEFT, GL_LOWER_LEFT
 		};
