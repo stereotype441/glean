@@ -1005,7 +1005,7 @@ BlendFuncResult::getresults(istream& s) {
 		s >> srcRGB >> srcA >> dstRGB >> dstA >> opRGB >> opA >> p.rbErr >> p.blErr;
 		p.srcRGB = nameToFactor(srcRGB);
 		p.srcA = nameToFactor(srcA);
-		p.srcRGB = nameToFactor(srcRGB);
+		p.dstRGB = nameToFactor(dstRGB);
 		p.dstA = nameToFactor(dstA);
 		p.opRGB = nameToFactor(opRGB);
 		p.opA = nameToFactor(opA);
