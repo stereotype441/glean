@@ -962,4 +962,64 @@ DrawingSurfaceConfig::match(vector<DrawingSurfaceConfig*>& choices) {
 	return best;
 } // DrawingSurfaceConfig::match
 
+// are two surface configs exactly the same?
+bool
+DrawingSurfaceConfig::equal(const DrawingSurfaceConfig &config) const
+{
+	if (
+#if defined(__X11__)
+	    visID == config.visID &&
+#  if defined(GLX_VERSION_1_3)
+	    fbcID == config.fbcID &&
+#  endif
+#elif defined(__WIN__)
+	    pfdID == config.pfdID &&
+#elif defined(__AGL__)
+	    pfID == config.pfID &&
+#else
+#  error "what's the config ID?"
+#endif
+	    canRGBA == config.canRGBA &&
+	    canCI == config.canCI &&
+	    bufSize == config.bufSize &&
+	    level == config.level &&
+	    db == config.db &&
+	    stereo == config.stereo &&
+	    aux == config.aux &&
+	    r == config.r &&
+	    g == config.g &&
+	    b == config.b &&
+	    a == config.a &&
+	    z == config.z &&
+	    s == config.s &&
+	    accR == config.accR &&
+	    accG == config.accG &&
+	    accB == config.accB &&
+	    accA == config.accA &&
+	    samples == config.samples &&
+	    canWindow == config.canWindow &&
+#if defined(__X11__)
+	    canPixmap == config.canPixmap &&
+#if defined(GLX_VERSION_1_3)
+	    canPBuffer == config.canPBuffer &&
+	    maxPBufferWidth == config.maxPBufferWidth &&
+	    maxPBufferHeight == config.maxPBufferHeight &&
+	    maxPBufferPixels == config.maxPBufferPixels &&
+#endif
+#endif
+	    canWinSysRender == config.canWinSysRender &&
+	    fast == config.fast &&
+	    conformant == config.conformant &&
+	    transparent == config.transparent &&
+	    transR == config.transR &&
+	    transG == config.transG &&
+	    transB == config.transB &&
+	    transA == config.transA &&
+	    transI == config.transI
+	    )
+		return true;
+	else
+		return false;
+}
+
 } // namespace GLEAN

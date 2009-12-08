@@ -210,6 +210,8 @@ class DrawingSurfaceConfig {
 		// machine may be compared with test results for
 		// configs on another machine.
 
+        bool equal(const DrawingSurfaceConfig &config) const;
+
 }; // class DrawingSurfaceConfig
 
 } // namespace GLEAN
