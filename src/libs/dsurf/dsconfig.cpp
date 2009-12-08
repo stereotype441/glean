@@ -179,6 +179,61 @@ template<class T> inline T abs(T a) {return (a < 0)? -a: a;}
 
 namespace GLEAN {
 
+// init all config fields to zero
+void
+DrawingSurfaceConfig::zeroFields()
+{
+#if defined(__X11__)
+	visID = 0;
+#  if defined(GLX_VERSION_1_3)
+	fbcID = 0;
+#  endif
+#elif defined(__WIN__)
+	pfdID = 0;
+#elif defined(__AGL__)
+	pfID = 0;
+#else
+#  error "what's the config ID?"
+#endif
+	canRGBA = 0;
+	canCI = 0;
+	bufSize = 0;
+	level = 0;
+	db = 0;
+	stereo = 0;
+	aux = 0;
+	r = 0;
+	g = 0;
+	b = 0;
+	a = 0;
+	z = 0;
+	s = 0;
+	accR = 0;
+	accG = 0;
+	accB = 0;
+	accA = 0;
+	samples = 0;
+	canWindow = 0;
+#if defined(__X11__)
+	canPixmap = 0;
+#if defined(GLX_VERSION_1_3)
+	canPBuffer = 0;
+	maxPBufferWidth = 0;
+	maxPBufferHeight = 0;
+	maxPBufferPixels = 0;
+#endif
+#endif
+	canWinSysRender = 0;
+	fast = 0;
+	conformant = 0;
+	transparent = 0;
+	transR = 0;
+	transG = 0;
+	transB = 0;
+	transA = 0;
+	transI = 0;
+}
+
 
 #if defined(__X11__)
 
@@ -485,6 +540,8 @@ DrawingSurfaceConfig::DrawingSurfaceConfig(int id, ::AGLPixelFormat pfd)
 DrawingSurfaceConfig::DrawingSurfaceConfig(string& str) {
 	if (!mapsInitialized)
 		initializeMaps();
+
+	zeroFields();
 
 	try {
 		Lex lex(str.c_str());

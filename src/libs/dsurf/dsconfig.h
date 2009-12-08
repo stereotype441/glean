@@ -186,6 +186,8 @@ class DrawingSurfaceConfig {
 
 	// Utilities:
 
+	void zeroFields();
+
 	string canonicalDescription();
 		// Return a string containing all the attributes in a
 		// drawing surface configuration.  This allows the config
