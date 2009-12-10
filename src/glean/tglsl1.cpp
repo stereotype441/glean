@@ -247,6 +247,37 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"Integer Literals",
+		"void main() { \n"
+		"   int i = 16;   // Decimal \n"
+		"   int j = 0x10; // Hexadecimal \n"
+		"   int k = 020;  // Octal \n"
+		"   gl_FrontColor = vec4(i, j, k, 16) / 32.0; \n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Float Literals",
+		"void main() { \n"
+		"   float x = 0.5e0; \n"
+		"   float y = 5.0e-1; \n"
+		"   float z = -(-0.05e1); \n"
+		"   float w = 0.5; \n"
+		"   gl_FrontColor = vec4(x, y, z, w); \n"
+		"   gl_Position = ftransform(); \n"
+		"} \n",
+		NO_FRAGMENT_SHADER,
+		{ 0.5, 0.5, 0.5, 0.5 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Swizzle, writemask =================================================
 	{
 		"Swizzle",
