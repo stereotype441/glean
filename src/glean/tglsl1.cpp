@@ -787,7 +787,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"exp(vec4) function",
+		"exp(vec4) function",  // base e
 		NO_VERTEX_SHADER,
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
@@ -795,6 +795,45 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor = exp(u) * 0.1; \n"
 		"} \n",
 		{ 0.2718, 0.1649, 0.0606, 0.7389 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"exp2(vec4) function",  // base 2
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(1.0, 2.5, -0.5, 2.0); \n"
+		"   gl_FragColor = exp2(u) * 0.1; \n"
+		"} \n",
+		{ 0.2, 0.5657, 0.0707, 0.4 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"log(vec4) function",  // natural log
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(1.0, 10.0, 500.0, 1000.0); \n"
+		"   gl_FragColor = log(u) * 0.1; \n"
+		"} \n",
+		{ 0.0, 0.2314, 0.6215, 0.6908 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"log2(vec4) function",  // log base 2
+		NO_VERTEX_SHADER,
+		"uniform vec4 uniform1; \n"
+		"void main() { \n"
+		"   vec4 u = vec4(1.0, 10.0, 500.0, 1000.0); \n"
+		"   gl_FragColor = log2(u) * 0.1; \n"
+		"} \n",
+		{ 0.0, 0.3322, 0.8966, 0.9966 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
