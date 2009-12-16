@@ -1,3 +1,5 @@
+import os.path
+
 Import(['*'])
 
 env = env.Clone()
@@ -8,4 +10,6 @@ showvis = env.Program('showvis', ['main.cpp'])
 
 env.Default(showvis)
 
-env.Install('/bin', showvis)
+bin_dir = os.path.join(env['prefix'], 'bin')
+env.Install(bin_dir, showvis)
+env.Alias('install', bin_dir)

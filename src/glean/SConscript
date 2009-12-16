@@ -1,3 +1,5 @@
+import os.path
+
 Import(['*'])
 
 env = env.Clone()
@@ -80,4 +82,6 @@ glean = env.Program(
 
 env.Default(glean)
 
-env.Install('/bin', glean)
+bin_dir = os.path.join(env['prefix'], 'bin')
+env.Install(bin_dir, glean)
+env.Alias('install', bin_dir)

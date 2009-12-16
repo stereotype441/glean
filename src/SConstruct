@@ -26,6 +26,11 @@ else:
 	default_machine = platform.machine()
 default_machine = _machine_map.get(default_machine, 'generic')
 
+if default_platform == 'windows':
+    default_prefix = os.path.join(os.environ.get('ProgramFiles', 'C:\\Program Files'), 'glean')
+else:
+    default_prefix = '/usr/local'
+
 vars = Variables()
 vars.Add(BoolVariable('debug', 'debug build', 'yes'))
 vars.Add(EnumVariable('platform', 'target platform', default_platform,
@@ -34,6 +39,7 @@ vars.Add(EnumVariable('machine', 'use machine-specific assembly code', default_m
                       allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
 vars.Add(EnumVariable('toolchain', 'compiler toolchain', 'default',
                       allowed_values=('default', 'crossmingw', 'winsdk')))
+vars.Add(PathVariable('prefix', 'installation prefix', default_prefix, PathVariable.PathIsDirCreate))
 if platform.machine() == 'win32':
     vars.Add(EnumVariable('MSVS_VERSION', 'Microsoft Visual Studio version', None, 
                           allowed_values=('7.1', '8.0', '9.0')))
@@ -228,15 +234,3 @@ env.Prepend(CPPPATH = [
 env.VariantDir(build_dir, '.', duplicate=0)
 
 SConscript('SConscript', build_dir=build_dir, duplicate=0)
-
-env.Tool('packaging')
-env.Package(
-    NAME           = 'glean',
-    #VERSION        = '1.1' + '-' + env['variant'],
-    VERSION        = env['variant'] + '-' + '1.1',
-    PACKAGEVERSION = 0,
-    PACKAGETYPE    = 'zip',
-    LICENSE        = 'mit',
-    SUMMARY        = 'An OpenGL Test and Benchmarking Suite',
-    URL            = 'http://glean.sourceforge.net/'
-)

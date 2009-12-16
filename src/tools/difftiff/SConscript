@@ -1,3 +1,5 @@
+import os.path
+
 Import(['*'])
 
 if env['glut']:
@@ -9,4 +11,6 @@ if env['glut']:
 
     env.Default(difftiff)
 
-    env.Install('/bin', difftiff)
+    bin_dir = os.path.join(env['prefix'], 'bin')
+    env.Install(bin_dir, difftiff)
+    env.Alias('install', bin_dir)
