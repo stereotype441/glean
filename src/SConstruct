@@ -97,9 +97,7 @@ if env['msvc']:
         ]
     else:
         ccflags += [
-          '/Ox', # maximum optimizations
-          '/Oi', # enable intrinsic functions
-          '/Ot', # favor code speed
+          '/O2', # optimize for speed
         ]
     ccflags += [
         '/EHsc', # set exception handling model
