@@ -182,6 +182,19 @@ if env['platform'] == 'darwin':
         'OpenGL',
     ])
 
+variant = env['platform']
+if env['machine'] != 'generic':
+    variant += '-' + env['machine']
+if env['debug']:
+    variant += '-debug'
+env['variant'] = variant
+
+# Put all SCons' persistent data in the build dir
+build_dir = os.path.join('..', 'build', variant)
+env.SConsignFile(os.path.join(build_dir, 'sign'))
+env['CONFIGUREDIR'] = os.path.join(build_dir, 'conf')
+env['CONFIGURELOG'] = os.path.join(build_dir, 'config.log')
+
 conf = Configure(env)
 if not conf.CheckCHeader('GL/glext.h'):
     conf.env.Prepend(CPPPATH = ['#glext'])
@@ -214,18 +227,9 @@ env.Prepend(CPPPATH = [
     '#libs/timer',
 ])
 
-variant = env['platform']
-if env['machine'] != 'generic':
-    variant += '-' + env['machine']
-if env['debug']:
-    variant += '-debug'
-env['variant'] = variant
+env.VariantDir(build_dir, '.', duplicate=0)
 
-variant_dir = os.path.join('..', 'build', variant)
-
-env.VariantDir(variant_dir, '.', duplicate=0)
-
-SConscript('SConscript', variant_dir=variant_dir, duplicate=0)
+SConscript('SConscript', build_dir=build_dir, duplicate=0)
 
 env.Tool('packaging')
 env.Package(
