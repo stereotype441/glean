@@ -2006,6 +2006,39 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		// Test that reads of varying vars in vertex shaders works.
+		// Mesa's GLSL compiler replaces some varying vars with temp regs
+		// so that they can be read.  The vertex shader here does some
+		// arithmetic so that additional temp regs are used.  If any
+		// temp regs are mis-used, this test should fail.
+		// This is a regression test for fd.o bug 26317
+		// Note: var3 = gl_Color
+		// Note: var1 = -var2
+		// Final fragment color should be equal to gl_Color
+		"varying variable read/write",
+		// vertex program:
+		"varying vec4 var1, var2, var3; \n"
+		"void main() { \n"
+		"   gl_Position = ftransform(); \n"
+		"   var1 = 2.0 * (vec4(0.0) - gl_Position); \n"
+		"   var2 = 2.0 * gl_Color; \n"
+		"   var3 = 0.5 * var2 + (2.0 * gl_Position + var1); \n"
+		"   var1 = -var2; \n"
+		"} \n",
+		// fragment program:
+		"varying vec4 var1; \n"
+		"varying vec4 var2; \n"
+		"varying vec4 var3; \n"
+		"void main() { \n"
+		"   gl_FragColor = var1 + var2 + var3; \n"
+		"} \n",
+		{ PRIMARY_R, PRIMARY_G, PRIMARY_B, PRIMARY_A },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+
 	// GL state refs =====================================================
 	{
 		"GL state variable reference (gl_FrontMaterial.ambient)",
