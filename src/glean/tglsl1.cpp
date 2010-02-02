@@ -4481,7 +4481,9 @@ GLSLTest::isApplicable() const
 	const char *version = (const char *) glGetString(GL_VERSION);
 	if (strncmp(version, "2.0", 3) == 0 ||
 		strncmp(version, "2.1", 3) == 0 ||
-		strncmp(version, "3.0", 3) == 0) {
+		strncmp(version, "3.0", 3) == 0 ||
+		strncmp(version, "3.1", 3) == 0 ||
+		strncmp(version, "3.2", 3) == 0) {
 		return true;
 	}
 	else {
