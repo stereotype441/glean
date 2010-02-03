@@ -887,6 +887,27 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		// This is a Mesa regression test (bump.c)
+		"cross() function, in-place",
+		NO_VERTEX_SHADER,
+		"void main() { \n"
+		"   vec3 u,v ; \n"
+                "   u.x = 0.8; \n"
+                "   u.y = -0.5; \n"
+                "   u.z = 1.0; \n"
+		"   v.x = 0.1; \n"
+                "   v.y = 0.5; \n"
+                "   v.z = -2.0; \n"
+		"   u = cross(u, v); \n"
+		"   gl_FragColor.xyz = u; \n"
+		"   gl_FragColor.w = 1.0; \n"
+		"} \n",
+		{ 0.502, 1.0, 0.4509, 1.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"abs() function",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
