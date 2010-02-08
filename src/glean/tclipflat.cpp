@@ -276,7 +276,7 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
             // black - OK
          }
          else if (image[k + 0] == 0 &&
-                  image[k + 1] == 255 &&
+                  image[k + 1] >= 254 &&
                   image[k + 0] == 0) {
             // green - OK
             anyGreen = GL_TRUE;
