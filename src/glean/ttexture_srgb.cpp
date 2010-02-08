@@ -155,7 +155,7 @@ TextureSRGBTest::testTextureFormat(GLenum intFormat, GLint components,
 
 	glGetIntegerv(GL_RED_BITS, &redBits);
 	glGetIntegerv(GL_ALPHA_BITS, &alphaBits);
-	const float tolerance = 1.0 / ((1 << redBits) - 1);
+	const float tolerance = 1.0 / ((1 << (redBits - 1)) - 1);
 
 	// setup matrices
 	glMatrixMode(GL_PROJECTION);
