@@ -187,6 +187,8 @@ ClipFlatResult::ClipFlatResult()
 void
 ClipFlatTest::setup(void)
 {
+   glDisable(GL_DITHER);
+
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    glOrtho(-1.25, 1.25, -1.25, 1.25, -1, 1);
