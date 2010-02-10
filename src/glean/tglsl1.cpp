@@ -94,6 +94,7 @@ static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 #define FLAG_VERSION_1_20     0x8  // GLSL 1.20 test
 #define FLAG_WINDING_CW       0x10  // clockwise-winding polygon
 #define FLAG_VERTEX_TEXTURE   0x20
+#define FLAG_ARB_DRAW_BUFFERS 0x40
 
 #define DONT_CARE_Z -1.0
 
@@ -3049,6 +3050,60 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		/* Test the #extension directive.
+		 * This test will only be run if we have the GL_ARB_draw_buffers
+		 * extension.  Note the FLAG_ARB_DRAW_BUFFERS flag.
+		 */
+		"Preprocessor test (extension test 1)",
+		NO_VERTEX_SHADER,
+		"#extension GL_ARB_draw_buffers: enable\n"
+		"void main() { \n"
+                "#if GL_ARB_draw_buffers \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_ARB_DRAW_BUFFERS
+	},
+
+	{
+		/* As above, but use #if defined test. */
+		"Preprocessor test (extension test 2)",
+		NO_VERTEX_SHADER,
+		"#extension GL_ARB_draw_buffers: enable\n"
+		"void main() { \n"
+                "#if defined(GL_ARB_draw_buffers) \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_ARB_DRAW_BUFFERS
+	},
+
+	{
+		/* Test extension disabling. */
+		"Preprocessor test (extension test 3)",
+		NO_VERTEX_SHADER,
+		"#extension GL_ARB_draw_buffers: disable\n"
+		"void main() { \n"
+                "#if defined(GL_ARB_draw_buffers) \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_ARB_DRAW_BUFFERS
+	},
+
+	{
 		"Preprocessor test (11)",
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
@@ -4332,6 +4387,14 @@ GLSLTest::testProgram(const ShaderProgram &p)
 	GLint u1, uArray, utex1d, utex2d, utex3d, utexZ, umat4, umat4t;
 	GLint umat2x4, umat2x4t, umat4x3, umat4x3t;
 	bool retVal = false;
+
+	if (p.flags & FLAG_ARB_DRAW_BUFFERS &&
+	    !GLUtils::haveExtensions("GL_ARB_draw_buffers")) {
+		// skip
+		retVal = true;
+		goto cleanup;
+	}
+
 
 	if (p.fragShaderString) {
 		fragShader = loadAndCompileShader(GL_FRAGMENT_SHADER,
