@@ -3001,6 +3001,70 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"Preprocessor test (8)",
+		NO_VERTEX_SHADER,
+		"#define FOO \n"
+		"void main() { \n"
+                "#ifdef FOO \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test (9)",
+		NO_VERTEX_SHADER,
+		"#define FOO \n"
+		"void main() { \n"
+                "#ifndef FOO \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test (10)",
+		NO_VERTEX_SHADER,
+		"#define FOO \n"
+		"void main() { \n"
+                "#if defined(FOO) \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test (11)",
+		NO_VERTEX_SHADER,
+		"#define FOO \n"
+		"void main() { \n"
+                "#if !defined(FOO) \n"
+		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#else \n"
+                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#endif \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		"Comment test (1)",
 		NO_VERTEX_SHADER,
                 "/* this is\n"
