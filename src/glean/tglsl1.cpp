@@ -87,13 +87,13 @@ static PFNGLUNIFORMMATRIX2X4FVPROC glUniformMatrix2x4fv_func = NULL;
 static PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv_func = NULL;
 
 
-#define FLAG_NONE   0x0
-#define FLAG_LOOSE  0x1 // to indicate a looser tolerance test is needed
-#define FLAG_ILLEGAL_SHADER 0x2  // the shader test should not compile
-#define FLAG_ILLEGAL_LINK   0x4  // the shaders should not link
-#define FLAG_VERSION_1_20   0x8  // GLSL 1.20 test
-#define FLAG_WINDING_CW     0x10  // clockwise-winding polygon
-#define FLAG_VERTEX_TEXTURE 0x20
+#define FLAG_NONE             0x0
+#define FLAG_LOOSE            0x1 // to indicate a looser tolerance test is needed
+#define FLAG_ILLEGAL_SHADER   0x2  // the shader test should not compile
+#define FLAG_ILLEGAL_LINK     0x4  // the shaders should not link
+#define FLAG_VERSION_1_20     0x8  // GLSL 1.20 test
+#define FLAG_WINDING_CW       0x10  // clockwise-winding polygon
+#define FLAG_VERTEX_TEXTURE   0x20
 
 #define DONT_CARE_Z -1.0
 
