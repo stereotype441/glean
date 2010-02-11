@@ -84,6 +84,8 @@ FBOTest::setup(void)
         glDrawBuffer(GL_FRONT);
         glReadBuffer(GL_FRONT);
 
+        glDisable(GL_DITHER);
+
         // compute error tolerances (may need fine-tuning)
         int bufferBits[5];
 
