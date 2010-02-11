@@ -172,6 +172,8 @@ TextureSRGBTest::testTextureFormat(GLenum intFormat, GLint components,
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glEnable(GL_TEXTURE_2D);
 
+	glDisable(GL_DITHER);
+
 	glDrawBuffer(GL_FRONT);
 	glReadBuffer(GL_FRONT);
 
