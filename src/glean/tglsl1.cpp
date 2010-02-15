@@ -2893,7 +2893,7 @@ static const ShaderProgram Programs[] = {
 
 	// Preprocessor tests ================================================
 	{
-		"Preprocessor test (1)",
+		"Preprocessor test 1 (#if 0)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"#if 0 \n"
@@ -2908,7 +2908,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (2)",
+		"Preprocessor test 2 (#if 1)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"#if 1 \n"
@@ -2923,7 +2923,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (3)",
+		"Preprocessor test 3 (#if ==)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"#define SYMBOL 3 \n"
@@ -2939,7 +2939,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (4)",
+		"Preprocessor test 4 (#if 1, #define macro)",
 		NO_VERTEX_SHADER,
 		"#if 1 \n"
 		"#define FOO(x) x \n"
@@ -2955,7 +2955,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (5)",
+		"Preprocessor test 5 (#if 1, #define macro)",
 		NO_VERTEX_SHADER,
 		"#define BAR(x) x \n"
 		"#if 1 \n"
@@ -2972,7 +2972,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (6)",
+		"Preprocessor test 6 (#if 0, #define macro)",
 		NO_VERTEX_SHADER,
 		"#define BAR(x) x \n"
 		"#if 0 \n"
@@ -2989,7 +2989,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (7)",
+		"Preprocessor test 7 (multi-line #define)",
 		NO_VERTEX_SHADER,
 		"#define FOO(x) \\\n"
                 " ((x) + (x)) \n"
@@ -3002,7 +3002,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (8)",
+		"Preprocessor test 8 (#ifdef)",
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
@@ -3018,7 +3018,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (9)",
+		"Preprocessor test 9 (#ifndef)",
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
@@ -3034,7 +3034,7 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		"Preprocessor test (10)",
+		"Preprocessor test 10 (#if defined())",
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
