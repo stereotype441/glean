@@ -3050,6 +3050,112 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
+		"Preprocessor test 11 (#elif)",
+		NO_VERTEX_SHADER,
+		"#define FOO 1\n"
+		"void main() { \n"
+                "#if FOO == 1 \n"
+		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#elif FOO == 2\n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+		"   vec4 r = vec4(1.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+                "   gl_FragColor = r; \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test 12 (#elif)",
+		NO_VERTEX_SHADER,
+		"#define FOO 2\n"
+		"void main() { \n"
+                "#if FOO == 1 \n"
+		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#elif FOO == 2\n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+		"   vec4 r = vec4(1.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+                "   gl_FragColor = r; \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test 13 (nested #if)",
+		NO_VERTEX_SHADER,
+		"#define FOO 1\n"
+		"#define BAR 0\n"
+		"void main() { \n"
+                "#if FOO == 1 \n"
+                "#if BAR == 1 \n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+                "#else \n"
+		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
+                "#endif \n"
+                "   gl_FragColor = r; \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test 14 (nested #if)",
+		NO_VERTEX_SHADER,
+		"#define FOO 0\n"
+		"#define BAR 0\n"
+		"void main() { \n"
+                "#if FOO == 1 \n"
+		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
+                "#else \n"
+                "#if BAR == 1 \n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+                "#endif \n"
+                "   gl_FragColor = r; \n"
+		"} \n",
+		{ 0.0, 1.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
+		"Preprocessor test 15 (nested #if, #elif)",
+		NO_VERTEX_SHADER,
+		"#define FOO 0\n"
+		"#define BAR 2\n"
+		"void main() { \n"
+                "#if FOO == 1 \n"
+		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
+                "#else \n"
+                "#if BAR == 1 \n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#elif BAR == 2 \n"
+		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
+                "#else \n"
+		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
+                "#endif \n"
+                "#endif \n"
+                "   gl_FragColor = r; \n"
+		"} \n",
+		{ 1.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
+	{
 		/* Test the #extension directive.
 		 * This test will only be run if we have the GL_ARB_draw_buffers
 		 * extension.  Note the FLAG_ARB_DRAW_BUFFERS flag.
