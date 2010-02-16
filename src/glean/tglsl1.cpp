@@ -376,60 +376,60 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
-        {
+	{
 		"Swizzled expression",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   vec4 a = vec4(1, 1, 1, 1); \n"
-                "   vec4 b = vec4(0.5, 0.2, 0.1, 0.8); \n"
-                "   vec4 c = (a * b).wzyx; \n"
+		"   vec4 a = vec4(1, 1, 1, 1); \n"
+		"   vec4 b = vec4(0.5, 0.2, 0.1, 0.8); \n"
+		"   vec4 c = (a * b).wzyx; \n"
 		"   gl_FragColor = c; \n"
 		"} \n",
 		{ 0.8, 0.1, 0.2, 0.5 },
 		DONT_CARE_Z,
 		FLAG_NONE
-        },
+	},
 
-        {
+	{
 		// This test targets SOA implementations where we have to
 		// check for SOA dependencies.
 		"Swizzle in-place",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   vec4 a = vec4(0.5, 0.2, 0.1, 0.8); \n"
-                "   a = a.yxwz; \n"
+		"   vec4 a = vec4(0.5, 0.2, 0.1, 0.8); \n"
+		"   a = a.yxwz; \n"
 		"   gl_FragColor = a; \n"
 		"} \n",
 		{ 0.2, 0.5, 0.8, 0.1 },
 		DONT_CARE_Z,
 		FLAG_NONE
-        },
+	},
 
-        {
+	{
 		"Swizzled swizzle",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
-                "   vec4 b = a.wzyx.yxwz; \n"
+		"   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
+		"   vec4 b = a.wzyx.yxwz; \n"
 		"   gl_FragColor = b; \n"
 		"} \n",
 		{ 0.3, 0.4, 0.1, 0.2 },
 		DONT_CARE_Z,
 		FLAG_NONE
-        },
+	},
 
-        {
+	{
 		"Swizzled swizzled swizzle",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
-                "   vec4 b = a.wzyx.yxwz.xxyz; \n"
+		"   vec4 a = vec4(0.1, 0.2, 0.3, 0.4); \n"
+		"   vec4 b = a.wzyx.yxwz.xxyz; \n"
 		"   gl_FragColor = b; \n"
 		"} \n",
 		{ 0.3, 0.3, 0.4, 0.1 },
 		DONT_CARE_Z,
 		FLAG_NONE
-        },
+	},
 
 
 	// Z-write ============================================================
@@ -645,8 +645,8 @@ static const ShaderProgram Programs[] = {
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
 		"   vec4 u = vec4(0.0, 0.09, 0.25, 1.0); \n"
-                "   u = u * uniform1.xxxx; // mul by 1.0 \n"
-                "   u = sqrt(u); \n"
+		"   u = u * uniform1.xxxx; // mul by 1.0 \n"
+		"   u = sqrt(u); \n"
 		"   gl_FragColor = u; \n"
 		"} \n",
 		{ 0.0, 0.3, 0.5, 1.0 },
@@ -660,9 +660,9 @@ static const ShaderProgram Programs[] = {
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
 		"   vec2 u = vec2(0.0, 0.04); \n"
-                "   u = u * uniform1.xx; // mul by 1.0 \n"
-                "   u = sqrt(u); \n"
-                "   u = u * uniform1.xx; // mul by 1.0 \n"
+		"   u = u * uniform1.xx; // mul by 1.0 \n"
+		"   u = sqrt(u); \n"
+		"   u = u * uniform1.xx; // mul by 1.0 \n"
 		"   gl_FragColor = vec4(u.x, u.y, 0.0, 0.0); \n"
 		"} \n",
 		{ 0.0, 0.2, 0.0, 0.0 },
@@ -893,12 +893,12 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   vec3 u,v ; \n"
-                "   u.x = 0.8; \n"
-                "   u.y = -0.5; \n"
-                "   u.z = 1.0; \n"
+		"   u.x = 0.8; \n"
+		"   u.y = -0.5; \n"
+		"   u.z = 1.0; \n"
 		"   v.x = 0.1; \n"
-                "   v.y = 0.5; \n"
-                "   v.z = -2.0; \n"
+		"   v.y = 0.5; \n"
+		"   v.z = -2.0; \n"
 		"   u = cross(u, v); \n"
 		"   gl_FragColor.xyz = u; \n"
 		"   gl_FragColor.w = 1.0; \n"
@@ -1070,14 +1070,14 @@ static const ShaderProgram Programs[] = {
 		"   float v0 = 0.0; \n"
 		"   float v1 = 1.0; \n"
 		"   gl_FragColor.x = mix(v0, v1, 0.25); \n"
-                "   v0 = 1.0; \n"
-                "   v1 = 0.0; \n"
+		"   v0 = 1.0; \n"
+		"   v1 = 0.0; \n"
 		"   gl_FragColor.y = mix(v0, v1, 0.25); \n"
-                "   v0 = -4.8; \n"
-                "   v1 = 15.2; \n"
+		"   v0 = -4.8; \n"
+		"   v1 = 15.2; \n"
 		"   gl_FragColor.z = mix(v0, v1, 0.25); \n"
-                "   v0 = 0.0; \n"
-                "   v1 = 0.0; \n"
+		"   v0 = 0.0; \n"
+		"   v1 = 0.0; \n"
 		"   gl_FragColor.w = mix(v0, v1, 0.25); \n"
 		"} \n",
 		{ 0.25, 0.75, 0.2, 0.0 },
@@ -1250,13 +1250,13 @@ static const ShaderProgram Programs[] = {
 		"while-loop with continue",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   int i = 0; \n"
+		"   int i = 0; \n"
 		"   float sum = 0.0; \n"
 		"   while (i < 20) { \n"
-                "      ++i; \n"
-                "      if (i > 5) \n"
-                "         continue; \n"
-                "      sum += 0.1; \n"
+		"      ++i; \n"
+		"      if (i > 5) \n"
+		"         continue; \n"
+		"      sum += 0.1; \n"
 		"   } \n"
 		"   gl_FragColor = vec4(sum); \n"
 		"} \n",
@@ -1269,12 +1269,12 @@ static const ShaderProgram Programs[] = {
 		"for-loop with continue",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "   int i; \n"
+		"   int i; \n"
 		"   float sum = 0.0; \n"
 		"   for (i = 0; i < 20; ++i) { \n"
-                "      if (i > 4) \n"
-                "         continue; \n"
-                "      sum += 0.1; \n"
+		"      if (i > 4) \n"
+		"         continue; \n"
+		"      sum += 0.1; \n"
 		"   } \n"
 		"   gl_FragColor = vec4(sum); \n"
 		"} \n",
@@ -1377,8 +1377,8 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"void main() { \n"
 		"   gl_FragColor = vec4(0.0); \n"
-                "   bool b = true; \n"
-                "   gl_FragColor.y = b ? 1.0 : 0.5; \n"
+		"   bool b = true; \n"
+		"   gl_FragColor.y = b ? 1.0 : 0.5; \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -1401,7 +1401,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"constant array with constant indexing, fragment shader",
 		NO_VERTEX_SHADER,
-                "uniform float uniformArray[4]; \n"
+		"uniform float uniformArray[4]; \n"
 		"void main() { \n"
 		"   gl_FragColor.x = uniformArray[0]; \n"
 		"   gl_FragColor.y = uniformArray[1]; \n"
@@ -1409,7 +1409,7 @@ static const ShaderProgram Programs[] = {
 		"   gl_FragColor.w = uniformArray[3]; \n"
 		"} \n",
 		{ UniformArray[0], UniformArray[1],
-                  UniformArray[2], UniformArray[3] },
+		  UniformArray[2], UniformArray[3] },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1435,7 +1435,7 @@ static const ShaderProgram Programs[] = {
 
 	{
 		"constant array with constant indexing, vertex shader",
-                "uniform float uniformArray[4]; \n"
+		"uniform float uniformArray[4]; \n"
 		"void main() { \n"
 		"   gl_FrontColor.x = uniformArray[0]; \n"
 		"   gl_FrontColor.y = uniformArray[1]; \n"
@@ -1445,7 +1445,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		NO_FRAGMENT_SHADER,
 		{ UniformArray[0], UniformArray[1],
-                  UniformArray[2], UniformArray[3] },
+		  UniformArray[2], UniformArray[3] },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1481,7 +1481,7 @@ static const ShaderProgram Programs[] = {
 		"   ar[1] = 0.1; \n"
 		"   ar[2] = 0.5; \n"
 		"   ar[3] = 0.7; \n"
-                "   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
+		"   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
 		"   gl_FragColor = vec4(ar[indx]); \n"
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
@@ -1498,7 +1498,7 @@ static const ShaderProgram Programs[] = {
 		"   ar[1] = 0.1; \n"
 		"   ar[2] = 0.5; \n"
 		"   ar[3] = 0.7; \n"
-                "   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
+		"   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
 		"   gl_FrontColor = vec4(ar[indx]); \n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
@@ -1510,10 +1510,10 @@ static const ShaderProgram Programs[] = {
 #endif
 	{
 		"constant array with variable indexing, vertex shader",
-                "uniform float uniformArray[4]; \n"
+		"uniform float uniformArray[4]; \n"
 		"uniform vec4 uniform1; \n"
 		"void main() { \n"
-                "   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
+		"   int indx = int(uniform1.y * 8.0);  // should be 2 \n"
 		"   gl_FrontColor = vec4(uniformArray[indx]); \n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
@@ -1530,17 +1530,17 @@ static const ShaderProgram Programs[] = {
 		// edge of the polygon should have a gray value =
 		// uniformArray[3].
 		"constant array with variable indexing, vertex shader (2)",
-                "uniform float uniformArray[4]; \n"
+		"uniform float uniformArray[4]; \n"
 		"void main() { \n"
-                "   int indx = int(gl_MultiTexCoord0.x + 2.0);  // 2 or 3 \n"
+		"   int indx = int(gl_MultiTexCoord0.x + 2.0);  // 2 or 3 \n"
 		"   gl_FrontColor = vec4(uniformArray[indx]); \n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
-                // If we read the center pixel we'd get the average of
-                // the Uniform[2] and Uniform[3] values here.  But we read
-                // an off-center pixel so this result was found emperically.
-                { 0.6, 0.6, 0.6, 0.6 },
+		// If we read the center pixel we'd get the average of
+		// the Uniform[2] and Uniform[3] values here.  But we read
+		// an off-center pixel so this result was found emperically.
+		{ 0.6, 0.6, 0.6, 0.6 },
 		DONT_CARE_Z,
 		FLAG_NONE
 	},
@@ -1555,10 +1555,10 @@ static const ShaderProgram Programs[] = {
 		"   ar[1] = 0.8; \n"
 		"   ar[2] = 0.5; \n"
 		"   ar[3] = 0.7; \n"
-                "   ivec2 indx; \n"
-                "   indx.x = 1; \n"
-                "   indx.y = int(uniform1.y * 8.0);  // should be 2 \n"
-                "   float p = ar[indx.x] * ar[indx.y]; \n"
+		"   ivec2 indx; \n"
+		"   indx.x = 1; \n"
+		"   indx.y = int(uniform1.y * 8.0);  // should be 2 \n"
+		"   float p = ar[indx.x] * ar[indx.y]; \n"
 		"   gl_FragColor = vec4(p); \n"
 		"} \n",
 		{ 0.4, 0.4, 0.4, 0.4 },
@@ -2155,8 +2155,8 @@ static const ShaderProgram Programs[] = {
 		"   gl_Position = ftransform(); \n"
 		"   // front color values should all be >= 1.0 \n"
 		"   gl_FrontColor = vec4(gl_MaxLights, gl_MaxClipPlanes,\n"
-		"                        gl_MaxTextureUnits, \n"
-		"                        gl_MaxTextureCoords); \n"
+		"        		gl_MaxTextureUnits, \n"
+		"        		gl_MaxTextureCoords); \n"
 		"} \n",
 		NO_FRAGMENT_SHADER,
 		{ 1.0, 1.0, 1.0, 1.0 },
@@ -2448,7 +2448,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"function with early return (3)",
 		NO_VERTEX_SHADER,
-                "float val = 0.5; \n"
+		"float val = 0.5; \n"
 		"void sub(in float x) { \n"
 		"   if (x > 0.0) \n"
 		"      return; \n"
@@ -2467,7 +2467,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"function with early return (4)",
 		NO_VERTEX_SHADER,
-                "float val = 0.5; \n"
+		"float val = 0.5; \n"
 		"void sub(in float x) { \n"
 		"   if (x >= 0.3) \n"
 		"      if (x >= 0.4) \n"
@@ -2807,17 +2807,17 @@ static const ShaderProgram Programs[] = {
 	{
 		"struct (1)",
 		NO_VERTEX_SHADER,
-                "struct s1 { \n"
-                "  float f1; \n"
-                "  vec4 v4; \n"
-                "}; \n"
-                "\n"
+		"struct s1 { \n"
+		"  float f1; \n"
+		"  vec4 v4; \n"
+		"}; \n"
+		"\n"
 		"void main() { \n"
-                "   s1 a, b; \n"
-                "   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
-                "   a.f1 = 0.0; \n"
-                "   b = a; \n"
-                "   gl_FragColor = b.v4; \n"
+		"   s1 a, b; \n"
+		"   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+		"   a.f1 = 0.0; \n"
+		"   b = a; \n"
+		"   gl_FragColor = b.v4; \n"
 		"} \n",
 		{ 0.25, 0.5, 0.75, 1.0 },
 		DONT_CARE_Z,
@@ -2827,17 +2827,17 @@ static const ShaderProgram Programs[] = {
 	{
 		"struct (2)",
 		NO_VERTEX_SHADER,
-                "struct s1 { \n"
-                "  float f1; \n"
-                "  vec4 v4; \n"
-                "}; \n"
-                "\n"
+		"struct s1 { \n"
+		"  float f1; \n"
+		"  vec4 v4; \n"
+		"}; \n"
+		"\n"
 		"void main() { \n"
-                "   s1 a[2]; \n"
-                "   a[0].v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
-                "   a[0].f1 = 0.0; \n"
-                "   a[1] = a[0]; \n"
-                "   gl_FragColor = a[1].v4; \n"
+		"   s1 a[2]; \n"
+		"   a[0].v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+		"   a[0].f1 = 0.0; \n"
+		"   a[1] = a[0]; \n"
+		"   gl_FragColor = a[1].v4; \n"
 		"} \n",
 		{ 0.25, 0.5, 0.75, 1.0 },
 		DONT_CARE_Z,
@@ -2847,18 +2847,18 @@ static const ShaderProgram Programs[] = {
 	{
 		"struct (3)",
 		NO_VERTEX_SHADER,
-                "struct s1 { \n"
-                "  float f1; \n"
-                "  vec4 v4; \n"
-                "}; \n"
-                "\n"
+		"struct s1 { \n"
+		"  float f1; \n"
+		"  vec4 v4; \n"
+		"}; \n"
+		"\n"
 		"void main() { \n"
-                "   vec4 scale = vec4(0.5); \n"
-                "   vec4 bias = vec4(0.1); \n"
-                "   s1 a; \n"
-                "   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
-                "   a.f1 = 0.0; \n"
-                "   gl_FragColor = a.v4 * scale + bias; \n"
+		"   vec4 scale = vec4(0.5); \n"
+		"   vec4 bias = vec4(0.1); \n"
+		"   s1 a; \n"
+		"   a.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+		"   a.f1 = 0.0; \n"
+		"   gl_FragColor = a.v4 * scale + bias; \n"
 		"} \n",
 		{ 0.225, 0.35, 0.475, 0.6 },
 		DONT_CARE_Z,
@@ -2868,23 +2868,23 @@ static const ShaderProgram Programs[] = {
 	{
 		"struct (4)",
 		NO_VERTEX_SHADER,
-                "struct s1 { \n"
-                "  float foo; \n"
-                "  vec4 v4; \n"
-                "}; \n"
-                "struct s2 { \n"
-                "  float bar; \n"
-                "  s1 s; \n"
-                "  float baz; \n"
-                "}; \n"
-                "\n"
+		"struct s1 { \n"
+		"  float foo; \n"
+		"  vec4 v4; \n"
+		"}; \n"
+		"struct s2 { \n"
+		"  float bar; \n"
+		"  s1 s; \n"
+		"  float baz; \n"
+		"}; \n"
+		"\n"
 		"void main() { \n"
-                "   s2 a; \n"
-                "   a.s.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
-                "   a.bar = 0.0; \n"
-                "   a.baz = 0.0; \n"
-                "   a.s.foo = 0.0; \n"
-                "   gl_FragColor = a.s.v4; \n"
+		"   s2 a; \n"
+		"   a.s.v4 = vec4(0.25, 0.5, 0.75, 1.0); \n"
+		"   a.bar = 0.0; \n"
+		"   a.baz = 0.0; \n"
+		"   a.s.foo = 0.0; \n"
+		"   gl_FragColor = a.s.v4; \n"
 		"} \n",
 		{ 0.25, 0.5, 0.75, 1.0 },
 		DONT_CARE_Z,
@@ -2992,7 +2992,7 @@ static const ShaderProgram Programs[] = {
 		"Preprocessor test 7 (multi-line #define)",
 		NO_VERTEX_SHADER,
 		"#define FOO(x) \\\n"
-                " ((x) + (x)) \n"
+		" ((x) + (x)) \n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(FOO(0.25)); \n"
 		"} \n",
@@ -3006,11 +3006,11 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
-                "#ifdef FOO \n"
+		"#ifdef FOO \n"
 		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3022,11 +3022,11 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
-                "#ifndef FOO \n"
+		"#ifndef FOO \n"
 		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3038,11 +3038,11 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
-                "#if defined(FOO) \n"
+		"#if defined(FOO) \n"
 		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3054,14 +3054,14 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO 1\n"
 		"void main() { \n"
-                "#if FOO == 1 \n"
+		"#if FOO == 1 \n"
 		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#elif FOO == 2\n"
+		"#elif FOO == 2\n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
+		"#else \n"
 		"   vec4 r = vec4(1.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
-                "   gl_FragColor = r; \n"
+		"#endif \n"
+		"   gl_FragColor = r; \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3073,14 +3073,14 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO 2\n"
 		"void main() { \n"
-                "#if FOO == 1 \n"
+		"#if FOO == 1 \n"
 		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#elif FOO == 2\n"
+		"#elif FOO == 2\n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
+		"#else \n"
 		"   vec4 r = vec4(1.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
-                "   gl_FragColor = r; \n"
+		"#endif \n"
+		"   gl_FragColor = r; \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3093,16 +3093,16 @@ static const ShaderProgram Programs[] = {
 		"#define FOO 1\n"
 		"#define BAR 0\n"
 		"void main() { \n"
-                "#if FOO == 1 \n"
-                "#if BAR == 1 \n"
+		"#if FOO == 1 \n"
+		"#if BAR == 1 \n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
+		"#else \n"
 		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
-                "#else \n"
+		"#endif \n"
+		"#else \n"
 		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
-                "#endif \n"
-                "   gl_FragColor = r; \n"
+		"#endif \n"
+		"   gl_FragColor = r; \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3115,16 +3115,16 @@ static const ShaderProgram Programs[] = {
 		"#define FOO 0\n"
 		"#define BAR 0\n"
 		"void main() { \n"
-                "#if FOO == 1 \n"
+		"#if FOO == 1 \n"
 		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
-                "#else \n"
-                "#if BAR == 1 \n"
+		"#else \n"
+		"#if BAR == 1 \n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
+		"#else \n"
 		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
-                "#endif \n"
-                "   gl_FragColor = r; \n"
+		"#endif \n"
+		"#endif \n"
+		"   gl_FragColor = r; \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3137,18 +3137,18 @@ static const ShaderProgram Programs[] = {
 		"#define FOO 0\n"
 		"#define BAR 2\n"
 		"void main() { \n"
-                "#if FOO == 1 \n"
+		"#if FOO == 1 \n"
 		"   vec4 r = vec4(0.0, 0.0, 1.0, 0.0); \n"
-                "#else \n"
-                "#if BAR == 1 \n"
+		"#else \n"
+		"#if BAR == 1 \n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#elif BAR == 2 \n"
+		"#elif BAR == 2 \n"
 		"   vec4 r = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
+		"#else \n"
 		"   vec4 r = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
-                "#endif \n"
-                "   gl_FragColor = r; \n"
+		"#endif \n"
+		"#endif \n"
+		"   gl_FragColor = r; \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3180,7 +3180,7 @@ static const ShaderProgram Programs[] = {
 		"#extension GL_ARB_draw_buffers: enable\n"
 		"void main() { \n"
 		"#if GL_ARB_draw_buffers == 1\n"
-                "   gl_FragData[0] = vec4(0.0, 1.0, 0.0, 0.0); \n"
+		"   gl_FragData[0] = vec4(0.0, 1.0, 0.0, 0.0); \n"
 		"#else \n"
 		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
 		"#endif \n"
@@ -3200,7 +3200,7 @@ static const ShaderProgram Programs[] = {
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
-                FLAG_ILLEGAL_SHADER
+		FLAG_ILLEGAL_SHADER
 	},
 
 	{
@@ -3208,11 +3208,11 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#define FOO \n"
 		"void main() { \n"
-                "#if !defined(FOO) \n"
+		"#if !defined(FOO) \n"
 		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 1.0, 0.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3222,9 +3222,9 @@ static const ShaderProgram Programs[] = {
 	{
 		"Comment test (1)",
 		NO_VERTEX_SHADER,
-                "/* this is\n"
-                "a multi-line\n"
-                "comment*/\n"
+		"/* this is\n"
+		"a multi-line\n"
+		"comment*/\n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(0.5); \n"
 		"} \n",
@@ -3236,7 +3236,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"Comment test (2)",
 		NO_VERTEX_SHADER,
-                "// another comment test\n"
+		"// another comment test\n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(0.5); //comment \n"
 		"} \n",
@@ -3248,7 +3248,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"Comment test (3)",
 		NO_VERTEX_SHADER,
-                "#define HALF 0.5  // half\n"
+		"#define HALF 0.5  // half\n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(HALF); \n"
 		"} \n",
@@ -3260,7 +3260,7 @@ static const ShaderProgram Programs[] = {
 	{
 		"Comment test (4)",
 		NO_VERTEX_SHADER,
-                "#define HALF 0.5  /* half */\n"
+		"#define HALF 0.5  /* half */\n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(HALF); \n"
 		"} \n",
@@ -3273,9 +3273,9 @@ static const ShaderProgram Programs[] = {
 		"Comment test (5)",
 		NO_VERTEX_SHADER,
 		"void main() { \n"
-                "/*}*/\n"
+		"/*}*/\n"
 		"   gl_FragColor = /*;*/ vec4(0.5); \n"
-                "/*}*/\n"
+		"/*}*/\n"
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
 		DONT_CARE_Z,
@@ -3399,7 +3399,7 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat2x4 m = mat2x4(0.1, 0.2, 0.3, 0.4, \n"
-		"                     0.5, 0.6, 0.7, 0.8); \n"
+		"        	     0.5, 0.6, 0.7, 0.8); \n"
 		"   gl_FragColor = m[1]; \n"
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
@@ -3412,9 +3412,9 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
-		"                     0.3, 0.4, \n"
-		"                     0.5, 0.6, \n"
-		"                     0.7, 0.8); \n"
+		"        	     0.3, 0.4, \n"
+		"        	     0.5, 0.6, \n"
+		"        	     0.7, 0.8); \n"
 		"   gl_FragColor.xy = m[1]; \n"
 		"   gl_FragColor.zw = m[2]; \n"
 		"} \n",
@@ -3428,7 +3428,7 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat2x3 m = mat2x3(0.1, 0.2, 0.3, \n"
-		"                     0.4, 0.5, 0.6); \n"
+		"        	     0.4, 0.5, 0.6); \n"
 		"   gl_FragColor.xyz = m[1]; \n"
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
@@ -3442,8 +3442,8 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat3x2 m = mat3x2(0.1, 0.2, \n"
-		"                     0.3, 0.4, \n"
-		"                     0.5, 0.6); \n"
+		"        	     0.3, 0.4, \n"
+		"        	     0.5, 0.6); \n"
 		"   gl_FragColor.xy = m[1]; \n"
 		"   gl_FragColor.zw = m[2]; \n"
 		"} \n",
@@ -3457,9 +3457,9 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
-		"                     0.4, 0.5, 0.6, \n"
-		"                     0.7, 0.8, 0.9, \n"
-		"                     1.0, 0.0, 1.0); \n"
+		"        	     0.4, 0.5, 0.6, \n"
+		"        	     0.7, 0.8, 0.9, \n"
+		"        	     1.0, 0.0, 1.0); \n"
 		"   gl_FragColor.xyz = m[1]; \n"
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
@@ -3473,8 +3473,8 @@ static const ShaderProgram Programs[] = {
 		"#version 120\n"
 		"void main() { \n"
 		"   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
-		"                     0.5, 0.6, 0.7, 0.8, \n"
-		"                     0.9, 1.0, 0.0, 1.0);\n"
+		"        	     0.5, 0.6, 0.7, 0.8, \n"
+		"        	     0.9, 1.0, 0.0, 1.0);\n"
 		"   gl_FragColor = m[1]; \n"
 		"} \n",
 		{ 0.5, 0.6, 0.7, 0.8 },
@@ -3489,8 +3489,8 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec4 v = vec4(0.2, -0.2, 0.4, 0.1); \n"
 		"   mat3x4 m = mat3x4(0.1, 0.2, 0.3, 0.4, \n"
-		"                     0.5, 0.6, 0.7, 0.8, \n"
-		"                     0.9, 1.0, 0.0, 1.0);\n"
+		"        	     0.5, 0.6, 0.7, 0.8, \n"
+		"        	     0.9, 1.0, 0.0, 1.0);\n"
 		"   gl_FragColor.xyz = v * m; \n"
 		"   gl_FragColor.w = 1.0; \n"
 		"} \n",
@@ -3508,9 +3508,9 @@ static const ShaderProgram Programs[] = {
 		"#version 120 \n"
 		"void main() { \n"
 		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
-		"                     0.3, 0.4, \n"
-		"                     0.5, 0.6, \n"
-		"                     0.7, 0.8); \n"
+		"        	     0.3, 0.4, \n"
+		"        	     0.5, 0.6, \n"
+		"        	     0.7, 0.8); \n"
 		"   vec4 v = vec4(0.9, 0.8, 0.7, 0.6); \n"
 		"   gl_FragColor.xy = (m * v) * 0.5; \n"
 		"   gl_FragColor.zw = vec2(0.0); \n"
@@ -3530,11 +3530,11 @@ static const ShaderProgram Programs[] = {
 		"#version 120 \n"
 		"void main() { \n"
 		"   mat4x2 m1 = mat4x2(0.1, 0.2, \n"
-		"                      0.3, 0.4, \n"
-		"                      0.5, 0.6, \n"
-		"                      0.7, 0.8); \n"
+		"        	      0.3, 0.4, \n"
+		"        	      0.5, 0.6, \n"
+		"        	      0.7, 0.8); \n"
 		"   mat2x4 m2 = mat2x4(0.9, 0.8, 0.7, 0.6, \n"
-		"                      0.5, 0.4, 0.3, 0.2); \n"
+		"        	      0.5, 0.4, 0.3, 0.2); \n"
 		"   mat2 m3 = m1 * m2; \n"
 		"   vec4 v4; \n"
 		"   v4.xy = m3[0]; \n"
@@ -3557,9 +3557,9 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec2 v = vec2(0.2, 0.5); \n"
 		"   mat4x2 m = mat4x2(0.1, 0.2, \n"
-		"                     0.3, 0.4, \n"
-		"                     0.5, 0.6, \n"
-		"                     0.7, 0.8); \n"
+		"        	     0.3, 0.4, \n"
+		"        	     0.5, 0.6, \n"
+		"        	     0.7, 0.8); \n"
 		"   gl_FragColor = v * m; \n"
 		"} \n",
 		{ 0.2 * 0.1 + 0.5 * 0.2,
@@ -3576,9 +3576,9 @@ static const ShaderProgram Programs[] = {
 		"void main() { \n"
 		"   vec3 v = vec3(0.2, 0.5, 0.1); \n"
 		"   mat4x3 m = mat4x3(0.1, 0.2, 0.3, \n"
-		"                     0.4, 0.5, 0.6, \n"
-		"                     0.7, 0.8, 0.9, \n"
-		"                     1.0, 0.1, 0.2); \n"
+		"        	     0.4, 0.5, 0.6, \n"
+		"        	     0.7, 0.8, 0.9, \n"
+		"        	     1.0, 0.1, 0.2); \n"
 		"   gl_FragColor = v * m; \n"
 		"} \n",
 		{ 0.2 * 0.1 + 0.5 * 0.2 + 0.1 * 0.3,
@@ -3647,8 +3647,8 @@ static const ShaderProgram Programs[] = {
 		"#version 120 \n"
 		"float [2] x; \n"
 		"void main() { \n"
-                "   x[0] = 1.0; \n"
-                "   x[1] = 2.0; \n"
+		"   x[0] = 1.0; \n"
+		"   x[1] = 2.0; \n"
 		"   gl_FragColor.x = x[0]; \n"
 		"   gl_FragColor.y = 0.25 * x[1]; \n"
 		"   gl_FragColor.z = 0.1 * (x[0] + x[1]); \n"
@@ -3678,7 +3678,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 [2] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                          vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        		  vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3692,7 +3692,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 [] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        		vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3705,7 +3705,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 [2] colors = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                         vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        		 vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3718,7 +3718,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 [] colors = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        		vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3731,7 +3731,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 colors[] = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                       vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        	       vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3744,7 +3744,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 colors[2] = vec4[](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"        		vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3757,7 +3757,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"vec4 colors[2] = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                         vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"                         vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3786,7 +3786,7 @@ static const ShaderProgram Programs[] = {
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
 		"const vec4 [2] colors = vec4[2](vec4(0.5, 0.4, 0.3, 0.2), \n"
-                "                                vec4(0.7, 0.8, 0.9, 1.0)); \n"
+		"                        vec4(0.7, 0.8, 0.9, 1.0)); \n"
 		"void main() { \n"
 		"   gl_FragColor = colors[1]; \n"
 		"} \n",
@@ -3815,7 +3815,7 @@ static const ShaderProgram Programs[] = {
 		"#version 120 \n"
 		"const float [2] x = float[2](1.0, 2.0); \n"
 		"void main() { \n"
-                "   int l = x.length(); \n"
+		"   int l = x.length(); \n"
 		"   gl_FragColor = vec4(l * 0.25); \n"
 		"} \n",
 		{ 0.5, 0.5, 0.5, 0.5 },
@@ -3826,7 +3826,7 @@ static const ShaderProgram Programs[] = {
 		"GLSL 1.20 array error check",
 		NO_VERTEX_SHADER,
 		"#version 120 \n"
-                "// Note array size disagreement here: \n"
+		"// Note array size disagreement here: \n"
 		"const float [2] x = float[3](1.0, 2.0); \n"
 		"void main() { \n"
 		"   gl_FragColor = vec4(1); \n"
@@ -3937,12 +3937,12 @@ static const ShaderProgram Programs[] = {
 
 	{
 		"texcoord varying",
-                // Does the linker correctly recognize that texcoord[1] is
-                // written by the vertex shader and read by the fragment shader?
+		// Does the linker correctly recognize that texcoord[1] is
+		// written by the vertex shader and read by the fragment shader?
 		// vert shader:
 		"void main() { \n"
-                "   int i = 1; \n"
-                "   gl_TexCoord[i] = vec4(0.5, 0, 0, 0); \n"
+		"   int i = 1; \n"
+		"   gl_TexCoord[i] = vec4(0.5, 0, 0, 0); \n"
 		"   gl_Position = ftransform(); \n"
 		"} \n",
 		// frag shader:
@@ -4568,7 +4568,7 @@ GLSLTest::testProgram(const ShaderProgram &p)
 
 	glUseProgram_func(program);
 
-        if (p.flags & FLAG_VERTEX_TEXTURE) {
+	if (p.flags & FLAG_VERTEX_TEXTURE) {
 		// check if vertex texture units are available
 		GLint n;
 		glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB, &n);
@@ -4577,7 +4577,7 @@ GLSLTest::testProgram(const ShaderProgram &p)
 			retVal = true;
 			goto cleanup;
 		}
-        }
+	}
 
 	// load uniform vars
 	u1 = glGetUniformLocation_func(program, "uniform1");
