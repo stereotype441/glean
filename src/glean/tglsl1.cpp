@@ -3156,19 +3156,17 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		/* Test the #extension directive.
-		 * This test will only be run if we have the GL_ARB_draw_buffers
-		 * extension.  Note the FLAG_ARB_DRAW_BUFFERS flag.
-		 */
+		// This test will only be run if we have the GL_ARB_draw_buffers
+		// extension.  Note the FLAG_ARB_DRAW_BUFFERS flag.
 		"Preprocessor test (extension test 1)",
 		NO_VERTEX_SHADER,
 		"#extension GL_ARB_draw_buffers: enable\n"
 		"void main() { \n"
-                "#if GL_ARB_draw_buffers \n"
-		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#if defined(GL_ARB_draw_buffers) \n"
+		"   gl_FragData[0] = vec4(0.0, 1.0, 0.0, 0.0); \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3176,16 +3174,16 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		/* As above, but use #if defined test. */
+		// As above, but use #if == 1 test.
 		"Preprocessor test (extension test 2)",
 		NO_VERTEX_SHADER,
 		"#extension GL_ARB_draw_buffers: enable\n"
 		"void main() { \n"
-                "#if defined(GL_ARB_draw_buffers) \n"
-		"   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#endif \n"
+		"#if GL_ARB_draw_buffers == 1\n"
+                "   gl_FragData[0] = vec4(0.0, 1.0, 0.0, 0.0); \n"
+		"#else \n"
+		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
+		"#endif \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
@@ -3193,20 +3191,16 @@ static const ShaderProgram Programs[] = {
 	},
 
 	{
-		/* Test extension disabling. */
+		// Test using a non-existant function.  Should not compile.
 		"Preprocessor test (extension test 3)",
 		NO_VERTEX_SHADER,
-		"#extension GL_ARB_draw_buffers: disable\n"
+		"#extension GL_FOO_bar: require\n"
 		"void main() { \n"
-                "#if defined(GL_ARB_draw_buffers) \n"
 		"   gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0); \n"
-                "#else \n"
-                "   gl_FragColor = vec4(0.0, 1.0, 0.0, 0.0); \n"
-                "#endif \n"
 		"} \n",
 		{ 0.0, 1.0, 0.0, 0.0 },
 		DONT_CARE_Z,
-		FLAG_ARB_DRAW_BUFFERS
+                FLAG_ILLEGAL_SHADER
 	},
 
 	{
