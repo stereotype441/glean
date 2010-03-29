@@ -2545,6 +2545,29 @@ static const ShaderProgram Programs[] = {
 		FLAG_NONE
 	},
 
+	{
+		"TPPStreamCompiler::assignOperands",
+		NO_VERTEX_SHADER,
+		"struct S { \n"
+		"   float f; \n"
+		"}; \n"
+		"\n"
+		"void F(S s) {} \n"
+		"\n"
+		"const S s = S(0.0); \n"
+		"\n"
+		"void F() { \n"
+		"   F(s); \n"
+		"} \n"
+		"\n"
+		"void main() { \n"
+		"   gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); \n"
+		"} \n",
+		{ 0.0, 0.0, 0.0, 0.0 },
+		DONT_CARE_Z,
+		FLAG_NONE
+	},
+
 	// Matrix tests ======================================================
 	{
 		"matrix column check (1)",
