@@ -50,7 +50,7 @@ main(int argc, char* argv[]) {
 	bool canonical = false;
 
 #	if defined(__X11__)
-		string displayName(":0");
+		char* displayName = NULL;
 #	endif
 
 	for (int i = 1; i < argc; ++i) {
@@ -88,10 +88,10 @@ main(int argc, char* argv[]) {
 #		endif
 
 legacyMethod:
-		Display* dpy = XOpenDisplay(displayName.c_str());
+		Display* dpy = XOpenDisplay(displayName);
 
 		if (!dpy) {
-			cerr << "can't open display " << displayName << "\n";
+			cerr << "can't open display " << XDisplayName(displayName) << "\n";
 			exit(2);
 		}
 
