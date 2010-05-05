@@ -178,6 +178,14 @@ static const GLfloat PolygonVerts[4][5] =
 #define Elements(array) (sizeof(array) / sizeof(array[0]))
 
 
+enum draw_mode {
+   BEGIN_END,
+   DRAW_ARRAYS,
+   DRAW_ELEMENTS,
+   NUM_DRAW_MODES
+};
+
+
 ClipFlatResult::ClipFlatResult()
 {
    pass = false;
@@ -231,6 +239,25 @@ ClipFlatTest::drawArrays(GLenum mode, const GLfloat *verts, GLuint count)
    glEnableClientState(GL_VERTEX_ARRAY);
 
    glDrawArrays(mode, 0, count);
+
+   glDisableClientState(GL_COLOR_ARRAY);
+   glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
+// Draw with glDrawElements()
+void
+ClipFlatTest::drawElements(GLenum mode, const GLfloat *verts, GLuint count)
+{
+   static const GLuint elements[6] = { 0, 1, 2, 3, 4, 5 };
+   glColorPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), verts + 0);
+   glVertexPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), verts + 3);
+   glEnableClientState(GL_COLOR_ARRAY);
+   glEnableClientState(GL_VERTEX_ARRAY);
+
+   assert(count <= Elements(elements));
+
+   glDrawElements(mode, count, GL_UNSIGNED_INT, elements);
 
    glDisableClientState(GL_COLOR_ARRAY);
    glDisableClientState(GL_VERTEX_ARRAY);
@@ -298,7 +325,7 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
 
 
 void
-ClipFlatTest::reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
+ClipFlatTest::reportFailure(GLenum mode, int drawMode, GLuint facing,
                             const GLfloat badColor[3], GLfloat x, GLfloat y)
 {
    const char *m, *d, *f;
@@ -326,10 +353,19 @@ ClipFlatTest::reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
       m = "???";
    }
 
-   if (arrayMode)
-      d = "glDrawArrays";
-   else
+   switch (drawMode) {
+   case BEGIN_END:
       d = "glBegin/End";
+      break;
+   case DRAW_ARRAYS:
+      d = "glDrawArrays";
+      break;
+   case DRAW_ELEMENTS:
+      d = "glDrawElements";
+      break;
+   default:
+      assert(0);
+   }
 
    if (facing == 0)
       f = "GL_CCW";
@@ -358,10 +394,11 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
                             const GLfloat *verts, GLuint count)
 {
    GLfloat x, y;
-   GLuint arrayMode, facing;
+   GLuint facing;
+   int drawMode;
 
-   // glBegin mode and glDrawArrays mode:
-   for (arrayMode = 0; arrayMode < 2; arrayMode++) {
+   // glBegin mode vs glDrawArrays vs glDrawElements:
+   for (drawMode = 0; drawMode < NUM_DRAW_MODES; drawMode++) {
 
       // Test CW, CCW winding (should make no difference)
       for (facing = 0; facing < 2; facing++) {
@@ -386,21 +423,30 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
 
                glClear(GL_COLOR_BUFFER_BIT);
 
-               if (arrayMode)
-                  drawArrays(mode, verts, count);
-               else
+               switch (drawMode) {
+               case BEGIN_END:
                   drawBeginEnd(mode, verts, count);
+                  break;
+               case DRAW_ARRAYS:
+                  drawArrays(mode, verts, count);
+                  break;
+               case DRAW_ELEMENTS:
+                  drawElements(mode, verts, count);
+                  break;
+               default:
+                  assert(0);
+               }
 
                glPopMatrix();
 
                GLfloat badColor[3];
                if (!checkResult(w, badColor)) {
-                  reportFailure(mode, arrayMode, facing, badColor, x, y);
+                  reportFailure(mode, drawMode, facing, badColor, x, y);
                   glFlush();
                   //sleep(25);  // enable for debugging
                   return false;
                }
-               //usleep(100000);  // enable for debugging
+               //usleep(50000);  // enable for debugging
             }
          }
       }
