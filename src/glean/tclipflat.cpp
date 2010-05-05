@@ -299,7 +299,7 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
 
 void
 ClipFlatTest::reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
-                            const GLfloat badColor[3])
+                            const GLfloat badColor[3], GLfloat x, GLfloat y)
 {
    const char *m, *d, *f;
 
@@ -340,6 +340,8 @@ ClipFlatTest::reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
             << d << "(" << m << "), glFrontFace("
             << f << ")\n";
 
+   env->log << "\tTranslation: " << x << ", " << y << "\n";
+
    if (testing_first_pv)
       env->log << "\tGL_EXT_provoking_vertex test: GL_FIRST_VERTEX_CONVENTION_EXT mode\n";
 
@@ -373,7 +375,9 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
             glCullFace(GL_FRONT);
          }
 
-         // Test clipping at 9 locations.
+         // Position the geometry at 9 different locations to test
+         // clipping against the left, right, bottom and top edges of
+         // the window.
          // Only the center location will be unclipped.
          for (y = -1.0; y <= 1.0; y += 1.0) {
             for (x = -1.0; x <= 1.0; x += 1.0) {
@@ -391,9 +395,12 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
 
                GLfloat badColor[3];
                if (!checkResult(w, badColor)) {
-                  reportFailure(mode, arrayMode, facing, badColor);
+                  reportFailure(mode, arrayMode, facing, badColor, x, y);
+                  glFlush();
+                  //sleep(25);  // enable for debugging
                   return false;
                }
+               //usleep(100000);  // enable for debugging
             }
          }
       }

@@ -65,7 +65,7 @@ private:
         bool testPositions(Window &w, GLenum mode,
                            const GLfloat *verts, GLuint count);
         void reportFailure(GLenum mode, GLuint arrayMode, GLuint facing,
-                           const GLfloat badColor[3]);
+                           const GLfloat badColor[3], GLfloat x, GLfloat y);
         bool checkResult(Window &w, GLfloat badColor[3]);
 
         void setup(void);
