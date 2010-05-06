@@ -326,9 +326,10 @@ ClipFlatTest::checkResult(Window &w, GLfloat badColor[3])
 
 void
 ClipFlatTest::reportFailure(GLenum mode, int drawMode, GLuint facing,
+                            GLuint fill,
                             const GLfloat badColor[3], GLfloat x, GLfloat y)
 {
-   const char *m, *d, *f;
+   const char *m, *d, *f, *p;
 
    switch (mode) {
    case GL_TRIANGLES:
@@ -372,9 +373,14 @@ ClipFlatTest::reportFailure(GLenum mode, int drawMode, GLuint facing,
    else
       f = "GL_CW";
 
+   if (fill == 0)
+      p = "GL_FILL";
+   else
+      p = "GL_LINE";
+
    env->log << name << ": Failure for "
-            << d << "(" << m << "), glFrontFace("
-            << f << ")\n";
+            << d << "(" << m << "), glFrontFace(" << f
+            << "), glPolygonMode(" << p << ")\n";
 
    env->log << "\tTranslation: " << x << ", " << y << "\n";
 
@@ -394,59 +400,65 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
                             const GLfloat *verts, GLuint count)
 {
    GLfloat x, y;
-   GLuint facing;
+   GLuint facing, fill;
    int drawMode;
 
-   // glBegin mode vs glDrawArrays vs glDrawElements:
-   for (drawMode = 0; drawMode < NUM_DRAW_MODES; drawMode++) {
+   // Loop over polygon mode: filled vs. outline
+   for (fill = 0; fill < 2; fill++) {
 
-      // Test CW, CCW winding (should make no difference)
-      for (facing = 0; facing < 2; facing++) {
+      glPolygonMode(GL_FRONT_AND_BACK, fill ? GL_LINE : GL_FILL);
 
-         if (facing == 0) {
-            glFrontFace(GL_CCW);
-            glCullFace(GL_BACK);
-         }
-         else {
-            glFrontFace(GL_CW);
-            glCullFace(GL_FRONT);
-         }
+      // Loop over drawing mode: glBegin/End vs glDrawArrays vs glDrawElements
+      for (drawMode = 0; drawMode < NUM_DRAW_MODES; drawMode++) {
 
-         // Position the geometry at 9 different locations to test
-         // clipping against the left, right, bottom and top edges of
-         // the window.
-         // Only the center location will be unclipped.
-         for (y = -1.0; y <= 1.0; y += 1.0) {
-            for (x = -1.0; x <= 1.0; x += 1.0) {
-               glPushMatrix();
-               glTranslatef(x, y, 0.0);
+         // Loop over CW vs. CCW winding (should make no difference)
+         for (facing = 0; facing < 2; facing++) {
 
-               glClear(GL_COLOR_BUFFER_BIT);
+            if (facing == 0) {
+               glFrontFace(GL_CCW);
+               glCullFace(GL_BACK);
+            }
+            else {
+               glFrontFace(GL_CW);
+               glCullFace(GL_FRONT);
+            }
 
-               switch (drawMode) {
-               case BEGIN_END:
-                  drawBeginEnd(mode, verts, count);
-                  break;
-               case DRAW_ARRAYS:
-                  drawArrays(mode, verts, count);
-                  break;
-               case DRAW_ELEMENTS:
-                  drawElements(mode, verts, count);
-                  break;
-               default:
-                  assert(0);
+            // Position the geometry at 9 different locations to test
+            // clipping against the left, right, bottom and top edges of
+            // the window.
+            // Only the center location will be unclipped.
+            for (y = -1.0; y <= 1.0; y += 1.0) {
+               for (x = -1.0; x <= 1.0; x += 1.0) {
+                  glPushMatrix();
+                  glTranslatef(x, y, 0.0);
+
+                  glClear(GL_COLOR_BUFFER_BIT);
+
+                  switch (drawMode) {
+                  case BEGIN_END:
+                     drawBeginEnd(mode, verts, count);
+                     break;
+                  case DRAW_ARRAYS:
+                     drawArrays(mode, verts, count);
+                     break;
+                  case DRAW_ELEMENTS:
+                     drawElements(mode, verts, count);
+                     break;
+                  default:
+                     assert(0);
+                  }
+
+                  glPopMatrix();
+
+                  GLfloat badColor[3];
+                  if (!checkResult(w, badColor)) {
+                     reportFailure(mode, drawMode, facing, fill, badColor, x, y);
+                     glFlush();
+                     sleep(25);  // enable for debugging
+                     return false;
+                  }
+                  //usleep(50000);  // enable for debugging
                }
-
-               glPopMatrix();
-
-               GLfloat badColor[3];
-               if (!checkResult(w, badColor)) {
-                  reportFailure(mode, drawMode, facing, badColor, x, y);
-                  glFlush();
-                  //sleep(25);  // enable for debugging
-                  return false;
-               }
-               //usleep(50000);  // enable for debugging
             }
          }
       }
