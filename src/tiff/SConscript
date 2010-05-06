@@ -132,6 +132,7 @@ conf.CheckCHeader('malloc.h')
 conf.CheckCHeader('search.h')
 conf.CheckCHeader('sys/time.h')
 conf.CheckCHeader('unistd.h')
+conf.CheckCHeader('string.h')
 
 # Check for standard library functions
 conf.CheckFunc('floor')
