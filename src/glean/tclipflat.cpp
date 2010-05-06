@@ -454,7 +454,7 @@ ClipFlatTest::testPositions(Window &w, GLenum mode,
                   if (!checkResult(w, badColor)) {
                      reportFailure(mode, drawMode, facing, fill, badColor, x, y);
                      glFlush();
-                     sleep(25);  // enable for debugging
+                     //sleep(25);  // enable for debugging
                      return false;
                   }
                   //usleep(50000);  // enable for debugging
