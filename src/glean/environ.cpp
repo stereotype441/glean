@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <cstdio>
 #elif defined(__MS__)
 
 #include <stdio.h>
