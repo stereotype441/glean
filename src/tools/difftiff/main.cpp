@@ -174,6 +174,10 @@ DiffColorMenu(int item) {
 		c[0] = 0;
 		c[1] = c[2] = 255;
 		break;
+	default:
+		assert(0);
+		c[0] = c[1] = c[2] = 0;
+		break;
 	}
 
 	if (c[0]!=DiffColor[0] || c[1]!=DiffColor[1] || c[2]!=DiffColor[2]) {
