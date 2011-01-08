@@ -36,6 +36,7 @@
 #else
 #include <GL/glut.h>
 #endif
+#include <cassert>
 #include <cmath>		// for fabs
 #include "image.h"
 
