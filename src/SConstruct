@@ -233,4 +233,4 @@ env.Prepend(CPPPATH = [
 
 env.VariantDir(build_dir, '.', duplicate=0)
 
-SConscript('SConscript', build_dir=build_dir, duplicate=0)
+SConscript('SConscript', variant_dir=build_dir, duplicate=0)
