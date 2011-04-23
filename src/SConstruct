@@ -38,7 +38,7 @@ vars.Add(EnumVariable('platform', 'target platform', default_platform,
 vars.Add(EnumVariable('machine', 'use machine-specific assembly code', default_machine,
                       allowed_values=('generic', 'ppc', 'x86', 'x86_64')))
 vars.Add(EnumVariable('toolchain', 'compiler toolchain', 'default',
-                      allowed_values=('default', 'crossmingw', 'winsdk')))
+                      allowed_values=('default', 'crossmingw')))
 vars.Add(PathVariable('prefix', 'installation prefix', default_prefix, PathVariable.PathIsDirCreate))
 if platform.machine() == 'win32':
     vars.Add(EnumVariable('MSVS_VERSION', 'Microsoft Visual Studio version', None, 
