@@ -9,6 +9,17 @@ find_package(OpenGL REQUIRED)
 find_package(TIFF)
 find_package(GLUT)
 
+# Put all executables into the bin subdirectory
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# Do the same for MSVC, regardless of the build type. This only works correctly
+# for CMake 2.8.1 and above.
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_BINARY_DIR}/bin)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_BINARY_DIR}/bin)
+
 if (NOT MSVC)
 	check_c_compiler_flag ("-Wall" C_COMPILER_FLAG_WALL)
 	if (C_COMPILER_FLAG_WALL)
