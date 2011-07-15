@@ -1,3 +1,5 @@
+include_directories (${GLUT_INCLUDE_DIR})
+
 file (GLOB sources "*.cpp")
 
 add_executable (showtiff ${sources})

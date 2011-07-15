@@ -82,7 +82,6 @@ include_directories (
 	libs/timer
 	glh
 	${GLEXT_INCLUDE_DIR}
-	${GLUT_INCLUDE_DIR}
 	${OPENGL_INCLUDE_DIR}
 	${TIFF_INCLUDE_DIR}
 )
