@@ -20,6 +20,8 @@ check_include_file (unistd.h HAVE_UNISTD_H)
 check_include_file (string.h HAVE_STRING_H)
 check_include_file (windows.h HAVE_WINDOWS_H)
 
+set (HAVE_APPLE_OPENGL_FRAMEWORK ${APPLE})
+
 # Check for standard library functions
 check_function_exists (floor HAVE_FLOOR)
 check_function_exists (isascii HAVE_ISASCII)

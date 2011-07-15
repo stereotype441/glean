@@ -51,7 +51,10 @@ else ()
 	endforeach (flag_var)
 endif ()
 
-set (GLEXT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/glext)
+if (APPLE)
+	# We rely on frameworks which where deprecated on x86-64
+	set (CMAKE_OSX_ARCHITECTURES i386)
+endif ()
 
 if (NOT TIFF_FOUND)
 	set (TIFF_INCLUDE_DIR ${CMAKE_BINARY_DIR}/tiff ${CMAKE_SOURCE_DIR}/tiff)
@@ -59,12 +62,13 @@ if (NOT TIFF_FOUND)
 	add_subdirectory (tiff)
 endif ()
 
+set (GLEXT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/glext)
+
 if (WIN32)
 	add_definitions (-D__WIN__ -D__MS__)
 elseif (APPLE)
 	add_definitions (-D__AGL__ -D__UNIX__)
 	find_library (CARBON_LIBRARY Carbon)
-	set (CMAKE_OSX_ARCHITECTURES i386)
 else ()
 	add_definitions (-D__X11__ -D__UNIX__)
 endif ()
