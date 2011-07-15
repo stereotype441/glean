@@ -9,9 +9,9 @@ target_link_libraries (difftiff
 	stats
 	timer
 	${TIFF_LIBRARY}
-	${OPENGL_gl_LIBRARY}
-	${OPENGL_glu_LIBRARY}
 	${GLUT_glut_LIBRARY}
+	${OPENGL_glu_LIBRARY}
+	${OPENGL_gl_LIBRARY}
 )
 
 if (WIN32)
