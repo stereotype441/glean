@@ -1,5 +1,4 @@
 .*.sw?
-.scon*
 *.a
 *.dep
 *.exe
@@ -13,4 +12,3 @@
 *.so
 *.zip
 build
-config.log
