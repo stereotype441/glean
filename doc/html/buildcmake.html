@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+  <TITLE>Building glean using cmake</TITLE>
+  <META NAME="description" CONTENT="building glean using cmake">
+  <META NAME="author" CONTENT="Jose Fonseca">
+  <LINK REV="made" HREF="mailto:jfonseca@vmware.com">
+</HEAD>
+
+<BODY bgcolor=#FFFFFF topmargin="10" bottommargin="10" leftmargin="10"
+  rightmargin="10" marginheight="0" marginwidth="0">
+
+<H1>Building <I>glean</I> with cmake</H1>
+
+<P>
+Now you can build glean on GNU/Linux or Windows using
+<A HREF="http://www.cmake.org/">cmake</A>. The advantages over GNU make are:
+<UL TYPE=DISC>
+	<LI> no need to set build options &mdash; everything is autodetected;
+	<LI> automatically uses an included tiff library if none can be found;
+	<LI> support to cross build from GNU/Linux to Windows using MinGW cross
+	compilers.
+</UL>
+
+<H2>Build <I>glean</I> on GNU/Linux</H2>
+
+<P>
+Simply type
+<PRE>
+    cmake -Hsrc -Bbuild
+    make -C build
+</PRE>
+
+<P>
+Everything should be autodetected for you.
+
+<H2>Build <I>glean</I> on Windows</H2>
+
+<P>
+Simply type
+<PRE>
+    cmake -G "Visual Studio 9 2008" -Hsrc -Bbuild
+    cmake --build build --config Debug %*
+</PRE>
+
+<P>
+Everything should be autodetected for you.
+
+<H2>Build <I>glean</I> for Windows on GNU/Linux</H2>
+
+<p>
+Create a <b>Toolchain.cmake</b> file containing:
+</p>
+<pre>
+# the name of the target operating system
+SET(CMAKE_SYSTEM_NAME Windows)
+
+# which compilers to use for C and C++
+SET(CMAKE_C_COMPILER i586-mingw32msvc-gcc)
+SET(CMAKE_CXX_COMPILER i586-mingw32msvc-g++)
+
+# here is the target environment located
+SET(CMAKE_FIND_ROOT_PATH /usr/i586-mingw32msvc)
+
+# adjust the default behaviour of the FIND_XXX() commands:
+# search headers and libraries in the target environment, search
+# programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+</pre>
+
+<p>
+Create a <b>Cache.cmake</b> file containing:
+</p>
+<pre>
+set(GLUT_INCLUDE_DIR "/path/to/glut/include" CACHE PATH "" FORCE)
+set(GLUT_glut_LIBRARY "/path/to/glut/lib/libglut32.a" CACHE FILEPATH "" FORCE)
+</pre>
+
+<p>
+Then do:
+</p>
+<pre>
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/path/to/install -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_TOOLCHAIN_FILE=/path/to/Toolchain.cmake -C /path/to/Cache.cmake -Hsrc -Bbuild
+make -C build
+</pre>
+
+<p>
+Read <a href="http://www.vtk.org/Wiki/CmakeMingw">this</a> for more information about CMake and MinGW cross compilation.
+</p>
+
+
+<HR>
+<SMALL>
+  <UL TYPE=DISC>
+    <LI> <A HREF="index.html"><I>glean</I> home</A>
+    <LI> <A HREF="whatis.html">What is <I>glean</I>?</A>
+    <LI> <A HREF="build.html">How do I build <I>glean</I>?</A>
+    <LI> <A HREF="run.html">How do I run <I>glean</I>?</A>
+    <LI> <A HREF="next.html">Where do we go from here?</A>
+      <UL TYPE=CIRCLE>
+        <LI> <A HREF="newtest.html">Adding new tests</A>
+	<LI> <A HREF="newfeat.html">Adding new infrastructure features</A>
+	<LI> <A HREF="overview.html">Overview of <I>glean</I> internals</A>
+        <LI> <A HREF="repo.html">Creating a repository of results</A>
+        <LI> <A HREF="port.html">Porting <I>glean</I></A>
+        <LI> <A HREF="cleanup.html">Cleaning up loose ends</A>
+      </UL>
+    <LI> <A HREF="changes.html">What has changed recently?</A>
+  </UL>
+</SMALL>
+
+</BODY>
+</HTML>

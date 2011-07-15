@@ -1,0 +1,5 @@
+add_subdirectory (dsurf)
+add_subdirectory (image)
+add_subdirectory (lex)
+add_subdirectory (stats)
+add_subdirectory (timer)
