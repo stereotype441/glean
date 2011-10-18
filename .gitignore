@@ -12,3 +12,5 @@
 *.so
 *.zip
 build
+bin
+include
