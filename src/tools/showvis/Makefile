@@ -4,7 +4,7 @@ TARGET=showvis
 ifeq ($(PLATFORM), MacOSX)
 	LIB=-framework GLUT -framework OpenGL -framework AGL -framework Carbon -ldsurf -llex -limage -lstats -ltimer -ltiff
 else
-	LIB=-ldsurf -llex -lGL $(EXTRALIBS)
+	LIB=-ldsurf -llex -lGL -lX11 $(EXTRALIBS)
 endif # MacOSX
 
 
